@@ -1,0 +1,28 @@
+
+-------------------------------------------
+start.sh:
+
+        do single routine, using slightly different parameters for $single and $singlep (line 95,100<-- possible bug? $single is passed in as 3 on both 95 and 100 and $singlep is hardcoded to 1 on 95)
+
+
+-------------------------------------------
+align_all.sh:
+parameters: $1 (name/datapoint), $2 (number of cores), $3 (1=assemble, 0=non-assemble)
+
+(<--align_all.sh only calls bowtie one way, as if the $3/assemble parameter is 0, it doesn't do anything different if it's 1 (unlike align.sh))
+
+-------------------------------------------
+extract.sh:
+parameters: $1 (name/datapoint), $2 (singlep/combinedp), $3 (1=single/2=pooled/3=both), $4 (params: 1=default, 0=paper, 3=custom)
+
+    run samtools sort -o ./dataTemp/$path/$1_sorted.bam ./dataTemp/$path/$1.bam # this sorts bam (line 18,22,24<-- where does the $1_sorted variable come from? Should it be $1"_sorted"?)
+
+-------------------------------------------
+gen_report.sh:
+parameters: $1 (mafcut)
+
+    calculate number of processors (line 5<--This is doing *2 to the number of processors, is this a bug?)
+            wait for a command/process to finish (line 15<--does it know which command? Does it matter)
+    wait for command to finish
+
+

@@ -1,0 +1,182 @@
+
+==========================
+gen_report.sh:
+
+- call report_gen.R, with pwd as path
+- call report_subset.R, with pwd as path
+- for every NON-"filled.Rds" file in reporttemp, call parallel_process.R in background with pwd and filename parameters
+- call report_gen_p2.R, with pwd as path, and $1 as maf cutoff
+
+==========================
+report_gen.R:
+parameters: path
+
+for all files in output/pooled
+    read the file into report data frame (<--line17, it looks like if there's more than one file in the directory it reads each and reassigns report to it - this is inefficient and possibly buggy if there's more than one file (I think it only expects one file?))
+if report is not empty, rename col1 and col4 as CHROM and COMBINED
+else it is single, not pooled
+for all files in output/single
+    create report by merging the data existing in report with the data in the current file (inner join: adding columns) based on a match of columns "CHROM", "POS", "REF"), basically a new column is added to report for each .tab file
+write report to report.csv
+
+possible optimizations:
+- use something besides read.delim/read.table and write.csv/write.table that works with matrices rather than data frames (maybe something from the data.table library?)
+- remove objects (rm()) and flush memory (gc()) as soon and often as possible
+
+==========================
+report_subset.R:
+parameters: path
+
+read report.csv to report data frame
+reset report to report minus first column
+while loop: divide report into data frames of 1000 rows each, and save each dataframe to reporttemp/report_p<n>.Rds (serialized R object)
+
+possible optimizations:
+- use something besides read.csv/read.table that works with matrices rather than data frames (maybe something from the data.table library?)
+- would it be possible to split the report dataframe up using a vectorized method instead of a for loop? It kind of does already, so there's only one iteration per every 1000 rows.
+- remove objects (rm()) and flush memory (gc()) as soon and often as possible (maybe after writing to .Rds?)
+
+==========================
+parallel_process.R
+parameters: path, file
+
+read report dataframe from .Rds file
+if "COMBINED" isn't a column name, set s=4, otherwise set s=5
+(<--line22, len is created but never used, it could be expensive too. increment is also never used)
+for each row (a) in report
+    if s<=num cols
+        for each col (b) in row a
+            if col b in row a is NA
+                fn = colname minus last 4 characters + "_sorted.bam" (<--line32, it uses substr() as if the first character is indexed at 0, but an example I saw indexes the first character at 1. Check this out. Also lines 39 and 43 use the substring method (what's the difference?) with indexing from 0 as well.)
+                cmd = <path>/tools/samtools-1.3.1/samtools tview <path>/dataTemp/single/<fn> <path>/reference/formatted_output.fasta -d T -p \"<row a's CHROM value>:<row a's POS value>" (<--line36, perhaps unimportant, but the first " is escaped with a \, and I don't think it's necessary since it's inside a '')
+                out = read in the output of cmd as a dataframe (delimited by '\n') and convert it to a matrix
+                if the first cell in row 1 of out == row a's REF cell value
+                    if out has at least two rows
+                        if the first cell in row 2 of out == "." OR ","
+                            replace the value of report[a,b] with row a's REF value + "/"
+save the modified dataframe to reporttemp/report_p<n>_filled.Rds (serialized R object)
+
+possible optimizations:
+- comment out line 22
+- again, if the dataframe could be represented as a matrix it might be faster (would have to be done in report_subset.R and report_gen.R first)
+- remove objects (rm()) and flush memory (gc()) as soon and often as possible
+
+==========================
+report_gen_p2.R
+parameters: path, MAF_CUTOFF
+
+read and merge (by rows) the split reports back into one large report dataframe
+write this as filled_report.csv
+
+# do editing for cutoffs:
+if numcols > 24 (for COMBINED) or numcols > 23 (for non-COMBINED)
+    (<--line52-55, variable tr is never used, and report is already a dataframe)
+    (<--line56, nc is assigned the ouput of nrow(report), this is deceptively named)
+    if "COMBINED" isn't a column name, set rfc=4, otherwise set rfc=5
+    while loop: for each row a in report:
+        copy row a (minus the initial 4 or 5 cols) to variable c as a matrix (<--these are terrible variable names, makes the code hard to read)
+        if more than half the values in c are NA
+            report <- report[-a, ] (<--line73,81, this reassignment inside a while loop (performed for each line!) is potentially very expensive, can this operation be vectorized instead of using a loop?)
+        else 
+            if there are only two types of data in row a, and one of them is NA OR if there's only one type of data in row a, and it isn't NA:
+                report <- report[-a, ] (<--line73,81,again, expensive)
+    write edited_report.csv
+else not enough samples, skipping cutoff editing
+
+# finding snp percentage per site:
+# remember report now has the rows removed from editing for cutoffs  
+if "COMBINED" isn't a column name
+    set snpp <- first 3 columns of report, all rows
+    set s=4
+else 
+    set snpp <- first 4 columns of report, all rows
+    set s=5
+convert snpp to a dataframe (<--line105, isn't snpp already a dataframe?)
+for each row in report
+    convert to matrix row a (minus the first 3 or 4 cols), grep with "A", then count how many A's, and store this in a new column in snpp, called "A"
+    - do all of the above for "C","T","G" as well (<--row a is converted to a matrix 5 times here!)
+    - do the same, but this time counting NA's and putting them in an "empty" col of snpp
+    store the max value of this row's A,C,T,G col values in a "max" col of snpp
+    store the 2nd max value of this row's A,C,T,G col values in a "max" col of snpp
+    store the sum of this row's A,C,T,G col values in a "sum" col of snpp
+    calculate MAF as second_max / (second_max + max) and store this in a "MAF" col of snpp
+write snpp to percentage_snps.csv
+
+# MAF_cutoff_report.csv and mutation_percentage.csv:
+sort the snpp by the MAF field, highest to lowest
+set snpp to only those rows that are abouve the MAF cutoff
+set report to only those rows in the report whose row names are also in the snpp
+read in the formatted_output.fasta (<--line128, "output" is a confusing name for the fasta reference)
+create a new empty dataframe called "out"
+for each sequence name (sector) in the fasta file (everything following '>' up to the first space):
+    copy the sequence annotation (name + trailing info) from the fasta row to the "role" column of the current "name" row of out.
+    calculate how many rows in report contain the current fasta name in their "CHROM" column, and put the total in the "snp" column of the current "name" row of out.
+    count how many characters are in this fasta row's sequence, and put the total in the "length" column of the current "name" row of out.
+    divide the result of the "snp" calculation by the "length", and put the result in the "percentage SNP" column of the current "name" row of out. (<--line136, this shouldn't have to recalculate snp and length, just reuse the existing results)
+sort the out dataframe by "percentage SNP", highest to lowest
+multiply the "percentage SNP" column values by 100
+write out to mutation_percentage.csv
+write report to MAF_cutoff_report.csv (<--line144, this could have been done right after line124, after "set report to only those rows whose row names are also in the snpp" 
+
+# replacing alleles with characters for chi square test:
+set reportc <- report
+(<--line149,150, ct and cl, terrible variable names)
+while loop, for each row in reportc:
+    set datap to the current row, minus the first "s" columns
+    converts datap to a matrix, then uses the table function to calculate a factor of the row, sorts the output (most frequent to least frequent) and stores it in va.
+    if the first two values in va occur more than 90% of the time
+        replace all occurences of the first value in all columns of reportc current row (minus the first "s" cols) with H (remember, in a factor, the value is the name, and the table function just returns a table that calculates the number of times the value occures, and uses the value as the name)
+        replace all occurences of the 2nd value in all columns of reportc current row (minus the first "s" cols) with A
+        if there are more than just the first two values in va
+            replace all occurences of each remaining value in all columns of reportc current row (minus the first "s" cols) with NA
+    else remove the current row from reportc (<--lin170, again, is this an expensive operation that could be vectorized?)
+write reportc to MAF_cutoff_report_chi.csv
+
+# generate probability values:
+set reportd <- reportc
+for each col x in reportd (except the first s-1 cols):
+    if this col is the "COMBINED" col (only occurs in pooled data) (<--184,195, if there are other cols after "COMBINED", it will create files for them in the /outputTemp/single)
+        for each file in /outputTemp/pooled
+            if the file (name?) contains "cutoff"
+                save the file path to fil
+    else save this to fil: /outputTemp/single/<current col name - last 4 chars>_cutoff" 
+    ap <- scanVcf(fil)
+    rr <- ap$`*:*-*`$rowRanges
+    for each row y in reportd
+        initialize ind to NA
+        if the current cell reportd[y, x] is not NA
+            if the number of character in the cell is 2
+                if the first character is not equal to reportd[y, REF] (<--line207,230, check that this works)
+                    set ind to the list of those names(rr) that contain both this row's CHROM value and ":<this row's POS value>_"
+                    if ind is not NA
+                        reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
+                    else reportd[y, x] <- NA
+                else reportd[y,x] <- 1
+            else
+                set ind to the list of those names(rr) that contain both this row's CHROM value and ":<this row's POS value>_"
+                if ind is not NA
+                    if the first character in report[y,x] is not equal to the third character
+                        reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
+                    else 
+                        reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][3]
+write reportd to probability.csv
+
+
+possible optimizations:
+- see some of the (<-- comments
+- in the finding snp percentage section, the snpp dataframe could be a matrix, and it could be initialized with the right number of rows in and columns (columns are added)
+
+
+==========================
+
+==========================
+
+==========================
+
+==========================
+
+==========================
+
+==========================
+
+==========================
