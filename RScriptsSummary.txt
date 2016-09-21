@@ -2,10 +2,11 @@
 ==========================
 gen_report.sh:
 
-- call report_gen.R, with pwd as path
-- call report_subset.R, with pwd as path
-- for every NON-"filled.Rds" file in reporttemp, call parallel_process.R in background with pwd and filename parameters
-- call report_gen_p2.R, with pwd as path, and $1 as maf cutoff
+call report_gen.R, with pwd as path
+call report_subset.R, with pwd as path
+calculate number of processors (line 5<--This is doing *2 to the number of processors, is this a bug?)
+for every NON-"filled.Rds" file in reporttemp, call parallel_process.R in background with pwd and filename parameters
+call report_gen_p2.R, with pwd as path, and $1 as maf cutoff
 
 ==========================
 report_gen.R:

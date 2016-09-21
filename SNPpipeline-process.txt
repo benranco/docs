@@ -4,14 +4,14 @@ start.sh:
 
     determine number of processor cores
     run cleanup.sh
-    run ref_gen.sh
+    run ref_gen.sh (line69<--doesn't check ref_gen.sh's exit code, even though exit 1 means we should abort)
     if single
-        if assemble, run args.sh for each datapoint filename (both R1 and R2) in ./data
-        if not assemble, run args.sh for each UNIQUE (adjacently anyway) datapoint filename (without the last 13 characters of the filename, which includes _R1 or _R2) in ./data
+        if unpaired (0), run args.sh for each datapoint filename in ./data
+        if paired (1), run args.sh once for each unique string obtained by chopping the last 13 characters off the filenames (which includes _R1 or _R2) in ./data (therefore only run args.sh once per R1 & R2 pair).
     if pooled, run args.sh, passing in $name as the first parameter
     if both
         do pooled call of args.sh in background (line 91<-- should it run in background? maybe should run before or after the singles, each with the full number of processors)
-        do single routine, using slightly different parameters for $single and $singlep (line 95,100<-- possible bug? $single is passed in as 3 on both 95 and 100 and $singlep is hardcoded to 1 on 95)
+        do single routine
     run gen_report.sh with $mafcut parameter
 
 
@@ -22,10 +22,10 @@ parameters: $1 9number of cores)
     export PERL5LIB=$PERL5LIB:`pwd`/tools/vcftools/src/perl
     rm -f ./reference/*.fai
     for each file in ./reference 
-        increment c (line 8<--c is not defined/initialized, don't know if that's a problem in bash)
+        increment c
         set ref to filename
     if c > 1
-        found multiple references, concat to one file called output.fasta, delete all other files
+        found multiple references, concat all files in /reference to one file called output.fasta, delete all other files
         set ref to output.fasta
     if c == 0
         found no reference, exit 1 
@@ -49,7 +49,6 @@ parameters: $1 ($datapoint for single, $name for pooled), $2 (name), $3 (1=singl
     if pooled, run extract.sh $1 $4 $3 $6 (with different log file)
     if single, run post_process.sh $1 $3
     if pooled, run post_process.sh $1 $3 (with different log file)
-    (10,13,18,21,26,29<--some of these lines are outputting to 2>&1 before the log and some aren't)
     (<-- the $2 parameter is never used)
 
 -------------------------------------------
@@ -58,9 +57,9 @@ parameters: $1 (name/datapoint), $2 (number of cores), $3 (1=assemble, 0=non-ass
 
     input=$1
     ref="./referenceTemp/formatted_output"
-    if assemble
+    if unpaired (0)
         run bowtie2 -p $2 -x $ref -U "./data/"$input --local --very-sensitive-local -S "./dataTemp/single/$input.sam"
-    elif not assemble
+    elif paired (1)
         run bowtie2 -p $2 -x $ref -1 "./data/$(ls "./data" | grep $input | sed -n 1p)" -2 "./data/$(ls "./data" | grep $input | sed -n 2p)" --local --very-sensitive-local -S "./dataTemp/single/$input.sam"
 
 ######
@@ -80,11 +79,13 @@ parameters: $1 (name/datapoint), $2 (number of cores), $3 (1=assemble, 0=non-ass
 
     input=$1
     ref="./referenceTemp/formatted_output"
-    make a comma separated list of R1 file names in .data
-    make a comma separated list of R2 file names in .data
-    run bowtie2 -p $2 -x $ref -1 $dataone -2 $datatwo --local --very-sensitive-local -S "./dataTemp/pooled/$input.sam"
-
-(<--align_all.sh only calls bowtie one way, as if the $3/assemble parameter is 0, it doesn't do anything different if it's 1 (unlike align.sh))
+    if unpaired (0)
+        make a comma separated list of file names in .data
+        run bowtie2 -p $2 -x $ref -U $data --local --very-sensitive-local -S "./dataTemp/pooled/$input.sam"
+    if paired (1)
+        make a comma separated list of R1 file names in .data
+        make a comma separated list of R2 file names in .data
+        run bowtie2 -p $2 -x $ref -1 $dataone -2 $datatwo --local --very-sensitive-local -S "./dataTemp/pooled/$input.sam"
 
 -------------------------------------------
 extract.sh:
@@ -94,10 +95,10 @@ parameters: $1 (name/datapoint), $2 (singlep/combinedp), $3 (1=single/2=pooled/3
     input="./dataTemp/$path/$1.sam"
     run samtools view -Sb $input > ./dataTemp/$path/$1.bam # this generates bam
     rm -f $input
-    run samtools sort -o ./dataTemp/$path/$1_sorted.bam ./dataTemp/$path/$1.bam # this sorts bam (line 18,22,24<-- where does the $1_sorted variable come from? Should it be $1"_sorted"?)
+    run samtools sort -o ./dataTemp/$path/$1_sorted.bam ./dataTemp/$path/$1.bam # this sorts bam (line 21,25,27<-- where does the $1_sorted variable come from? Should it be $1"_sorted"? - I think it's because $1, $2, etc are recognized as special positional parameters in bash)
     rm -f ./dataTemp/$path/$1.bam
-    run samtools index ./dataTemp/$path/$1_sorted.bam (line 18,22,24<--again, should $1_sorted be $1"_sorted"?)
-    binput="./dataTemp/$path/$1_sorted.bam" (line 18,22,24<--again, should $1_sorted be $1"_sorted"? This time it's within a larger string.)
+    run samtools index ./dataTemp/$path/$1_sorted.bam 
+    binput="./dataTemp/$path/$1_sorted.bam" 
     ref="./reference/formatted_output.fasta"
     if params==paper(0)
         run freebayes -f $ref -p $2 --pvar 0.75 --min-alternate-count 1 --theta 0.01  --use-best-n-alleles 4 --min-alternate-fraction 0.8 $binput 1> ./outputTemp/$path/$1.vcf
@@ -164,12 +165,12 @@ parameters: $1 (mafcut)
     Rscript ./scripts/report_subset.R `pwd`
     calculate number of processors (line 5<--This is doing *2 to the number of processors, is this a bug?)
     for each file in ./reporttemp not containing "filled.Rds" in the name
-        if counter < number fo cores
+        if counter < number of cores
             Rscript ./scripts/parallel_process.R `pwd` $f & 
             increment counter
         else
-            wait for a command/process to finish (line 15<--does it know which command? Does it matter)
-    wait for command to finish
+            wait for all currently active child processes to finish 
+    wait for all currently active child processes to finish
     Rscript ./scripts/report_gen_p2.R `pwd` $1
 
 -------------------------------------------
