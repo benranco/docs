@@ -1,3 +1,5 @@
+http://www.htslib.org/doc/
+
 
 Program: samtools (Tools for alignments in the SAM format)
 Version: 1.3.1 (using htslib 1.3.1)
@@ -158,4 +160,21 @@ Options:
   -b       Generate BAI-format index for BAM files [default]
   -c       Generate CSI-format index for BAM files
   -m INT   Set minimum interval size for CSI indices to 2^INT [14]
+
+
+===========
+tview options
+===========
+
+tview: unrecognized option '--help'
+Usage: samtools tview [options] <aln.bam> [ref.fasta]
+Options:
+   -d display      output as (H)tml or (C)urses or (T)ext 
+   -p chr:pos      go directly to this position
+   -s STR          display only reads from this sample or group
+      --input-fmt-option OPT[=VAL]
+               Specify a single input file format option in the form
+               of OPTION or OPTION=VALUE
+      --reference FILE
+               Reference sequence FASTA FILE [null]
 

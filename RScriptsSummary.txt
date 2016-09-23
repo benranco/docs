@@ -12,16 +12,18 @@ call report_gen_p2.R, with pwd as path, and $1 as maf cutoff
 report_gen.R:
 parameters: path
 
-for all files in output/pooled
-    read the file into report data frame (<--line17, it looks like if there's more than one file in the directory it reads each and reassigns report to it - this is inefficient and possibly buggy if there's more than one file (I think it only expects one file?))
+for all fileshttp://www.htslib.org/doc/ in output/pooled
+    read the file into report data frame (<--line17, it looks like if there's more than one file in the directory it reads each and reassigns report to it - this is inefficient and possibly buggy if there's more than one file (it only expects one file, which is a correct assumption based on program logic alone))
 if report is not empty, rename col1 and col4 as CHROM and COMBINED
-else it is single, not pooled
+else single=TRUE (<--line33, this should really be called noPooled, because it checks/reads single even if single==FALSE)
 for all files in output/single
-    create report by merging the data existing in report with the data in the current file (inner join: adding columns) based on a match of columns "CHROM", "POS", "REF"), basically a new column is added to report for each .tab file
+    build report by merging the data existing in report with the data in the current file (join: adding columns) based on a match of columns "CHROM", "POS", "REF"), basically a new column is added to report for each .tab file. If single==true, accept unmatched rows that occur either in report or sr. If single!=true, the only unmatched rows that are accepted are those that occur in report but not sr.
 write report to report.csv
 
 possible optimizations:
 - use something besides read.delim/read.table and write.csv/write.table that works with matrices rather than data frames (maybe something from the data.table library?)
+- if I can handle the report as a matrix rather than dataframe, could I do a faster merge process? 
+- could I initialize the size of report first (esp columns) to speed things up?
 - remove objects (rm()) and flush memory (gc()) as soon and often as possible
 
 ==========================
@@ -35,32 +37,47 @@ while loop: divide report into data frames of 1000 rows each, and save each data
 possible optimizations:
 - use something besides read.csv/read.table that works with matrices rather than data frames (maybe something from the data.table library?)
 - would it be possible to split the report dataframe up using a vectorized method instead of a for loop? It kind of does already, so there's only one iteration per every 1000 rows.
+- maybe initialize the size of the spl dataframe to 1000 or 999 before copying 
 - remove objects (rm()) and flush memory (gc()) as soon and often as possible (maybe after writing to .Rds?)
 
 ==========================
 parallel_process.R
 parameters: path, file
 
-read report dataframe from .Rds file
+read report dataframe from .Rds file (name passed in as file) in reporttemp/
 if "COMBINED" isn't a column name, set s=4, otherwise set s=5
 (<--line22, len is created but never used, it could be expensive too. increment is also never used)
 for each row (a) in report
     if s<=num cols
-        for each col (b) in row a
+        for each col (b) in row a (other than the first s cols)
             if col b in row a is NA
-                fn = colname minus last 4 characters + "_sorted.bam" (<--line32, it uses substr() as if the first character is indexed at 0, but an example I saw indexes the first character at 1. Check this out. Also lines 39 and 43 use the substring method (what's the difference?) with indexing from 0 as well.)
-                cmd = <path>/tools/samtools-1.3.1/samtools tview <path>/dataTemp/single/<fn> <path>/reference/formatted_output.fasta -d T -p \"<row a's CHROM value>:<row a's POS value>" (<--line36, perhaps unimportant, but the first " is escaped with a \, and I don't think it's necessary since it's inside a '')
+                fn = colname minus last 4 characters + "_sorted.bam" (<--line32, it uses substr() as if the first character is indexed at 0, but an example I saw indexes the first character at 1. Check this out. Also lines 39 and 43 use the substring method (what's the difference?) with indexing from 0 as well. Also fn is a confusing variable name, rename to filename).
+                cmd = <path>/tools/samtools-1.3.1/samtools tview <path>/dataTemp/single/<fn> <path>/reference/formatted_output.fasta -d T -p \"<row a CHROM value>:<row a POS value>" 
+(<--line34, the samtools call is only looking in dataTemp/single for the .bam, should it look in dataTemp/pooled for pooled data?)
+(<--line36, perhaps unimportant, but the first " is escaped with a \, and I don't think it's necessary since it's inside a '')
                 out = read in the output of cmd as a dataframe (delimited by '\n') and convert it to a matrix
                 if the first cell in row 1 of out == row a's REF cell value
                     if out has at least two rows
                         if the first cell in row 2 of out == "." OR ","
-                            replace the value of report[a,b] with row a's REF value + "/"
+                            replace the value of report[a,b] with row a's REF value + "/" (<--line46, Jun-Jun mentioned replacing the "/" with a repeat of the reference character).
 save the modified dataframe to reporttemp/report_p<n>_filled.Rds (serialized R object)
 
 possible optimizations:
 - comment out line 22
 - again, if the dataframe could be represented as a matrix it might be faster (would have to be done in report_subset.R and report_gen.R first)
+- try replacing the for loops with vectorized operations (either the outer row loop or the inner col loop). This might not make sense to do since we're doing a system call in the inner loop
+- try a faster ifelse form for the conditionals?
 - remove objects (rm()) and flush memory (gc()) as soon and often as possible
+
+from: /home/benrancourt/Documents/copiedFromGosuzombie/gosuzombieDesktop/SNPpipeline-isabel-fupansRun
+report.csv:
+"CHROM","POS","REF","HI.3518.007.Index_13.9525.tab","HI.3518.007.Index_15.8106.tab","HI.3518.007.Index_18.8207.tab","HI.3518.007.Index_2.9146.tab"
+"PSME_00000002-RA",55,"A",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"PSME_00000002-RA",91,"T",NA,NA,NA,NA,NA,"A/",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+"PSME_00000002-RA",108,"T",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+samtools commands:
+./tools/samtools-1.3.1/samtools tview ./dataTemp/single/HI.3518.007.Index_13.9525_sorted.bam ./reference/formatted_output.fasta -d T -p PSME_00000002-RA:55
+./tools/samtools-1.3.1/samtools tview ./dataTemp/single/HI.3518.007.Index_15.8106_sorted.bam ./reference/formatted_output.fasta -d T -p PSME_00000002-RA:55
 
 ==========================
 report_gen_p2.R
