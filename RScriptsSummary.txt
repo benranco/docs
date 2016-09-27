@@ -69,6 +69,12 @@ possible optimizations:
 - try a faster ifelse form for the conditionals?
 - remove objects (rm()) and flush memory (gc()) as soon and often as possible
 
+Specific:
+- instead of if (is.na(report[a,b])), use which() to select the cols (is it faster for cols, or just rows?) in row a instead of a for loop
+- or vectorize the process of taking a subset of report (or just a row) that only contains the na cells, or create a vector of the indices that contain na's for each row, or for the whole report
+- instead of the inner if statements, do a simple for loop that just does the samtools call saves the results in a vector, and then uses either an apply function for the logic in the if statgements, or a vectorized approach to the condition checking (better), or uses an ifelse (better), or uses a which (better) 
+
+
 from: /home/benrancourt/Documents/copiedFromGosuzombie/gosuzombieDesktop/SNPpipeline-isabel-fupansRun
 report.csv:
 "CHROM","POS","REF","HI.3518.007.Index_13.9525.tab","HI.3518.007.Index_15.8106.tab","HI.3518.007.Index_18.8207.tab","HI.3518.007.Index_2.9146.tab"
@@ -82,6 +88,51 @@ samtools commands:
 ==========================
 report_gen_p2.R
 parameters: path, MAF_CUTOFF
+
+[First, brief summary of what happens to report during report_gen_p2.R:
+- all "filled.Rds" files are combined to make report (written to filled_report.csv)
+- if there are at least 20 sample columns in report, do cutoff editing (written to filled_report.csv):
+    - remove all rows that have NA for more than half their values
+    - remove all rows that have only two types of data, and NA is one of them
+    - remove all rows that have only one type of data, and it isn't NA
+- don't modify report, but use it to create the percentage snp's data set (snpp) (written to percentage_snps.csv):
+    - calculate and store in snpp the totals of A, C, T, G, NA, the max (excluding NA), second_max (excluding NA), sum (excluding NA), and MAF (second_max / (second_max + max)
+- remove all rows from report whose MAF (stored in snpp) is less than the MAF_CUTOFF (written to MAF_cutoff_report.csv) (also, possibly sort the report by snpp's MAF field, highest to lowest? - need to double-check functionality)
+- use the reference fasta file to calculate and write mutation_percentage.csv (without modifying report):
+    - name = sequence name
+    - role = sequence annotation (name + trailing info)
+    - snp = number of rows in report containing the current fasta name in their "CHROM" cell
+    - length = number of character's in the sequence
+    - percentage SNP = snp / length * 100
+    - sort by percentage SNP
+- copy report to reportc (beyond this point report itself is no longer manipulated or referenced)
+- for each row of reportc:
+    - if the two most frequent values make up MORE THAN 90% of the row, replace all occurences of the most frequent with H and all occurrences of the 2nd most frequent with A, and replace everything else with NA
+    - else if the two most frequent values make up 90% or less, remove the row from reportc
+- write reportc to MAF_cutoff_report_chi.csv
+- copy reportc to reportd
+- for each column of reportd (there might be a bug here (s-1 doesn't look like it'll work for single rather than pooled runs because it doesn't have a COMBINED column)):
+    - if it's the COMBINED column, set file name to the existing "cutoff" file in outputTemp/pooled
+    - else set file name to /outputTemp/single/<current col name - last 4 chars>_cutoff" (there might be a bug here for pooled data, because all the columns after COMBINED will get saved in the outputTemp/single folder)
+    - ap <- scanVcf(fil)
+    - rr <- ap$`*:*-*`$rowRanges
+    - for each row in reportd, if the current cell is not NA:
+        - if the number of characters in the cell is 2
+            - if the first character is not equal to the current row's REF value
+                - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
+                - if ind is not NA, set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
+                - if ind is NA, set the current cell to NA
+            - else if the first character is equal to the current row's REF value, set the current cell to 1
+        - else (maybe should explicitly say if the number of chars in cell >= 3, since that's what it assumes)
+            - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
+            - if ind is not NA (possible bug: there's no provision for when it is NA)
+                - if the first character in the cell is not equal to the third character
+                    - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
+                - else if the first and third character do equal each other
+                    - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][3]
+- write reportd to probability.csv      
+]
+
 
 read and merge (by rows) the split reports back into one large report dataframe
 write this as filled_report.csv
@@ -97,12 +148,13 @@ if numcols > 24 (for COMBINED) or numcols > 23 (for non-COMBINED)
             report <- report[-a, ] (<--line73,81, this reassignment inside a while loop (performed for each line!) is potentially very expensive, can this operation be vectorized instead of using a loop?)
         else 
             if there are only two types of data in row a, and one of them is NA OR if there's only one type of data in row a, and it isn't NA:
-                report <- report[-a, ] (<--line73,81,again, expensive)
+                report <- report[-a, ] (<--line73,81,again, maybe expensive)
     write edited_report.csv
 else not enough samples, skipping cutoff editing
 
 # finding snp percentage per site:
 # remember report now has the rows removed from editing for cutoffs  
+(<--line97-116, snpp is built up by appending columns to it, which is expensive. Best to pre-allocate the size of snpp, and if possible even vectorize the copying of column data. See comment below as well.) 
 if "COMBINED" isn't a column name
     set snpp <- first 3 columns of report, all rows
     set s=4
@@ -112,8 +164,8 @@ else
 convert snpp to a dataframe (<--line105, isn't snpp already a dataframe?)
 for each row in report
     convert to matrix row a (minus the first 3 or 4 cols), grep with "A", then count how many A's, and store this in a new column in snpp, called "A"
-    - do all of the above for "C","T","G" as well (<--row a is converted to a matrix 5 times here!)
-    - do the same, but this time counting NA's and putting them in an "empty" col of snpp
+    do all of the above for "C","T","G" as well (<--row a is converted to a matrix 5 times here!)
+    do the same, but this time counting NA's and putting them in an "empty" col of snpp
     store the max value of this row's A,C,T,G col values in a "max" col of snpp
     store the 2nd max value of this row's A,C,T,G col values in a "max" col of snpp
     store the sum of this row's A,C,T,G col values in a "sum" col of snpp
@@ -122,57 +174,57 @@ write snpp to percentage_snps.csv
 
 # MAF_cutoff_report.csv and mutation_percentage.csv:
 sort the snpp by the MAF field, highest to lowest
-set snpp to only those rows that are abouve the MAF cutoff
-set report to only those rows in the report whose row names are also in the snpp
+set snpp to only those rows that are above the MAF cutoff
+set report to only those rows in the report whose row names are also in the snpp (<--line124, does this also sort the report to the same order as the newly sorted snpp? would be good to know)
 read in the formatted_output.fasta (<--line128, "output" is a confusing name for the fasta reference)
-create a new empty dataframe called "out"
+create a new empty dataframe called "out" (<--line129, out could be initialized to the right number of cols & rows) 
 for each sequence name (sector) in the fasta file (everything following '>' up to the first space):
-    copy the sequence annotation (name + trailing info) from the fasta row to the "role" column of the current "name" row of out.
-    calculate how many rows in report contain the current fasta name in their "CHROM" column, and put the total in the "snp" column of the current "name" row of out.
-    count how many characters are in this fasta row's sequence, and put the total in the "length" column of the current "name" row of out.
-    divide the result of the "snp" calculation by the "length", and put the result in the "percentage SNP" column of the current "name" row of out. (<--line136, this shouldn't have to recalculate snp and length, just reuse the existing results)
+    copy the sequence annotation (name + trailing info) from the fasta row to the "role" column of a row in out bearing the same "name" as the fasta sequence.
+    calculate how many rows in report contain the current fasta name in their "CHROM" column, and put the total in the "snp" column of the "name" row of out.
+    count how many characters are in this fasta row's sequence, and put the total in the "length" column of the "name" row of out.
+    divide the result of the recent "snp" calculation by the "length", and put the result in the "percentage SNP" column of the current "name" row of out. (<--line136, this shouldn't have to recalculate snp and length, just reuse the existing results)
 sort the out dataframe by "percentage SNP", highest to lowest
 multiply the "percentage SNP" column values by 100
 write out to mutation_percentage.csv
 write report to MAF_cutoff_report.csv (<--line144, this could have been done right after line124, after "set report to only those rows whose row names are also in the snpp" 
 
 # replacing alleles with characters for chi square test:
-set reportc <- report
+set reportc <- report (<--line148, is this expensive to copy report to reportc, or just a reference/pointer?)
 (<--line149,150, ct and cl, terrible variable names)
 while loop, for each row in reportc:
     set datap to the current row, minus the first "s" columns
-    converts datap to a matrix, then uses the table function to calculate a factor of the row, sorts the output (most frequent to least frequent) and stores it in va.
-    if the first two values in va occur more than 90% of the time
+    converts datap to a matrix, then uses the table function to calculate a factor of the row, sorts the output (most frequent to least frequent) and stores it in va. (<--line155, wouldn't need to convert the row to matrix if reportc was already a matrix)
+    if the first two values in va occur more than 90% of the time (<--line156, should this be > or >= ?)
         replace all occurences of the first value in all columns of reportc current row (minus the first "s" cols) with H (remember, in a factor, the value is the name, and the table function just returns a table that calculates the number of times the value occures, and uses the value as the name)
-        replace all occurences of the 2nd value in all columns of reportc current row (minus the first "s" cols) with A
+        replace all occurences of the 2nd value in all columns of reportc current row (minus the first "s" cols) with A (<--line158,159, should H and A be hardcoded here? probably, but double-check)
         if there are more than just the first two values in va
             replace all occurences of each remaining value in all columns of reportc current row (minus the first "s" cols) with NA
     else remove the current row from reportc (<--lin170, again, is this an expensive operation that could be vectorized?)
 write reportc to MAF_cutoff_report_chi.csv
 
 # generate probability values:
-set reportd <- reportc
+set reportd <- reportc (<--line181, is this expensive to copy report to reportc, or just a reference/pointer?)
 for each col x in reportd (except the first s-1 cols):
-    if this col is the "COMBINED" col (only occurs in pooled data) (<--184,195, if there are other cols after "COMBINED", it will create files for them in the /outputTemp/single)
+    if this col is the "COMBINED" col (only occurs in pooled data) (<--182,184,195, if there are other cols after "COMBINED", it will create files for them in the /outputTemp/single, and the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED. This might be buggy for both pooled and single then.)
         for each file in /outputTemp/pooled
             if the file (name?) contains "cutoff"
-                save the file path to fil
-    else save this to fil: /outputTemp/single/<current col name - last 4 chars>_cutoff" 
+                set fil to the file path
+    else set fil to: /outputTemp/single/<current col name - last 4 chars>_cutoff" 
     ap <- scanVcf(fil)
     rr <- ap$`*:*-*`$rowRanges
     for each row y in reportd
         initialize ind to NA
         if the current cell reportd[y, x] is not NA
-            if the number of character in the cell is 2
+            if the number of characters in the cell is 2
                 if the first character is not equal to reportd[y, REF] (<--line207,230, check that this works)
-                    set ind to the list of those names(rr) that contain both this row's CHROM value and ":<this row's POS value>_"
+                    set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
                     if ind is not NA
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else reportd[y, x] <- NA
                 else reportd[y,x] <- 1
-            else
-                set ind to the list of those names(rr) that contain both this row's CHROM value and ":<this row's POS value>_"
-                if ind is not NA
+            else  (<--line224, maybe this should specify else if num chars is >= 3, since line 230 seems to assume it)
+                set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
+                if ind is not NA (<--line228, what if ind is NA? There's no provision for this, unlike above)
                     if the first character in report[y,x] is not equal to the third character
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else 
