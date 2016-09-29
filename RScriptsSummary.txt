@@ -112,9 +112,9 @@ parameters: path, MAF_CUTOFF
     - else if the two most frequent values make up 90% or less, remove the row from reportc
 - write reportc to MAF_cutoff_report_chi.csv
 - copy reportc to reportd
-- for each column of reportd (there might be a bug here (s-1 doesn't look like it'll work for single rather than pooled runs because it doesn't have a COMBINED column)):
+- for each column of reportd (there might be a bug here (s-1 doesn't look like it'll work for single rather than pooled runs because it doesn't have a COMBINED column). FIXED, check to make sure it's correct.):
     - if it's the COMBINED column, set file name to the existing "cutoff" file in outputTemp/pooled
-    - else set file name to /outputTemp/single/<current col name - last 4 chars>_cutoff" (there might be a bug here for pooled data, because all the columns after COMBINED will get saved in the outputTemp/single folder)
+    - else set file name to /outputTemp/single/<current col name - last 4 chars>_cutoff" (there might be a bug here for pooled data, because all the columns after COMBINED will look for files in the outputTemp/single folder)
     - ap <- scanVcf(fil)
     - rr <- ap$`*:*-*`$rowRanges
     - for each row in reportd, if the current cell is not NA:
@@ -122,15 +122,16 @@ parameters: path, MAF_CUTOFF
             - if the first character is not equal to the current row's REF value
                 - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
                 - if ind is not NA, set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
-                - if ind is NA, set the current cell to NA
+                - else if ind is NA, set the current cell to NA
             - else if the first character is equal to the current row's REF value, set the current cell to 1
-        - else (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes)
+        - else (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes. FIXED lower down, but check if this is correct.)
             - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
-            - if ind is not NA (possible bug: there's no provision for when it is NA)
+            - if ind is not NA (possible bug: there's no provision for when it is NA. FIXED, but check.)
                 - if the first character in the cell is not equal to the third character
                     - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                 - else if the first and third character do equal each other
                     - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][3]
+            - if ind is NA, set the current cell to NA (this was added by Ben)
 - write reportd to probability.csv      
 ]
 
@@ -209,7 +210,7 @@ write reportc to MAF_cutoff_report_chi.csv
 # generate probability values:
 set reportd <- reportc (<--line196, is this expensive to copy report to reportc, or just a reference/pointer?)
 for each col x in reportd (except the first s-1 cols):
-    if this col is the "COMBINED" col (only occurs in pooled data) (<--197,199,210, if there are other cols after "COMBINED", it will create files for them in the /outputTemp/single, and the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED. This might be buggy for both pooled and single then.)
+    if this col is the "COMBINED" col (only occurs in pooled data) (<--202,204,214, if there are other cols after "COMBINED", it will look for files for them in the /outputTemp/single. Also, the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED, and would cause an error for single (FIXED this part). This might be buggy for both pooled and single then.)
         for each file in /outputTemp/pooled
             if the file (name?) contains "cutoff"
                 set fil to the file path
@@ -220,20 +221,22 @@ for each col x in reportd (except the first s-1 cols):
         initialize ind to NA
         if the current cell reportd[y, x] is not NA
             if the number of characters in the cell is 2
-                if the first character is not equal to reportd[y, REF] (<--line222,245, check that this works)
+                if the first character is not equal to reportd[y, REF] 
                     set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
                     if ind is not NA
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else reportd[y, x] <- NA
                 else reportd[y,x] <- 1
-            else  (<--line239, maybe this should specify else if num chars is >= 3, since line 245 seems to assume it)
+            else  (<--line242,247, maybe this should specify else if num chars is >= 3, since line 245 seems to assume it. DONE for 247, but check if this is right. If it needs to be done for 242, I'd also need to add an additional else clause at the end for the case when num chars < 2.)
                 set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
-                if ind is not NA (<--line243, what if ind is NA? There's no provision for this, unlike above)
+                if ind is not NA (<--line245, what if ind is NA? There's no provision for this, unlike above. DONE: I've added an else clause to deal with it (line256), but need to check if my action (setting cell to NA) is correct.)
                     if the first character in report[y,x] is not equal to the third character
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else 
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][3]
-write reportd to probability.csv
+                else reportd[y, x] <- NA (<--line256, added by me. Check to make sure this is needed.)
+write reportd to probability.csv 
+(<-- I suspect that there's something wrong with either this routine to generate probability.csv, or the preceding routine to generate the MAF_cutoff_report_chi.csv file, because the _chi file only has H, A, or NA in its data cells, but this routine expects to find 2 or more characters in each cell).
 
 
 possible optimizations:
