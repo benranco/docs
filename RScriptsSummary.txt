@@ -107,6 +107,7 @@ parameters: path, MAF_CUTOFF
     - sort by percentage SNP
 - copy report to reportc (beyond this point report itself is no longer manipulated or referenced)
 - for each row of reportc:
+    - [added by Ben] if there's only one value in the row, replace all occurences of it with H
     - if the two most frequent values make up MORE THAN 90% of the row, replace all occurences of the most frequent with H and all occurrences of the 2nd most frequent with A, and replace everything else with NA
     - else if the two most frequent values make up 90% or less, remove the row from reportc
 - write reportc to MAF_cutoff_report_chi.csv
@@ -123,7 +124,7 @@ parameters: path, MAF_CUTOFF
                 - if ind is not NA, set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                 - if ind is NA, set the current cell to NA
             - else if the first character is equal to the current row's REF value, set the current cell to 1
-        - else (maybe should explicitly say if the number of chars in cell >= 3, since that's what it assumes)
+        - else (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes)
             - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
             - if ind is not NA (possible bug: there's no provision for when it is NA)
                 - if the first character in the cell is not equal to the third character
@@ -143,6 +144,7 @@ if numcols > 24 (for COMBINED) or numcols > 23 (for non-COMBINED)
     (<--line56, nc is assigned the ouput of nrow(report), this is deceptively named)
     if "COMBINED" isn't a column name, set rfc=4, otherwise set rfc=5
     while loop: for each row a in report:
+        (<--line70, possible off-by-one error here with rfc)
         copy row a (minus the initial 4 or 5 cols) to variable c as a matrix (<--these are terrible variable names, makes the code hard to read)
         if more than half the values in c are NA
             report <- report[-a, ] (<--line73,81, this reassignment inside a while loop (performed for each line!) is potentially very expensive, can this operation be vectorized instead of using a loop?)
@@ -192,20 +194,22 @@ write report to MAF_cutoff_report.csv (<--line144, this could have been done rig
 set reportc <- report (<--line148, is this expensive to copy report to reportc, or just a reference/pointer?)
 (<--line149,150, ct and cl, terrible variable names)
 while loop, for each row in reportc:
+    (<--line154,158,etc, the "COMINED" column would be excluded from pooled data. Is this correct? The routine for "generate probability values" seems to want to include it).
     set datap to the current row, minus the first "s" columns
     converts datap to a matrix, then uses the table function to calculate a factor of the row, sorts the output (most frequent to least frequent) and stores it in va. (<--line155, wouldn't need to convert the row to matrix if reportc was already a matrix)
-    if the first two values in va occur more than 90% of the time (<--line156, should this be > or >= ?)
+    [added by Ben] if there's only one value in the row, replace all occurences of it with H (<--156-159, this was added by me, check if this was a correct interpretation of what it should do)
+    if the first two values in va occur more than 90% of the time (<--line160, should this be > or >= 90? Also, what if there's only one value in va? Does this break? Seems like it. (fixed that). Also, what if the top two values are equal, do we just leave it to the sort algorithm to determine which gets H and which gets A?)
         replace all occurences of the first value in all columns of reportc current row (minus the first "s" cols) with H (remember, in a factor, the value is the name, and the table function just returns a table that calculates the number of times the value occures, and uses the value as the name)
-        replace all occurences of the 2nd value in all columns of reportc current row (minus the first "s" cols) with A (<--line158,159, should H and A be hardcoded here? probably, but double-check)
+        replace all occurences of the 2nd value in all columns of reportc current row (minus the first "s" cols) with A (<--line158,165,166,171,172,179 should H and A be hardcoded here? probably, but double-check)
         if there are more than just the first two values in va
             replace all occurences of each remaining value in all columns of reportc current row (minus the first "s" cols) with NA
-    else remove the current row from reportc (<--lin170, again, is this an expensive operation that could be vectorized?)
+    else remove the current row from reportc (<--lin185, again, is this an expensive operation that could be vectorized?)
 write reportc to MAF_cutoff_report_chi.csv
 
 # generate probability values:
-set reportd <- reportc (<--line181, is this expensive to copy report to reportc, or just a reference/pointer?)
+set reportd <- reportc (<--line196, is this expensive to copy report to reportc, or just a reference/pointer?)
 for each col x in reportd (except the first s-1 cols):
-    if this col is the "COMBINED" col (only occurs in pooled data) (<--182,184,195, if there are other cols after "COMBINED", it will create files for them in the /outputTemp/single, and the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED. This might be buggy for both pooled and single then.)
+    if this col is the "COMBINED" col (only occurs in pooled data) (<--197,199,210, if there are other cols after "COMBINED", it will create files for them in the /outputTemp/single, and the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED. This might be buggy for both pooled and single then.)
         for each file in /outputTemp/pooled
             if the file (name?) contains "cutoff"
                 set fil to the file path
@@ -216,15 +220,15 @@ for each col x in reportd (except the first s-1 cols):
         initialize ind to NA
         if the current cell reportd[y, x] is not NA
             if the number of characters in the cell is 2
-                if the first character is not equal to reportd[y, REF] (<--line207,230, check that this works)
+                if the first character is not equal to reportd[y, REF] (<--line222,245, check that this works)
                     set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
                     if ind is not NA
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else reportd[y, x] <- NA
                 else reportd[y,x] <- 1
-            else  (<--line224, maybe this should specify else if num chars is >= 3, since line 230 seems to assume it)
+            else  (<--line239, maybe this should specify else if num chars is >= 3, since line 245 seems to assume it)
                 set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
-                if ind is not NA (<--line228, what if ind is NA? There's no provision for this, unlike above)
+                if ind is not NA (<--line243, what if ind is NA? There's no provision for this, unlike above)
                     if the first character in report[y,x] is not equal to the third character
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else 
