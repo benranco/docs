@@ -34,7 +34,7 @@ parameters: $1 9number of cores)
         java -jar ./tools/picard-tools-2.3.0/picard.jar NormalizeFasta I=./reference/$ref O=./reference/"formatted_output.fasta" LINE_LENGTH=60 
     delete original fasta file
     echo "build new ref"
-    run bowtie2-build --threads $ncore $newref $ref 
+    run bowtie2-build --threads $ncore ./reference/formatted_output.fasta ./referenceTemp/formatted_output 
     echo "build fai for reference"
     run samtools faidx "./reference/formatted_output.fasta"
 
@@ -89,7 +89,7 @@ parameters: $1 (name/datapoint), $2 (number of cores), $3 (1=assemble, 0=non-ass
 
 -------------------------------------------
 extract.sh:
-parameters: $1 (name/datapoint), $2 (singlep/combinedp), $3 (1=single/2=pooled/3=both), $4 (params: 1=default, 0=paper, 3=custom)
+parameters: $1 (name/datapoint), $2 (singlep/pooledp), $3 (1=single/2=pooled/3=both), $4 (params: 1=default, 0=paper, 3=custom)
 
     path="single" or "pooled"
     input="./dataTemp/$path/$1.sam"

@@ -1,3 +1,4 @@
+More documentation here:
 http://www.htslib.org/doc/
 
 

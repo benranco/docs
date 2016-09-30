@@ -12,7 +12,7 @@ call report_gen_p2.R, with pwd as path, and $1 as maf cutoff
 report_gen.R:
 parameters: path
 
-for all fileshttp://www.htslib.org/doc/ in output/pooled
+for all files in output/pooled
     read the file into report data frame (<--line17, it looks like if there's more than one file in the directory it reads each and reassigns report to it - this is inefficient and possibly buggy if there's more than one file (it only expects one file, which is a correct assumption based on program logic alone))
 if report is not empty, rename col1 and col4 as CHROM and COMBINED
 else single=TRUE (<--line33, this should really be called noPooled, because it checks/reads single even if single==FALSE)
@@ -35,6 +35,7 @@ reset report to report minus first column
 while loop: divide report into data frames of 1000 rows each, and save each dataframe to reporttemp/report_p<n>.Rds (serialized R object)
 
 possible optimizations:
+- instead of reading in from the csv, why not just take as input the report created by report_gen.R
 - use something besides read.csv/read.table that works with matrices rather than data frames (maybe something from the data.table library?)
 - would it be possible to split the report dataframe up using a vectorized method instead of a for loop? It kind of does already, so there's only one iteration per every 1000 rows.
 - maybe initialize the size of the spl dataframe to 1000 or 999 before copying 
@@ -53,7 +54,7 @@ for each row (a) in report
             if col b in row a is NA
                 fn = colname minus last 4 characters + "_sorted.bam" (<--line32, it uses substr() as if the first character is indexed at 0, but an example I saw indexes the first character at 1. Check this out. Also lines 39 and 43 use the substring method (what's the difference?) with indexing from 0 as well. Also fn is a confusing variable name, rename to filename).
                 cmd = <path>/tools/samtools-1.3.1/samtools tview <path>/dataTemp/single/<fn> <path>/reference/formatted_output.fasta -d T -p \"<row a CHROM value>:<row a POS value>" 
-(<--line34, the samtools call is only looking in dataTemp/single for the .bam, should it look in dataTemp/pooled for pooled data?)
+(<--line34, the samtools call is only looking in dataTemp/single for the .bam, should it look in dataTemp/pooled for pooled data? - It skips the combined column.)
 (<--line36, perhaps unimportant, but the first " is escaped with a \, and I don't think it's necessary since it's inside a '')
                 out = read in the output of cmd as a dataframe (delimited by '\n') and convert it to a matrix
                 if the first cell in row 1 of out == row a's REF cell value
@@ -90,14 +91,19 @@ report_gen_p2.R
 parameters: path, MAF_CUTOFF
 
 [First, brief summary of what happens to report during report_gen_p2.R:
+***
 - all "filled.Rds" files are combined to make report (written to filled_report.csv)
-- if there are at least 20 sample columns in report, do cutoff editing (written to filled_report.csv):
+***
+- if there are at least 20 sample columns in report, do cutoff editing (written to edited_report.csv):
     - remove all rows that have NA for more than half their values
     - remove all rows that have only two types of data, and NA is one of them
     - remove all rows that have only one type of data, and it isn't NA
+***
 - don't modify report, but use it to create the percentage snp's data set (snpp) (written to percentage_snps.csv):
     - calculate and store in snpp the totals of A, C, T, G, NA, the max (excluding NA), second_max (excluding NA), sum (excluding NA), and MAF (second_max / (second_max + max)
-- remove all rows from report whose MAF (stored in snpp) is less than the MAF_CUTOFF (written to MAF_cutoff_report.csv) (also, possibly sort the report by snpp's MAF field, highest to lowest? - need to double-check functionality)
+***
+- remove all rows from report whose MAF (stored in snpp) is less than the MAF_CUTOFF (written to MAF_cutoff_report.csv), and sort the report by snpp's MAF field, highest to lowest
+***
 - use the reference fasta file to calculate and write mutation_percentage.csv (without modifying report):
     - name = sequence name
     - role = sequence annotation (name + trailing info)
@@ -105,19 +111,22 @@ parameters: path, MAF_CUTOFF
     - length = number of character's in the sequence
     - percentage SNP = snp / length * 100
     - sort by percentage SNP
+***
 - copy report to reportc (beyond this point report itself is no longer manipulated or referenced)
 - for each row of reportc:
     - [added by Ben] if there's only one value in the row, replace all occurences of it with H
     - if the two most frequent values make up MORE THAN 90% of the row, replace all occurences of the most frequent with H and all occurrences of the 2nd most frequent with A, and replace everything else with NA
     - else if the two most frequent values make up 90% or less, remove the row from reportc
 - write reportc to MAF_cutoff_report_chi.csv
-- copy reportc to reportd
+***
+- copy reportc to reportd (Bug: I believe it should copy report to reportd. FIXED.)
 - for each column of reportd (there might be a bug here (s-1 doesn't look like it'll work for single rather than pooled runs because it doesn't have a COMBINED column). FIXED, check to make sure it's correct.):
     - if it's the COMBINED column, set file name to the existing "cutoff" file in outputTemp/pooled
-    - else set file name to /outputTemp/single/<current col name - last 4 chars>_cutoff" (there might be a bug here for pooled data, because all the columns after COMBINED will look for files in the outputTemp/single folder)
+    - else set file name to /outputTemp/single/<current col name - last 4 chars>_cutoff" (there might be a bug here for pooled data, because all the columns after COMBINED will look for files in the outputTemp/single folder. BUT, I don't think it's a bug because according to program logic there will only ever be one cutoff file in /outputTemp/pooled/, and /outputTemp/single/ will be empty unless doing single or both.)
     - ap <- scanVcf(fil)
     - rr <- ap$`*:*-*`$rowRanges
     - for each row in reportd, if the current cell is not NA:
+        - (POSSIBLE BUG: checking characters in the below code may or may not take into account that the data is formatted like "A/A", and might not take the "/" into account. Todo: Test this.)
         - if the number of characters in the cell is 2
             - if the first character is not equal to the current row's REF value
                 - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
@@ -133,6 +142,7 @@ parameters: path, MAF_CUTOFF
                     - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][3]
             - if ind is NA, set the current cell to NA (this was added by Ben)
 - write reportd to probability.csv      
+***
 ]
 
 
@@ -145,7 +155,7 @@ if numcols > 24 (for COMBINED) or numcols > 23 (for non-COMBINED)
     (<--line56, nc is assigned the ouput of nrow(report), this is deceptively named)
     if "COMBINED" isn't a column name, set rfc=4, otherwise set rfc=5
     while loop: for each row a in report:
-        (<--line70, possible off-by-one error here with rfc)
+        (<--line70, possible off-by-one error here with rfc. Yup.)
         copy row a (minus the initial 4 or 5 cols) to variable c as a matrix (<--these are terrible variable names, makes the code hard to read)
         if more than half the values in c are NA
             report <- report[-a, ] (<--line73,81, this reassignment inside a while loop (performed for each line!) is potentially very expensive, can this operation be vectorized instead of using a loop?)
@@ -178,7 +188,7 @@ write snpp to percentage_snps.csv
 # MAF_cutoff_report.csv and mutation_percentage.csv:
 sort the snpp by the MAF field, highest to lowest
 set snpp to only those rows that are above the MAF cutoff
-set report to only those rows in the report whose row names are also in the snpp (<--line124, does this also sort the report to the same order as the newly sorted snpp? would be good to know)
+set report to only those rows in the report whose row names are also in the snpp, and sort it to the same order as the rows in snpp (<--line124, does this also sort the report to the same order as the newly sorted snpp? It would seem so (I tested with a small df).
 read in the formatted_output.fasta (<--line128, "output" is a confusing name for the fasta reference)
 create a new empty dataframe called "out" (<--line129, out could be initialized to the right number of cols & rows) 
 for each sequence name (sector) in the fasta file (everything following '>' up to the first space):
@@ -209,8 +219,10 @@ write reportc to MAF_cutoff_report_chi.csv
 
 # generate probability values:
 set reportd <- reportc (<--line196, is this expensive to copy report to reportc, or just a reference/pointer?)
+(<--line196, I believe it SHOULD be reportd <- report, based on the desciption in the readme.md, and the program logic in the routine. FIXED.)
 for each col x in reportd (except the first s-1 cols):
-    if this col is the "COMBINED" col (only occurs in pooled data) (<--202,204,214, if there are other cols after "COMBINED", it will look for files for them in the /outputTemp/single. Also, the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED, and would cause an error for single (FIXED this part). This might be buggy for both pooled and single then.)
+    if this col is the "COMBINED" col (only occurs in pooled data) (<--202,204,214, if there are other cols after "COMBINED", it will look for files for them in the /outputTemp/single.  BUT, I don't think it's a bug because according to program logic there will only ever be one cutoff file in /outputTemp/pooled/, and /outputTemp/single/ will be empty unless doing single or both.)
+(<--Also, the for loop seems designed only for the pooled scenario where the s-1'th column would be COMBINED, and would cause an error for single (FIXED this part). This might be buggy for both pooled and single then.)
         for each file in /outputTemp/pooled
             if the file (name?) contains "cutoff"
                 set fil to the file path
@@ -220,6 +232,7 @@ for each col x in reportd (except the first s-1 cols):
     for each row y in reportd
         initialize ind to NA
         if the current cell reportd[y, x] is not NA
+            (<--line223,230,242,247,249,253, POSSIBLE BUG: checking characters in the below code may or may not take into account that the data is formatted like "A/A", and might not take the "/" into account. Todo: Test this.)
             if the number of characters in the cell is 2
                 if the first character is not equal to reportd[y, REF] 
                     set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"

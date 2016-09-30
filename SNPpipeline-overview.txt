@@ -1,0 +1,152 @@
+
+Generate the reference file (formatted_output.fasta):
+    - combine and format fasta file to consistent line lengths
+    - build new reference: run bowtie2-build --threads <numCores> ./reference/formatted_output.fasta ./referenceTemp/formatted_output 
+    - build fai for reference: run samtools faidx "./reference/formatted_output.fasta"
+(line69<--doesn't check ref_gen.sh's exit code, even though exit 1 means we should abort)
+
+--------------------------
+If Single, for each file (or R1/R2 pair) in ./data:
+
+Alignment with bowtie, save to ./dataTemp/single/<filename>.sam:
+    - if unpaired (0), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -U "./data/"<filename> --local --very-sensitive-local -S "./dataTemp/single/<filename>.sam"
+    - if paired (1), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -1 "./data/$(ls "./data" | grep <filename> | sed -n 1p)" -2 "./data/$(ls "./data" | grep <filename> | sed -n 2p)" --local --very-sensitive-local -S "./dataTemp/single/<filename>.sam"
+
+Generate .bam:
+    - run: samtools view -Sb ./dataTemp/single/<filename>.sam > ./dataTemp/single/<filename>.bam
+    - delete ./dataTemp/single/<filename>.sam
+
+Sort .bam:
+    - run: samtools sort -o ./dataTemp/single/<filename>_sorted.bam ./dataTemp/single/<filename>.bam
+    - delete ./dataTemp/single/<filename>.sam
+
+Index .bam:
+    - run: samtools index ./dataTemp/single/<filename>_sorted.bam
+
+Find SNPs with freebayes, save to ./outputTemp/single/<filename>.vcf:
+    - if params==paper(0)
+        - run: freebayes -f ./reference/formatted_output.fasta -p <singlep> --pvar 0.75 --min-alternate-count 1 --theta 0.01  --use-best-n-alleles 4 --min-alternate-fraction 0.8 ./dataTemp/single/<filename>_sorted.bam 1> ./outputTemp/single/<filename>.vcf
+    - if params=default(1)
+        - run: freebayes -f ./reference/formatted_output.fasta -p <singlep> ./dataTemp/single/<filename>_sorted.bam 1> ./outputTemp/single/<filename>.vcf
+
+Remove indels:
+    - run: vcftools --vcf ./outputTemp/single/<filename>.vcf --remove-indels --recode --recode-INFO-all --out ./outputTemp/single/<filename>
+
+Filter using cutoffs:
+    - run: cat ./outputTemp/single/<filename>.recode.vcf | ./tools/vcftools/src/perl/vcf-annotate --filter Qual=5 > ./outputTemp/single/<filename>_cutoff
+
+Tab conversion:
+    - run: vcf-to-tab < ./outputTemp/single/<filename>_cutoff > ./output/single/<filename>.tab
+
+--------------------------
+If Pooled:
+
+Alignment with bowtie, save to ./dataTemp/pooled/<filename>.sam:
+    - if unpaired (0), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -U <list of file in ./data> --local --very-sensitive-local -S "./dataTemp/pooled/<filename>.sam"
+    - if paired (1), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -1 <list of R1 files in ./data> -2 <list of R2 files in ./data> --local --very-sensitive-local -S "./dataTemp/pooled/<filename>.sam"
+
+Generate .bam:
+    - run: samtools view -Sb ./dataTemp/pooled/<filename>.sam > ./dataTemp/pooled/<filename>.bam
+    - delete ./dataTemp/pooled/<filename>.sam
+
+Sort .bam:
+    - run: samtools sort -o ./dataTemp/pooled/<filename>_sorted.bam ./dataTemp/pooled/<filename>.bam
+    - delete ./dataTemp/pooled/<filename>.sam
+
+Index .bam:
+    - run: samtools index ./dataTemp/pooled/<filename>_sorted.bam
+
+Find SNPs with freebayes, save to ./outputTemp/pooled/<filename>.vcf:
+    - if params==paper(0)
+        - run: freebayes -f ./reference/formatted_output.fasta -p <singlep> --pvar 0.75 --min-alternate-count 1 --theta 0.01  --use-best-n-alleles 4 --min-alternate-fraction 0.8 ./dataTemp/pooled/<filename>_sorted.bam 1> ./outputTemp/pooled/<filename>.vcf
+    - if params=default(1)
+        - run: freebayes -f ./reference/formatted_output.fasta -p <singlep> ./dataTemp/pooled/<filename>_sorted.bam 1> ./outputTemp/pooled/<filename>.vcf
+
+Remove indels:
+    - run: vcftools --vcf ./outputTemp/pooled/<filename>.vcf --remove-indels --recode --recode-INFO-all --out ./outputTemp/pooled/<filename>
+
+Filter using cutoffs:
+    - run: cat ./outputTemp/pooled/<filename>.recode.vcf | ./tools/vcftools/src/perl/vcf-annotate --filter Qual=5 > ./outputTemp/pooled/<filename>_cutoff
+
+Tab conversion:
+    - run: vcf-to-tab < ./outputTemp/pooled/<filename>_cutoff > ./output/pooled/<filename>.tab
+
+
+------------------------------------------------------------
+Report Generation:
+
+Generate report.csv:
+- read the .tab file in ./output/pooled/ (if it exists), and store it's data in a report column called "COMBINED"
+- read all the .tab files in ./output/single/ and add them to the report, adding one column per .tab file (matching rows by "CHROM", "POS", "REF")
+    - if the report has a "COMBINED" column, don't accept any rows in the single .tab files that don't match up with an already existing row in the report.
+    - if the report has no "COMBINED" column, accept all rows from the single .tab files, even if they don't match with an already existing row in the report.
+- write this report to ./reports/report.csv
+
+Generate filled_report.csv:
+- split the contents of report into separate files of 1000 rows each, then process each file row by row:
+    - excluding the "COMBINED" column from calculations (if it exists), for each column in the row, if its data is NA:
+        - run: samtools tview ./dataTemp/single/<filename>_sorted.bam ./reference/formatted_output.fasta -d T -p \"<the row's CHROM value>:<the row's POS value>"
+        - if the first character in line 1 of the samtools ouput is the same as the current row's "REF" value, and the first character in line 2 of the samtools output is either "." or ",", replace the NA in the current column with the "REF" value + "/" (Todo: Jun-Jun requested replacing it with "REF"/"REF".)
+- after processing, recombine all the files into one large report, and write it to ./reports/filled_report.csv
+
+Generate edited_report.csv (editing for cutoffs):
+- using the data in filled_report as input, if there are at least 20 data columns (21 if "COMBINED" exists):
+    - excluding the "COMBINED" column from calculations (if it exists):
+        - BUG: There's an off-by-one error here: it never includes the first single data column in the following calculations:
+        - remove all rows that have NA for more than half their values
+        - remove all rows that have only two types of data, and NA is one of them
+        - remove all rows that have only one type of data, and it isn't NA
+        - write the results to ./reports/edited_report.csv
+- if there are less than 20 data columns, skip this step and don't write edited_report.csv
+
+Generate percentage_snps.csv (finding snp percentage per site):
+- excluding the "COMBINED" column from calculations (if it exists), for each row in the report (either filled_report if less than 20 data columns, or edited_report if more than 20), calculate and store in a new report the totals of A, C, T, G, NA, the max (excluding NA), second_max (excluding NA), sum (excluding NA), and MAF (second_max / (second_max + max)
+- write this to percentage_snps.csv
+
+Generate MAF_cutoff_report.csv:
+- remove all rows from report (either filled_report if less than 20 data columns, or edited_report if more than 20) whose MAF (see percentage_snps.csv) is less than the MAF_CUTOFF, and sort the report by snpp's MAF field, highest to lowest
+- write this to MAF_cutoff_report.csv
+
+Generate mutation_percentage.csv:
+- use the MAF_cutoff_report's "CHROM" column and the reference fasta file to calculate and write mutation_percentage.csv, sorted by percentage SNP. Columns in mutation_percentage.csv are defined as:
+    - "" = sequence name
+    - role = sequence annotation (name + trailing info)
+    - snp = number of rows in MAF_cutoff_report containing the current fasta name in their "CHROM" cell
+    - length = number of character's in the sequence
+    - percentage SNP = snp / length * 100
+- write this to mutation_percentage.csv
+
+Generate MAF_cutoff_report_chi.csv (replacing alleles with characters for chi square test):
+- NOTE: This procedure was non-operational when I tested it. I've fixed some bugs and made sure it runs, but since I don't know what it's supposed to do, I don't know whether it's doing it properly. 
+- using MAF_cutoff_report.csv as a starting point, excluding the "COMBINED" column from operations (if it exists), for each row:
+    - if there's only one value in the row, replace all occurences of it with "H"
+    - if the two most frequent values make up more than 90% of the row, replace all occurences of the most frequent with H and all occurrences of the 2nd most frequent with A, and replace everything else with NA
+    - else if the two most frequent values make up 90% or less, remove the row from report
+    - TODO: the way it's written, the two most frequent values must make up MORE THAN 90% of the row, and therefore they wouldn't qualify if they make up 90%. Should I change this to be inclusive of 90%? 
+- write report to MAF_cutoff_report_chi.csv
+
+Generate probability.csv:
+- NOTE: This procedure was non-operational when I tested it. I've fixed some bugs and made sure it runs, but since I don't know what it's supposed to do, I don't know whether it's doing it properly. 
+- using MAF_cutoff_report.csv as a starting point, for each column of the report:
+    - if it's the "COMBINED" column, set <filename> to the existing "cutoff" file in outputTemp/pooled/
+    - otherwise set <filename> to /outputTemp/single/<current col name (minus the last 4 chars)>_cutoff"
+    - perform the following two operations:
+        - ap <- scanVcf(<filename>)
+        - rr <- ap$`*:*-*`$rowRanges
+    - for each cell in the current report column, if the current cell is not NA:
+        - POSSIBLE BUG: checking characters in the below code may or may not take into account that the data is formatted like "A/A", and might not take the "/" into account. Todo: Test this.
+        - if the number of characters in the cell is 2 and the first character is NOT equal to the current row's "REF" value:
+            - set ind to the list of those row ranges that contain both this row's "CHROM" value and ":<this row's POS value>_"
+            - if ind is not NA, set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
+            - else if ind is NA, set the current cell to NA
+        - if the number of characters in the cell is 2 and the first character IS equal to the current row's "REF" value, set the current cell to 1
+        - otherwise: (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes. FIXED lower down, but check if this is correct.)
+            - set ind to the list of those row ranges that contain both this row's "CHROM" value and ":<this row's POS value>_"
+            - if ind is not NA 
+                - if the first character in the cell is not equal to the third character
+                    - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
+                - else if the first and third character do equal each other
+                    - set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][3]
+            - if ind is NA, set the current cell to NA (this was added by Ben)
+- write report to probability.csv      
+
