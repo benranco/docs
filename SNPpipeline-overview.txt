@@ -11,6 +11,7 @@ If Single, for each file (or R1/R2 pair) in ./data:
 Alignment with bowtie, save to ./dataTemp/single/<filename>.sam:
     - if unpaired (0), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -U "./data/"<filename> --local --very-sensitive-local -S "./dataTemp/single/<filename>.sam"
     - if paired (1), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -1 "./data/$(ls "./data" | grep <filename> | sed -n 1p)" -2 "./data/$(ls "./data" | grep <filename> | sed -n 2p)" --local --very-sensitive-local -S "./dataTemp/single/<filename>.sam"
+    (the above command passes as input the two files (R1 & R2) whose names contain the given <filename> string)
 
 Generate .bam:
     - run: samtools view -Sb ./dataTemp/single/<filename>.sam > ./dataTemp/single/<filename>.bam
@@ -45,31 +46,15 @@ Alignment with bowtie, save to ./dataTemp/pooled/<filename>.sam:
     - if unpaired (0), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -U <list of file in ./data> --local --very-sensitive-local -S "./dataTemp/pooled/<filename>.sam"
     - if paired (1), run: bowtie2 -p <numCores> -x ./referenceTemp/formatted_output -1 <list of R1 files in ./data> -2 <list of R2 files in ./data> --local --very-sensitive-local -S "./dataTemp/pooled/<filename>.sam"
 
-Generate .bam:
-    - run: samtools view -Sb ./dataTemp/pooled/<filename>.sam > ./dataTemp/pooled/<filename>.bam
-    - delete ./dataTemp/pooled/<filename>.sam
+The following operations are the same as for single data, except instead of being run once per file (or R1/R2 pair) in ./data/single, these are run only once for the pooled data, and "single" is changed to "pooled" in any folder paths in the above commands:
 
-Sort .bam:
-    - run: samtools sort -o ./dataTemp/pooled/<filename>_sorted.bam ./dataTemp/pooled/<filename>.bam
-    - delete ./dataTemp/pooled/<filename>.sam
-
-Index .bam:
-    - run: samtools index ./dataTemp/pooled/<filename>_sorted.bam
-
-Find SNPs with freebayes, save to ./outputTemp/pooled/<filename>.vcf:
-    - if params==paper(0)
-        - run: freebayes -f ./reference/formatted_output.fasta -p <singlep> --pvar 0.75 --min-alternate-count 1 --theta 0.01  --use-best-n-alleles 4 --min-alternate-fraction 0.8 ./dataTemp/pooled/<filename>_sorted.bam 1> ./outputTemp/pooled/<filename>.vcf
-    - if params=default(1)
-        - run: freebayes -f ./reference/formatted_output.fasta -p <singlep> ./dataTemp/pooled/<filename>_sorted.bam 1> ./outputTemp/pooled/<filename>.vcf
-
-Remove indels:
-    - run: vcftools --vcf ./outputTemp/pooled/<filename>.vcf --remove-indels --recode --recode-INFO-all --out ./outputTemp/pooled/<filename>
-
-Filter using cutoffs:
-    - run: cat ./outputTemp/pooled/<filename>.recode.vcf | ./tools/vcftools/src/perl/vcf-annotate --filter Qual=5 > ./outputTemp/pooled/<filename>_cutoff
-
-Tab conversion:
-    - run: vcf-to-tab < ./outputTemp/pooled/<filename>_cutoff > ./output/pooled/<filename>.tab
+Generate .bam
+Sort .bam
+Index .bam
+Find SNPs with freebayes, save to ./outputTemp/pooled/<filename>.vcf
+Remove indels
+Filter using cutoffs
+Tab conversion
 
 
 ------------------------------------------------------------
@@ -120,26 +105,27 @@ Generate MAF_cutoff_report_chi.csv (replacing alleles with characters for chi sq
 - NOTE: This procedure was non-operational when I tested it. I've fixed some bugs and made sure it runs, but since I don't know what it's supposed to do, I don't know whether it's doing it properly. 
 - using MAF_cutoff_report.csv as a starting point, excluding the "COMBINED" column from operations (if it exists), for each row:
     - if there's only one value in the row, replace all occurences of it with "H"
-    - if the two most frequent values make up more than 90% of the row, replace all occurences of the most frequent with H and all occurrences of the 2nd most frequent with A, and replace everything else with NA
+    - if the two most frequent values make up more than 90% of the row, replace all occurences of the most frequent with H and all occurrences of the 2nd most frequent with A, and replace everything else with NA (NOTE: What if they both have the same number of occurences? Do we just leave it to the sorting algorithm to determine which gets H and which gets A?)
     - else if the two most frequent values make up 90% or less, remove the row from report
     - TODO: the way it's written, the two most frequent values must make up MORE THAN 90% of the row, and therefore they wouldn't qualify if they make up 90%. Should I change this to be inclusive of 90%? 
 - write report to MAF_cutoff_report_chi.csv
+    - TODO: What if either of the two most frequent values required for a majority of > 90% is NA? Do we delete the row? I have assumed so and programmed it accordingly.  
 
 Generate probability.csv:
 - NOTE: This procedure was non-operational when I tested it. I've fixed some bugs and made sure it runs, but since I don't know what it's supposed to do, I don't know whether it's doing it properly. 
 - using MAF_cutoff_report.csv as a starting point, for each column of the report:
     - if it's the "COMBINED" column, set <filename> to the existing "cutoff" file in outputTemp/pooled/
-    - otherwise set <filename> to /outputTemp/single/<current col name (minus the last 4 chars)>_cutoff"
+    - otherwise set <filename> to ./outputTemp/single/<current col name (minus the last 4 chars)>_cutoff"
     - perform the following two operations:
         - ap <- scanVcf(<filename>)
         - rr <- ap$`*:*-*`$rowRanges
     - for each cell in the current report column, if the current cell is not NA:
-        - POSSIBLE BUG: checking characters in the below code may or may not take into account that the data is formatted like "A/A", and might not take the "/" into account. Todo: Test this.
-        - if the number of characters in the cell is 2 and the first character is NOT equal to the current row's "REF" value:
+        - POSSIBLE BUG: checking characters in the below code may or may not take into account that the data is formatted like "A/A", and might not take the "/" into account. Todo: Test this. It seems like it might take this into account, which might be why it looks for 2 characters ("A/") or 3 characters ("A/G") in some cases. However, if so, this would break once I do the change Jun-Jun requested for filled_report.csv).
+        - if the number of characters in the current cell is 2 and the first character is NOT equal to the current row's "REF" value:
             - set ind to the list of those row ranges that contain both this row's "CHROM" value and ":<this row's POS value>_"
             - if ind is not NA, set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
             - else if ind is NA, set the current cell to NA
-        - if the number of characters in the cell is 2 and the first character IS equal to the current row's "REF" value, set the current cell to 1
+        - if the number of characters in the current cell is 2 and the first character IS equal to the current row's "REF" value, set the current cell to 1
         - otherwise: (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes. FIXED lower down, but check if this is correct.)
             - set ind to the list of those row ranges that contain both this row's "CHROM" value and ":<this row's POS value>_"
             - if ind is not NA 
