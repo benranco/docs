@@ -9,6 +9,8 @@ for every NON-"filled.Rds" file in reporttemp, call parallel_process.R in backgr
 call report_gen_p2.R, with pwd as path, and $1 as maf cutoff
 
 ==========================
+(<-- check all uses of grep in R code to make sure it specifies correct usage of fixed=TRUE and value=FALSE, for example)
+==========================
 report_gen.R:
 parameters: path
 
@@ -126,8 +128,7 @@ parameters: path, MAF_CUTOFF
 - for each column of reportd (there might be a bug here (s-1 doesn't look like it'll work for single rather than pooled runs because it doesn't have a COMBINED column). FIXED, check to make sure it's correct.):
     - if it's the COMBINED column, set file name to the existing "cutoff" file in outputTemp/pooled
     - else set file name to /outputTemp/single/<current col name - last 4 chars>_cutoff" (there might be a bug here for pooled data, because all the columns after COMBINED will look for files in the outputTemp/single folder. BUT, I don't think it's a bug because according to program logic there will only ever be one cutoff file in /outputTemp/pooled/, and /outputTemp/single/ will be empty unless doing single or both.)
-    - ap <- scanVcf(fil)
-    - rr <- ap$`*:*-*`$rowRanges
+    - import the “_cutoff” file (it's in vcf format), and get the row ranges recorded in the file. We will use their names and indices to look up genotype likelihoods.
     - for each row in reportd, if the current cell is not NA:
         - (POSSIBLE BUG: checking characters in the below code may or may not take into account that the data is formatted like "A/A", and might not take the "/" into account. Todo: Test this. It seems like it might take this into account, which might be why it looks for 2 characters ("A/") or 3 characters ("A/G") in some cases. However, if so, this would break once I do the change Jun-Jun requested for filled_report.csv).
         - if the number of characters in the cell is 2
@@ -136,7 +137,7 @@ parameters: path, MAF_CUTOFF
                 - if ind is not NA, set the current cell to 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                 - else if ind is NA, set the current cell to NA
             - else if the first character is equal to the current row's REF value, set the current cell to 1
-        - else (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes. FIXED lower down, but check if this is correct.)
+        - else (maybe should explicitly check if the number of chars in cell >= 3, since that's what it assumes. Done.)
             - set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
             - if ind is not NA (possible bug: there's no provision for when it is NA. FIXED, but check.)
                 - if the first character in the cell is not equal to the third character
@@ -158,7 +159,7 @@ if numcols > 24 (for COMBINED) or numcols > 23 (for non-COMBINED)
     (<--line56, nc is assigned the ouput of nrow(report), this is deceptively named)
     if "COMBINED" isn't a column name, set rfc=4, otherwise set rfc=5
     while loop: for each row a in report:
-        (<--line70, possible off-by-one error here with rfc. Yup.)
+        (<--line70, possible off-by-one error here with rfc. Yup. TODO.)
         copy row a (minus the initial 4 or 5 cols) to variable c as a matrix (<--these are terrible variable names, makes the code hard to read)
         if more than half the values in c are NA
             report <- report[-a, ] (<--line73,81, this reassignment inside a while loop (performed for each line!) is potentially very expensive, can this operation be vectorized instead of using a loop?)
@@ -233,8 +234,7 @@ for each col x in reportd (except the first s-1 cols):
             if the file (name?) contains "cutoff"
                 set fil to the file path
     else set fil to: /outputTemp/single/<current col name - last 4 chars>_cutoff" 
-    ap <- scanVcf(fil)
-    rr <- ap$`*:*-*`$rowRanges
+    import the “_cutoff” file (it's in vcf format), and get the row ranges recorded in the file. We will use their names and indices to look up genotype likelihoods.
     for each row y in reportd
         initialize ind to NA
         if the current cell reportd[y, x] is not NA
@@ -246,7 +246,7 @@ for each col x in reportd (except the first s-1 cols):
                         reportd[y, x] <- 10 ^ as.list(ap$`*:*-*`$GENO$GL[ind])[[1]][2]
                     else reportd[y, x] <- NA
                 else reportd[y,x] <- 1
-            else  (<--line242,247, maybe this should specify else if num chars is >= 3, since line 245 seems to assume it. DONE for 247, but check if this is right. If it needs to be done for 242, I'd also need to add an additional else clause at the end for the case when num chars < 2.)
+            else  (<--line242,247, maybe this should specify else if num chars is >= 3, since line 245 seems to assume it. If it needs to be done for 242, I'd also need to add an additional else clause at the end for the case when num chars < 2. DONE)
                 set ind to the list of those names of rr that contain both this row's CHROM value and ":<this row's POS value>_"
                 if ind is not NA (<--line245, what if ind is NA? There's no provision for this, unlike above. DONE: I've added an else clause to deal with it (line256), but need to check if my action (setting cell to NA) is correct.)
                     if the first character in report[y,x] is not equal to the third character
@@ -260,6 +260,20 @@ possible optimizations:
 - see some of the (<-- comments
 - in the finding snp percentage section, the snpp dataframe could be a matrix, and it could be initialized with the right number of rows in and columns (columns are added)
 
+
+#####
+VCF and VariantAnnotation resources:
+
+http://bioconductor.org/packages/release/bioc/html/VariantAnnotation.html (contains Introduction to VariantAnnotation and the reference pdf for VariantAnnotation, along with R scripts and a video)
+
+https://github.com/samtools/hts-specs (has canonical specifications of VCF format)
+http://www.htslib.org/doc/vcf.html (seems to briefly document the VCF format, linked to from here, which also has links to sam and faidx formats: http://www.htslib.org/doc/)
+https://github.com/Bioconductor-mirror/VariantAnnotation/blob/master/R/methods-scanVcf.R
+https://github.com/Bioconductor/VCF_projects/blob/master/VariantAnnotation/R/methods-scanVcf.R
+
+Vcftools info:
+https://vcftools.github.io/perl_module.html
+http://vcftools.sourceforge.net/perl_module.html#vcf-annotate
 
 ==========================
 
