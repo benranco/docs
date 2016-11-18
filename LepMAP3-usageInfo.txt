@@ -1,0 +1,181 @@
+Lep-MAP3 programs usage info:
+==================================================================
+
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+Documentation for these programs is not yet available at:
+https://sourceforge.net/p/lep-map3/wiki/browse_pages/
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ Filtering2
+Error 1001
+usage: java Filtering [options] data=file >file1_filtered.post
+options:
+         data=file          Loads input data in Lep-MAP3 posterior format
+         dataTolerance=NUM  P-value limit for segregation distortion [0.01]
+         removeNonInformative=1  Remove (after filtering) non-informative markers
+         outputHWE=1        Output segregation distortion for the markers
+         MAFLimit=NUM       NUM>=1: Filter out markers with > NUM missing individuals in each family [inf]
+         MAFLimit=NUM       NUM<1: Filter out markers with missing rate > NUM in each family
+         missingLimit=NUM   Filter out markers that have < NUM informative families [0]
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ SeparateIdenticals
+Error 401
+usage: java SeparateIndeticals [options] data=file >map.txt 2>prints.txt
+options:
+         data=file          Loads genotype posteriors from a file (- for standard input)
+                            Column 1: contig, Column 2: pos
+                            Columns 3,...,N+2: pedigree information for lines 1-6, for lines > 6
+                            Columns 3,...,10*N+2: 10 posteriors for each individual and each genotype combination (AA,AC,..., GT,TT)
+         lodLimit=NUM       LOD score limit [10.0]
+         informativeMask=STR     Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         theta=NUM          Fixed recombination fraction [0.0]
+         (fe)maleTheta=NUM  Fixed recombination fraction separately for both sex [0.0]
+         sizeLimit=NUM      Remove LGs with < NUM markers [1]
+         numThreads=NUM     Use maximum of NUM threads (most speedup if equals numParts) [1]
+         numParts=NUM       Divide markers to NUM parts [1]
+         removeSingles=0    Do not remove single markers (slower but does not miss markers)
+         keepRate=NUM       Keep joined markers with this prob (1.0 = all pair-wise comparisons are done) [0.5]
+         betweenSameType=1  Only compute LOD scores between identically informative markers (applicable to single family data)
+                            Also one has to specify 3 LOD limits (paternal, maternal and both) in this case
+         lod3Mode=NUM       Controls how LOD scores are computed between double informative markers [1]
+                            1: haplotypes match (4 alleles, max LOD = log(4^n)
+                            2: homozygotes match (3 alleles, max LOD = log(3^n))
+                            3: homozygotes or heterozygotes match (2 alleles, max LOD = log(2^n))
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ SeparateChromosomes2
+Error 401
+usage: java SeparateIndeticals [options] data=file >map.txt 2>prints.txt
+options:
+         data=file          Loads genotype posteriors from a file (- for standard input)
+                            Column 1: contig, Column 2: pos
+                            Columns 3,...,N+2: pedigree information for lines 1-6, for lines > 6
+                            Columns 3,...,10*N+2: 10 posteriors for each individual and each genotype combination (AA,AC,..., GT,TT)
+         lodLimit=NUM       LOD score limit [10.0]
+         informativeMask=STR     Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         theta=NUM          Fixed recombination fraction [0.0]
+         (fe)maleTheta=NUM  Fixed recombination fraction separately for both sex [0.0]
+         sizeLimit=NUM      Remove LGs with < NUM markers [1]
+         numThreads=NUM     Use maximum of NUM threads (most speedup if equals numParts) [1]
+         numParts=NUM       Divide markers to NUM parts [1]
+         removeSingles=0    Do not remove single markers (slower but does not miss markers)
+         keepRate=NUM       Keep joined markers with this prob (1.0 = all pair-wise comparisons are done) [0.5]
+         betweenSameType=1  Only compute LOD scores between identically informative markers (applicable to single family data)
+                            Also one has to specify 3 LOD limits (paternal, maternal and both) in this case
+         lod3Mode=NUM       Controls how LOD scores are computed between double informative markers [1]
+                            1: haplotypes match (4 alleles, max LOD = log(4^n)
+                            2: homozygotes match (3 alleles, max LOD = log(3^n))
+                            3: homozygotes or heterozygotes match (2 alleles, max LOD = log(2^n))
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ JoinSingles2All
+Error 701
+usage: java JoinSingles2 [options] map=map_file data=file >map.txt 2>prints.txt
+options:
+         map=map_file       Initial LG map file. Typically generated by SeparateIdenticals or JoinSingles2.
+         data=file          Loads input genotypes in Lep-MAP posterior format
+         lodLimit=NUM       LOD score limit [10.0]
+         lodDifference=NUM  Required LOD difference [0.0]
+         informativeMask=STR      Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         theta=NUM          Fixed recombination fraction [0.0]
+         (fe)maleTheta=NUM  Fixed recombination fraction separately for both sex [0.0]
+         betweenSameType=1  Only compute LOD scores between identically informative markers (applicable to single family data)
+                            Also one has to specify 3 LOD limits (paternal, maternal and both) in this case
+         lod3Mode=NUM       Controls how LOD scores are computed between double informative markers [1]
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ JoinSingles2Identicals
+Error 701
+usage: java JoinSingles2 [options] map=map_file data=file >map.txt 2>prints.txt
+options:
+         map=map_file       Initial LG map file. Typically generated by SeparateIdenticals or JoinSingles2.
+         data=file          Loads input genotypes in Lep-MAP posterior format
+         lodLimit=NUM       LOD score limit [10.0]
+         lodDifference=NUM  Required LOD difference [0.0]
+         informativeMask=STR      Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         theta=NUM          Fixed recombination fraction [0.0]
+         (fe)maleTheta=NUM  Fixed recombination fraction separately for both sex [0.0]
+         betweenSameType=1  Only compute LOD scores between identically informative markers (applicable to single family data)
+                            Also one has to specify 3 LOD limits (paternal, maternal and both) in this case
+         lod3Mode=NUM       Controls how LOD scores are computed between double informative markers [1]
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ OutputData
+Error 901
+usage: java OutputData [options] data=file map=map_file >posterior_clean.txt 2>prints.txt
+options:
+         map=map_file       LG map file. Typically generated by SeparateIdenticals or JoinSingles2.
+         sizeLimit=NUM      Output data only with LGs with >= NUM markers [1]
+         lod3Mode=NUM       Controls how LOD scores are computed between double informative markers [1]
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ ShortPath
+Error 801
+usage: java ShortPath [options] prints.txt
+options:
+         prints.txt               Output (err-stream) from SeparateIdenticals, JoinSingles or OutputData
+         informativeMask=STR      Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         sizeLimit=NUM            Use only markers that occur NUM times
+         limit1=NUM               Maximum differences in the segregation prints to join markers [1]
+         limit2=NUM               Minimum number of segregative individuals to join markers [1]
+         begin=NUM                find paths starting from marker NUM
+         end=NUM                  find paths ending to marker NUM
+[benrancourt@localhost LepMAP3]$ 
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+[benrancourt@localhost LepMAP3]$ java -cp binary/bin/ OrderMarkers2
+Error 301
+usage: java OrderMarkers2 [options] data=file.posterior
+         data=file          Loads genotype posteriors from a file (- for standard input)
+                            Column 1: contig, Column 2: pos
+                            Columns 3,...,N+2: pedigree information for lines 1-6, for lines > 6
+                            Columns 3,...,10*N+2: 10 posteriors for each individual and each genotype combination (AA,AC,..., GT,TT)
+         map=chromosome_map_file     LG map file. Typically generated by SeparateChromosomes2 or JoinSingles2.
+         evaluateOrder=order.txt     Load initial marker order from a file
+         informativeMask=STR     Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         useMorgan=1        Use Morgan (linear) mapping function
+         useKosambi=1       Use Kosambi mapping function
+         improveOrder=0     Do not improve the order (used to only (re)evaluate a order)
+         numThreads=NUM     Use NUM threads [1]
+         numThreads=NUM     Use NUM threads [1]
+         numMergeIterations=NUM  Run NUM iterations [6]
+         chromosome=NUM     Order chromosome NUM only [all]
+         scale=NUM          Scale posteriors by NUM (p -> p^NUM)  [1]
+         minError=NUM       Set minimum posterior value [0.001]
+         outputPhasedData=1 Output phased data
+         removeMarkers=m1 [ m2 m3 ...]  Remove markers
+         sexAveraged=1      Calculate sex-averaged map distances
+         phasedData=1       Input data is phased
+         recombination1=NUM Recombination rate for male [0.001]
+         recombination2=NUM Recombination rate for female [0.001]
+         interference1=NUM  Recombination interference for male [0.001]
+         interference2=NUM  Recombination interference for female [0.001]
+         identicalLimit=NUM Reduce the number of markers. 
+                            If the absolute probability difference between markers is < NUM they are collapsed [0]
+         computeLODScores=file   Evaluate pair-wise LOD scores and store to file
+         randomPhase=1      Start the phasing algorithm from a random phase configuration.
+                            Useful if the phasing does not converge properly with evaluateOrder
+[benrancourt@localhost LepMAP3]$ 
+
+------------------------------------------------------------------
+
+

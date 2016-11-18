@@ -1,0 +1,185 @@
+Lep-MAP2 programs/modules usage info, obtained from the command-line:
+==================================================================
+
+Further documentation for these Lep-MAP2 Modules is at:
+https://sourceforge.net/p/lepmap2/wiki/browse_pages/
+https://sourceforge.net/p/lepmap2/wiki/Home/
+https://sourceforge.net/p/lepmap2/wiki/Modules/
+https://sourceforge.net/p/lepmap2/wiki/General%20Usage%20example/
+
+Legacy and newer version of Lep-MAP (Lep-MAP3 has no documentation yet):
+https://sourceforge.net/u/lep-map/profile/
+https://sourceforge.net/projects/lep-map/
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+In my search to find a specification of the linkage file format:
+
+Actual official documentation? (defines 4 locus types) (why does the allele numbers locus type allow numbers greater than 4?):
+http://www.jurgott.org/linkage/LinkagePC.html
+http://www.jurgott.org/linkage/LinkageUser.pdf
+http://www.jurgott.org/linkage/LinkageSupportProg.pdf
+http://www.jurgott.org/linkage/LinkageWin.zip
+http://www.jurgott.org/linkage/LinkageLinux.zip
+
+Gives some notes that add a bit more understanding to the specification (locus types):
+http://www-genepi.med.utah.edu/~alun/software/docs/linkage.html
+
+This seems to give a good explanation of columns 1-6, and correlates numbers of the genotype columns (1-4) to alleletes ACGT (is this for the "allele numbers" locus type?):
+https://www.broadinstitute.org/haploview/input-file-formats
+
+Gives more info on "affection status" phenotype coding, and "codominant marker locus" phenotype coding (which seems to be "allete numbers" locus type) (see the bottom of section (b)):
+https://dsgweb.wustl.edu/aldi/software/manuals/mega2_html/mega2-II.html
+
+Others that give partial information:
+http://www.medgen.de/ped/imex3.html#fileformat
+http://www.medgen.de/ped/imex4.html
+
+References the jurgott user guide above:
+https://watson.hgen.pitt.edu/docs/conversions/linkage_pre-makeped.html
+https://watson.hgen.pitt.edu/docs/conversions/frame_inp_linkage.html  # see Subsection-9.3
+
+Original Lathrop et al Research Paper:
+https://www.ncbi.nlm.nih.gov/pubmed/6585139
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1684427/
+
+
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+Helper scripts:
+
+It seems there are additional scripts available in scripts/ to help with converting file formats, etc:
+
+Useful scripts
+
+linkage2post.awk, simpleconvert.awk : these are used to convert linkage files to posteriors and back, needed to run ParentCall (to impute missing parental genotypes or to call markers in the sex chromosome)
+
+loc2linkage : this will convert JoinMap files to linkage files
+
+vcf2posterior.awk : this will convert vcf files to Lep-MAP posteriors (takes PL field from a vcf). The pedigree information must be added separately.
+
+Note: script transpose_tab can become very slow with many markers. Now there is the Transpose module in Lep-MAP that does transposes faster (replace "./transpose_tab" with "java [-cp bin] Tranpose").
+
+
+------------------------------------------------------------------
+Filtering Module:
+
+[benrancourt@localhost binary]$ java -cp bin/ Filtering
+usage: java Filtering [options] data=file1 [file2 ...] >file1_filtered.linkage
+options:
+         data=file [file2 ...]   Loads input genotypes in LINKAGE Pre-makeped format
+         epsilon=NUM             Probability of a haplotype error [0.01], used to model Mendel errors
+         dataTolerance=NUM       P-value limit for segregation distortion [0.01]
+         removeMarkers=m1 [m2 ...] Remove markers m1 m2 ... from further analysis [not set]
+         outputHWE=1             Output p-values of segregation distortion (to error stream)
+         missingLimit=NUM        Filter out markers with > NUM missing values in each family [inf]
+         missingLimitIndividual=NUM  Filter out individuals with > NUM missing values [inf]
+         informativeFamilyLimit=NUM  Filter out markers that have < NUM informative families [0]
+         filterIdenticalSubset=A B   Filter genotypes that occur less than B times in size A subsets of adjacent individuals [1 1 = not set]
+         nonIdenticalLimit=NUM   Filter out markers based on low number of identical (or complementary) segregation patterns in each family[1]
+         nonNearIdenticalLimit=NUM1 NUM2   Same as above but allows missing rate of NUM2 when considering patterns to be identical [1 0.0]
+         MAFLimit=NUM            Filter out markers with minimum allele frequency < NUM in each family [0.0]
+         keepAlleles=1           Keep the same alleles in the data as were in the input
+
+
+------------------------------------------------------------------
+SeparateChromosomes Module: 
+
+[benrancourt@localhost binary]$ java -cp bin/ SeparateChromosomes
+usage: java SeparateChromosomes [options] data=file [file2 file3...]
+options:
+         data=file [file2 ...]   Loads input genotypes in LINKAGE Pre-makeped format
+         lodLimit=NUM [NUM2 ...] LOD score limit [10.0]
+         (fe)malePrior=NUM       Uniform prior for recombination fraction for (maternal) paternal haplotypes [0.05]
+         (fe)malePrior=A B C     Affine prior for recombination fraction for (maternal) paternal haplotypes [not set]
+         (fe)maleTheta=NUM       Use fixed recombination fraction [not set]
+         (fe)maleTheta=ML        Use maximum likelihood recombination fraction [not set]
+         removeMarkers=m1 [m2 ...] Remove markers m1 m2 ... from further analysis [not set]
+         informativeMask=STR     Use only markers with informative father (1), mother(2), both patrents(3) or neither parent(0) [0123]
+         families=f1 [f2 ...]    Use only families f1 f2 ... [not set]
+         sizeLimit=NUM           Remove LGs with < NUM markers [1]
+
+
+------------------------------------------------------------------
+JoinSingles Module:
+
+[benrancourt@localhost binary]$ java -cp bin/ JoinSingles
+usage: java JoinSingles chromosome_map_file [options] data=file1 [file2 file3...]
+options:
+         chromosome_map_file     Initial LG map file. Typically generated by SeparateChromosomes or JoinSingles.
+         data=file [file2 ...]   Loads input genotypes in LINKAGE Pre-makeped format
+         lodLimit=NUM [NUM2 ...] LOD score limit [10.0]
+         lodDifference=NUM       Required difference in LOD scores between the best LG and the second best LG of each joined marker[0.0]
+         (fe)malePrior=NUM       Uniform prior for recombination fraction for (maternal) paternal haplotypes [maternal:2*epsilon*(1-epsilon)]
+         (fe)malePrior=A B C     Affine prior for recombination fraction for (maternal) paternal haplotypes [paternal:4 0 0.5]
+         (fe)maleTheta=NUM       Use fixed recombination fraction [not set]
+         informativeMask=STR     Use only markers with informative father (1), mother(2), both parents(3) or neither parent(0) [0123]
+         families=f1 [f2 ...]    Use only families f1 f2 ... [not set]
+
+
+------------------------------------------------------------------
+OrderMarkers Module:
+
+[benrancourt@localhost binary]$ java -cp bin/ OrderMarkers
+usage: java OrderMarkers [options] data=file1 [file2 file3...]
+options:
+         map=chromosome_map_file LG map file. Typically generated by SeparateChromosomes or JoinSingles.
+                                 Either map or evaluateOrder must be provided
+         data=file [file2 ...]   Loads input genotypes in LINKAGE Pre-makeped format from file, - for standard input
+         removeMarkers=m1 [m2 ...] Remove markers m1 m2 ... from further analysis [not set]
+         informativeMask=STR     Use only markers with informative father (1), mother(2), both patrents(3) or neither parent(0) [0123]
+         families=f1 [f2 ...]    Use only families f1 f2 ... [not set]
+         informativeFamilyLimit=NUM  Filter out markers that have < NUM informative families [0]
+         numMergeIterations=NUM  How many iterations are performed [6]
+         chromosome=NUM          Order only one chromosome [not set]
+         improveOrder=0          Disable order refinement by maximizing likelihood
+         removeDuplicates=0      Disable removing of duplicate markers
+         evaluateOrder=file      Loads the order of markers from a file
+                                 Either map or evaluateOrder must be provided
+         computeLODScores=1      Evaluate pair-wise LOD scores on the order given in evaluateOrder
+         maxDistance=NUM         Maximum allowed recombination probability (when evaluating likelihoods) [inf]
+         maxError=NUM            Maximum allowed haplotype error probability (when evaluating likelihoods)
+         minError=NUM            Minimum allowed haplotype error probability (when evaluating likelihoods)
+         useKosambi=1            Use Kosambi mapping function (instead of Haldane).
+         polishWindow=NUM        Uses only a window of NUM markers in the polishing step to obtain speedup.
+         filterWindow=NUM        Uses about 4 x NUM markers to decided whether it is needed to evaluate the full likelihood for all markers,
+                                 to obtain speedup. Only activated with more than 32 x NUM markers.
+         numThreads=NUM          Use maximum of NUM threads [1]
+         initRecombination=NUM [NUM2]   Initial recombination probability paternal [and maternal] [0.05, NUM2=NUM]
+         initError=NUM           Initial haplotype error probability [0.01]
+         learnErrorParameters=0  Disable error parameter learning [not set]
+         learnRecombinationParameters=0 1 Disable paternal recombination rate learning [not set]
+         learnRecombinationParameters=0 0 Disable recombination rate learning [not set]
+         learnRecombinationParameters=1 0 Disable maternal recombination rate learning [not set]
+         sexAveraged=1           Use sex-averaged recombination rates
+         outputPhasedData=1      Output most likely phased data for each marker (instead of phases)
+         alpha=NUM               Penalty parameter. The optimization score is 'likelihood - alpha*COUNT' [0.0]
+         markerClusters=file     Load duplicated markers from a file, file should contain two columns, marker name and cluster ID
+         missingClusteringLimit=NUM  Allow missing rate of NUM when deciding whether two markers are duplicates [0.0] (exprimental)
+         hammingClusteringLimit=NUM  Allow hamming difference rate of NUM when deciding whether two markers are duplicates [0.0] (exprimental)
+
+
+------------------------------------------------------------------
+ParentCall Module:
+
+[benrancourt@localhost binary]$ java -cp bin/ ParentCall
+usage: java ParentCall [options] data=file
+options:
+         data=file          Loads genotype posteriors from a file (- for standard input)
+                            Column 1: contig, Column 2: pos
+                            Columns 3,...,N+2: pedigree information for lines 1-6, for lines > 6
+                            columns 3,...,10*N+2: 10 posteriors for each individual and each genotype combination (AA,AC,..., GT,TT)
+         familyLimit=NUM    Required log-odds difference to call a SNP [2.0]
+         ZLimit=NUM         Required log-odds difference to call a SNP with Z inheritance [inf]
+         XLimit=NUM         Required log-odds difference to call a SNP with X inheritance [inf]
+         removeNonInformative=1  Remove markers that are not informative
+         ignoreParentOrder=1     Do not care about the order of parental genotypes [not set]
+         fixSex=0                Do not correct Mendel "errors" for sex markers [1]
+ 
+
+------------------------------------------------------------------
+

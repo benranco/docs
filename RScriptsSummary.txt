@@ -260,6 +260,10 @@ possible optimizations:
 - see some of the (<-- comments
 - in the finding snp percentage section, the snpp dataframe could be a matrix, and it could be initialized with the right number of rows in and columns (columns are added)
 
+#####
+Code to list the GL's for triallelic (or more, if it's possible) sites:
+for (ix in 1:length(ap$`*:*-*`$GENO$GL)) { if (length(ap$`*:*-*`$GENO$GL[ix][[1]]) > 3 ) { print(paste0(ix,": ",ap$`*:*-*`$GENO$GL[ix])) } }
+- then extract the CHROM and POS value from names(rr[ix]) and use them to grab the matching row(s) in MAF_cutoff_report.csv and put them in my test file. Also do the same for a row that has  eg. A/A that matches REF.
 
 #####
 VCF and VariantAnnotation resources:
