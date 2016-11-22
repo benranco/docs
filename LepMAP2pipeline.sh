@@ -31,6 +31,11 @@ separateChromosomesOutputSuffix="-map.txt"
 joinSinglesOutputSuffix="-map_js.txt"
 orderMarkersOutputSuffix="-map_js-chr1.SA.txt"
 
+orderMarkersOutputSuffixPt1="-map_js-chr"
+orderMarkersOutputSuffixPt2=".SA.txt"
+orderMarkersLogFileNameSuffixPt1="-orderMarkers-chr"
+orderMarkersLogFileNameSuffixPt2="-lepMAP2-log.txt"
+
 if [[ $doFiltering -eq 1 ]]
 then
   mainInputFileSuffix=$filteredOutputSuffix
@@ -53,6 +58,8 @@ separateChromosomesCommand="java -cp "$lepMap2Bin" SeparateChromosomes data="$dl
 joinSinglesCommand="java -cp "$lepMap2Bin" JoinSingles "$dl$inputFileNameMainPart$separateChromosomesOutputSuffix" data="$dl$inputFileNameMainPart$mainInputFileSuffix" lodLimit=3"
 
 orderMarkersCommand="java -cp "$lepMap2Bin" OrderMarkers data="$dl$inputFileNameMainPart$mainInputFileSuffix" map="$dl$inputFileNameMainPart$joinSinglesOutputSuffix" alpha=0.1 chromosome=1 polishWindow=100 filterWindow=10  sexAveraged=1"
+
+orderMarkersCommandChooseLG="java -cp "$lepMap2Bin" OrderMarkers data="$dl$inputFileNameMainPart$mainInputFileSuffix" map="$dl$inputFileNameMainPart$joinSinglesOutputSuffix" alpha=0.1 polishWindow=100 filterWindow=10  sexAveraged=1 chromosome="
 
 #-----
 #orderMarkersCommand1="java -cp "$lepMap2Bin" OrderMarkers data="$dl$inputFileNameMainPart$mainInputFileSuffix" map="$dl$inputFileNameMainPart$joinSinglesOutputSuffix" alpha=0.1 chromosome=1 sexAveraged=1 improveOrder=0 polishWindow=100 filterWindow=10"
@@ -77,6 +84,14 @@ orderMarkersCommand="java -cp "$lepMap2Bin" OrderMarkers data="$dl$inputFileName
 
 
 
+# ############################################################
+function getNumLinkageGroups {
+  # parameter $1 should be the name the map file we will be checking to determin number of linkage groups
+
+  # number of linkage groups = the number of unique lines (minus the header) in the file
+  numLinkageGroups=`sort -u $dl$1 | wc -l` 
+  numLinkageGroups=$((numLinkageGroups-1)) # - 1 because of the header line
+}
 
 
 # ############################################################
@@ -89,9 +104,7 @@ function countMarkersInLinkageGroups {
   echo "===========================================================================" >> $dl$inputFileNameMainPart$logFileNameSuffix
   date | tee -a $dl$inputFileNameMainPart$logFileNameSuffix
 
-  # number of linkage groups = the number of unique lines (minus the header) in the file
-  numLinkageGroups=`sort -u $dl$mapFileName | wc -l` 
-  numLinkageGroups=$((numLinkageGroups-1)) # - 1 because of the header line
+  getNumLinkageGroups $mapFileName
 
   echo "Number of Linkage Groups in "$mapFileName": "$numLinkageGroups" (might be only "$((numLinkageGroups-1))" if some markers are in 0=no linkage group)" | tee -a $dl$inputFileNameMainPart$logFileNameSuffix  
 
@@ -169,11 +182,43 @@ countMarkersInLinkageGroups $inputFileNameMainPart$joinSinglesOutputSuffix
 echo " " | tee -a $dl$inputFileNameMainPart$logFileNameSuffix  
 echo "===========================================================================" >> $dl$inputFileNameMainPart$logFileNameSuffix
 echo "===========================================================================" >> $dl$inputFileNameMainPart$logFileNameSuffix
-date | tee -a $dl$inputFileNameMainPart$logFileNameSuffix  
-echo "Beginning LepMAP2 OrderMarkers SA module. Output filename: $inputFileNameMainPart$orderMarkersOutputSuffix." | tee -a $dl$inputFileNameMainPart$logFileNameSuffix
-echo " " >> $dl$inputFileNameMainPart$logFileNameSuffix
+#date | tee -a $dl$inputFileNameMainPart$logFileNameSuffix  
+#echo "Beginning LepMAP2 OrderMarkers SA module. Output filename: $inputFileNameMainPart$orderMarkersOutputSuffix." | tee -a $dl$inputFileNameMainPart$logFileNameSuffix
+#echo " " >> $dl$inputFileNameMainPart$logFileNameSuffix
 
-$orderMarkersCommand > $dl$inputFileNameMainPart$orderMarkersOutputSuffix 2>> $dl$inputFileNameMainPart$logFileNameSuffix
+#$orderMarkersCommand > $dl$inputFileNameMainPart$orderMarkersOutputSuffix 2>> $dl$inputFileNameMainPart$logFileNameSuffix
+
+
+
+### =========================================
+date | tee -a $dl$inputFileNameMainPart$logFileNameSuffix  
+echo "Beginning LepMAP2 OrderMarkers SA modules. See individual Order Markers log files for each Linkage Group." | tee -a $dl$inputFileNameMainPart$logFileNameSuffix
+
+getNumLinkageGroups $inputFileNameMainPart$joinSinglesOutputSuffix
+counter=0
+ncore="$(( ($(grep -c ^processor /proc/cpuinfo) -4)/2 ))"
+
+echo "running parallel processing"
+
+for i in `seq 1 $numLinkageGroups`
+do 
+  if [ $counter -lt $ncore ]; then	
+    date > -a $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
+    echo "Beginning LepMAP2 OrderMarkers SA module. Output filename: $dl$inputFileNameMainPart$orderMarkersOutputSuffixPt1$i$orderMarkersOutputSuffixPt2." | tee -a $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
+    echo " " >> $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
+
+    $orderMarkersCommandChooseLG$i > $dl$inputFileNameMainPart$orderMarkersOutputSuffixPt1$i$orderMarkersOutputSuffixPt2 2>> $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2 &
+    counter=$(( $counter + 1 ))
+  else
+    wait
+    #echo "wait reset"
+    counter=0
+  fi
+done
+wait
+
+### =========================================
+
 
 
 ### Done
