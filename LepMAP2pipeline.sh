@@ -43,6 +43,9 @@ then
   joinSinglesOutputSuffix="-filtered-map_js.txt"
   orderMarkersOutputSuffix="-filtered-map_js-chr1.SA.txt"
   orderMarkersMFOutputSuffix="-filtered-map_js-chr1.MF.txt"
+
+  orderMarkersOutputSuffixPt1="-filtered-map_js-chr"
+  orderMarkersLogFileNameSuffixPt1="-filtered-orderMarkers-chr"
 fi
 
 dl=$dataLocationWithFinalSlash
