@@ -199,24 +199,24 @@ echo "Beginning LepMAP2 OrderMarkers SA modules. See individual Order Markers lo
 
 getNumLinkageGroups $inputFileNameMainPart$joinSinglesOutputSuffix
 counter=0
-ncore="$(( ($(grep -c ^processor /proc/cpuinfo) -4)/2 ))"
+ncore="$(( ($(grep -c ^processor /proc/cpuinfo) -4) ))"
 
 echo "running parallel processing"
 
 for i in `seq 1 $numLinkageGroups`
-do 
-  if [ $counter -lt $ncore ]; then	
-    date > -a $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
-    echo "Beginning LepMAP2 OrderMarkers SA module. Output filename: $dl$inputFileNameMainPart$orderMarkersOutputSuffixPt1$i$orderMarkersOutputSuffixPt2." | tee -a $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
-    echo " " >> $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
-
-    $orderMarkersCommandChooseLG$i > $dl$inputFileNameMainPart$orderMarkersOutputSuffixPt1$i$orderMarkersOutputSuffixPt2 2>> $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2 &
-    counter=$(( $counter + 1 ))
-  else
+do
+  if [ $counter -ge $ncore ]; then
     wait
     #echo "wait reset"
     counter=0
-  fi
+  fi 
+
+  date > $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
+  echo "Beginning LepMAP2 OrderMarkers SA module. Output filename: $dl$inputFileNameMainPart$orderMarkersOutputSuffixPt1$i$orderMarkersOutputSuffixPt2." | tee -a $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
+  echo " " >> $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2
+
+  $orderMarkersCommandChooseLG$i > $dl$inputFileNameMainPart$orderMarkersOutputSuffixPt1$i$orderMarkersOutputSuffixPt2 2>> $dl$inputFileNameMainPart$orderMarkersLogFileNameSuffixPt1$i$orderMarkersLogFileNameSuffixPt2 &
+  counter=$(( $counter + 1 ))
 done
 wait
 

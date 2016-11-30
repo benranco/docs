@@ -1,14 +1,14 @@
 #args <- commandArgs(trailingOnly = TRUE)
 #path <- args[1]
 
-path <- "/home/benrancourt/Downloads/AllChromosomesAt6and3-copy/"
+path <- "/home/benrancourt/Downloads/AllChromosomesAt10and6-copy/"
 
 #MAF_CUTOFF <- args[2]
 #MAF_CUTOFF <- as.double(MAF_CUTOFF)
 
 options(stringsAsFactors = FALSE, warn = 1)
 
-message("running remove_duplicate_markers.R. Output is a .csv sorted by linkage_group, position, error_estimate, genotype.")
+message("running remove_duplicate_markers.R. Output is a .csv sorted by linkage_group, position, marker_id, error_estimate.")
 
 if(!require(stringr))
 {
@@ -75,6 +75,11 @@ for (lg in linkageGroups)
   orderMarkersData <- subset(orderMarkersData , select=-c(female_position,left_paren,right_paren))
   
   combinedData <- merge(orderMarkersData, csvData, by="marker_number", all=FALSE, sort=FALSE)
+  # this sorting order of the combinedData is essential for the successful execution 
+  # of the below while-loop. If a different order is desired for presentation (eg. the 
+  # marker_id before the error_estimate), this can be done at the very end of this 
+  # for-loop (which iterates through the linkage groups), after the inner while-loop 
+  # has been exited.
   combinedData <- combinedData[order(combinedData$position, combinedData$error_estimate, combinedData$marker_id), ]
 #  print(combinedData[1:10,1:5])
 #  write.csv(combinedData, paste0(path,csvFilenameMinusExtension,"-lg",lg,".csv"), row.names=FALSE)
@@ -143,6 +148,12 @@ for (lg in linkageGroups)
 
   # re-arrange the order of the columns to make more visual sense (column 4 (after removing the duplicate_or_phases column) is the marker_id, col1 is marker_number, col2 is position, col3 is error_estimate)
   combinedData <- combinedData[ , c(2,3,4,1,5:ncol(combinedData))]
+
+  # Modify the sorted order of the data slightly, so that it is ordered by marker_id
+  # before error_estimate. (It needed to be sorted by error_estimate before 
+  # marker_id for the successful execution of the above inner while-loop).
+  combinedData <- combinedData[order(combinedData$position, combinedData$marker_id, combinedData$error_estimate), ]
+
   # add a linkage_group column to the beginning of the dataframe
   combinedData <- cbind(linkage_group = lg, combinedData)
 
@@ -155,11 +166,11 @@ for (lg in linkageGroups)
     }
     else 
     {
-      rbind(finalCombinedData, combinedData)
+      finalCombinedData <- rbind(finalCombinedData, combinedData)
     }
   }
 } # end for-loop (iterates through the linkage groups)
 
-write.csv(finalCombinedData, paste0(path,csvFilenameMinusExtension,"-postLepMAP2.csv"), row.names=FALSE)
+write.csv(finalCombinedData, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr.csv"), row.names=FALSE)
 
 message("remove_duplicate_markers complete")
