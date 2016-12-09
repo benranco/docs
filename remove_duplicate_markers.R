@@ -1,7 +1,7 @@
 #args <- commandArgs(trailingOnly = TRUE)
 #path <- args[1]
 
-path <- "/home/benrancourt/Downloads/AllChromosomesAt10and6-copy/"
+path <- "/home/benrancourt/Downloads/LepMAP2-r45-60592-p0.01/"
 
 #MAF_CUTOFF <- args[2]
 #MAF_CUTOFF <- as.double(MAF_CUTOFF)
@@ -18,8 +18,6 @@ if(!require(stringr))
 library(stringr)
 
 # #######################################################################
-# TODO: before even doing this, write a routine to run the LepMAP2 OrderMarkers module in parallel for each Linkage Group
-# TODO: also investigate using LepMAP3 
 # x1. Read -map_js.txt file
 # x2. Create a vector of unique Linkage Group (LG) ids from that file
 # x3. Read chrX.SA.txt files (one for each chromosome/linkage group)
@@ -42,8 +40,8 @@ library(stringr)
 
 # TODO: define what is used to represent "no data" in the csv (NA or "-", etc), and update the code down below accordingly
 
-csvFilenameMinusExtension <- "R28-S91-M28K-Ben"
-mapFilenameMinusExtension <- "R28-S91-M28K-Ben-map_js"
+csvFilenameMinusExtension <- "r45-60592-p0.01"
+mapFilenameMinusExtension <- "r45-60592-p0.01-map_js"
 
 csvData <- read.csv(paste0(path,csvFilenameMinusExtension,".csv"))
 numDataColsInCsvData <- ncol(csvData)-1
@@ -86,11 +84,11 @@ for (lg in linkageGroups)
 
   # we will use these temporary columns below
   combinedData$record_number <- seq.int(nrow(combinedData)) 
+  
   # library(stringr) required for str_split_fixed:
   combinedData$genotype <- str_split_fixed(combinedData$marker_id,"-",2)[ ,1]
 
   index <- 1
-
   rowsToKeep <- numeric(nrow(combinedData)) # initializes all elements to 0
   rowsToKeepIndex <- 1
 
