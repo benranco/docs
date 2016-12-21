@@ -293,6 +293,18 @@ finalUniqueGenes <- finalUniqueGenes[!(finalUniqueGenes$gene %in% genesThatOccur
 # order the genesInMultipleLGs data by gene first, then LG
 genesInMultipleLGs <- genesInMultipleLGs[order(genesInMultipleLGs$gene,genesInMultipleLGs$linkage_group), ]
 
+
+# output a stripped-down csv file that just has the data from the representative
+# marker for each gene
+representativeMarkers <- finalUniqueGenes[ , c(9,13:ncol(finalUniqueGenes))]
+write.csv(representativeMarkers, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-uniqueGenes-justTheMarkers.csv"), row.names=FALSE)
+
+# build a map file that preserves the linkage group/gene relationship:
+mapHeader <- "#java JoinSingles /home/benrancourt/Downloads/LepMAP2-VERSION2-r45-60592-p0-test1/r45-60592-p0.01-uniqueGenes-map.txt data=/home/benrancourt/Downloads/LepMAP2-VERSION2-r45-60592-p0-test1/r45-60592-p0.01-uniqueGenes.linkage lodLimit=6"
+write(mapHeader, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-map_js.txt"), ncolumns=1,append=FALSE)
+write(finalUniqueGenes$linkage_group, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-map_js.txt"), ncolumns=1,append=TRUE)
+
+
 write.csv(genesInMultipleLGs, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-genesInMoreThanOneLG.csv"), row.names=FALSE)
 
 write.csv(finalUniqueGenes, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-uniqueGenes.csv"), row.names=FALSE)
