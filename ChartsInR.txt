@@ -1,0 +1,134 @@
+
+
+Getting started with charts:
+http://www.statmethods.net/graphs/
+https://flowingdata.com/2012/12/17/getting-started-with-charts-in-r/
+
+------------------
+
+Stripcharts:
+http://www.cyclismo.org/tutorial/R/plotting.html
+https://www.programiz.com/r-programming/strip-chart
+
+Example, using built-in airquality data.frame:
+
+str(airquality)
+help(stripchart)
+stripchart(airquality,method="stack",vertical=TRUE, pch=20)
+stripchart(list(airquality$Ozone,airquality$Solar.R),method="jitter",vertical=TRUE, pch=3)
+stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=3)
+stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=20)
+
+Boxplots and stripcharts in R:
+http://www.clayford.net/statistics/tag/strip-charts/
+
+
+------------------
+
+Ladder plots:
+http://rgraphgallery.blogspot.ca/2013/04/rg24-ladder-plot.html
+http://stackoverflow.com/questions/23447249/ladder-plot-code-modification
+
+This creates a ladder plot, gleaned from the code example in the above stackoverflow thread:
+x<-data.frame(A=c(1:10), B=c(1:10)+rnorm(10))
+xx<-stack(x) # restructures data for stripchart function
+with( xx, boxplot(values~ind))
+apply(x,1,points, col="red")
+apply(x,1,lines, col="blue")
+
+
+------------------
+
+Other charts:
+
+Beeswarm plot, looks promising, similar to stripchart:
+https://flowingdata.com/2016/09/08/beeswarm-plot-in-r-to-show-distributions/
+Rug, violin, beanplot seem interesting:
+http://flowingdata.com/2012/05/15/how-to-visualize-and-compare-distributions/
+
+
+------------------
+
+
+-----------------------
+
+To install Circos and the Circos-Tools package, download the current version of each from the Circos download page and unzip them. Move the "tools" folder and all its contents from the unzipped circos-tools location into the "circos" folder of the unzipped circos location.
+
+
+#To install perl modules on CentOS for Circos, from command-line:
+perl -v # to determine if your perl version is at least 5.8 or newer
+# navigate to whichever directory you extracted circos to, and navigate to its bin directory  (eg. /home/benrancourt/Desktop/circos/circos-0.69-3/bin), then:
+./circos modules
+# copy the list of modules to a text file
+sudo yum install perl-CPAN
+sudo yum install gd-devel # this includes /usr/bin/gdlib-config, which is needed by some CPAN modules
+sudo cpan Module::Build
+sudo perl -MCPAN -e shell # opens the CPAN shell
+# to install the missing modules from the list, for each module, type:
+install modulename
+# (eg: install Math::Bezier)
+# install module Statistics::Descriptive, which is needed by circos' tableviewer tool (distributed in the tools package) but which might not be included in the list of modules needed by circos:
+install Statistics::Descriptive 
+# type q to quit
+# make sure you now have all the necessary modules:
+./circos modules
+# if some modules are still missing, go back into the CPAN shell and try installing them again, then read the ouput of the install operation and look for errors, such as modules that are required by this module which for some reason weren't automatically installed, or required non-perl linux libraries that need to be installed via yum. Then try installing those required modules, or resolving those dependency issues and retry installing the module that didn't work.
+
+
+
+======================
+
+Format of data input files for Circos:
+http://circos.ca/documentation/tutorials/configuration/data_files/
+Quickstart guide for Circos, very useful:
+http://circos.ca/documentation/tutorials/quick_start/
+
+Circos command-line parameters:
+http://circos.ca/tutorials/lessons/configuration/runtime_parameters/
+Circos configuration files:
+http://circos.ca/tutorials/lessons/configuration/configuration_files/
+Circos data file format:
+http://circos.ca/documentation/tutorials/configuration/data_files/
+Circos best practices:
+http://circos.ca/documentation/tutorials/reference/best_practices/
+Circos quick start:
+http://circos.ca/documentation/tutorials/quick_start/
+
+Circos image examples:
+http://circos.ca/images/
+Circos guide to use in genomics and sequence analysis:
+http://circos.ca/guide/genomic/
+
+Circos intro guide to creating circular layouts of tabular data (using tableviewer):
+http://circos.ca/guide/tables/
+Circos visualizing tables, part 1:
+http://circos.ca/presentations/articles/vis_tables1/
+Circos visualizing tables, part2 (in-depth description of the configuration syntax for tableviewer script set):
+http://circos.ca/presentations/articles/vis_tables2/
+Circos tableviewer utlity quick tutorial:
+http://www.circos.ca/documentation/tutorials/utilities/visualizing_tables/
+
+Online Circos tableviewer utility (a more full one comes with Circos installation):
+http://mkweb.bcgsc.ca/tableviewer/
+Online Circos tableviewer sample input data files:
+http://mkweb.bcgsc.ca/tableviewer/samples/
+
+Circos installing perl modules:
+http://circos.ca/documentation/tutorials/configuration/perl_and_modules/
+
+
+
+--------------
+
+Possible ways to represent data in Circos:
+- thickness of ribbon at each end corresponds to number of genes in the LG that goes to each LG in the other data set. Each LG's segment size is relative to total number of genes in LG.
+- thickness of ribbon at each end corresponds to percentage of genes in the LG that goes to each LG in the other data set. This could mean ribbons have different thicknesses at each end. Each LG's segment size is the same.
+- each gene is represented by a ribbon, and it's location on the LG segment represents its position in that LG (data is sorted by LG,position, and two genes with the same position are beside each other, not on top of each other).
+- each gene is represented by a ribbon, and it's location on the LG segment represents its position in that LG divided by the position in the LG it connects to.
+
+Corresponding input tables (to the above, in same order):
+- one row per LG, one col per LG, and the cells contain the total number of genes shared by each
+- same as above, but to plot each cell on the circle we would have to divide its value by the sum of all values in the row (for end1) or col (for end2) 
+- one row for each gene in each LG in data1, and one col for each gene in each LG in data2. The cells are simply true or false.
+
+

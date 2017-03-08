@@ -1,0 +1,180 @@
+
+
+R for Windows FAQ:
+https://cran.r-project.org/bin/windows/base/rw-FAQ.html
+
+R:
+https://cran.r-project.org/
+https://cran.r-project.org/bin/windows/ # links to all other pages
+https://cran.r-project.org/bin/windows/base/ #resource page for first-time install
+https://cran.r-project.org/bin/windows/base/old/ # previous versions of R
+https://cran.r-project.org/bin/windows/base/old/2.15.2/
+https://cran.r-project.org/bin/windows/base/old/2.15.2/README.R-2.15.2 # installing guide
+
+Old library binaries:
+https://cran.r-project.org/bin/windows/contrib/
+https://cran.r-project.org/bin/windows/contrib/2.15/
+
+To build R and R packages on Windows:
+https://cran.r-project.org/bin/windows/Rtools/
+
+Info on building R and ncdf/ncdf4 for Windows 7 64-bit:
+http://cirrus.ucsd.edu/~pierce/ncdf/how_to_build_on_windows.html
+Using different/old versions of R:
+https://support.rstudio.com/hc/en-us/articles/200486138-Using-Different-Versions-of-R
+
+----------------------------------------------
+
+netCDF-3.6.3 release notes:
+http://www.unidata.ucar.edu/software/netcdf/release-notes-3.6.3.html
+netCDF binaries:
+http://www.unidata.ucar.edu/software/netcdf/binaries.html
+netCDF downloads:
+http://www.unidata.ucar.edu/downloads/netcdf/index.jsp
+
+Installing info:
+http://www.unidata.ucar.edu/software/netcdf/old_docs/docs_3_6_3/netcdf-install/
+http://www.unidata.ucar.edu/software/netcdf/old_docs/docs_3_6_3/netcdf-install/Installing-the-DLL.html#Installing-the-DLL
+http://www.unidata.ucar.edu/software/netcdf/old_docs/docs_3_6_3/netcdf-install/installing_002dbinaries.html#installing_002dbinaries
+
+On communication between 64-bit and 32-bit processes (hopefully if they're all 32-bit it's all ok):
+https://blog.mattmags.com/2007/06/30/accessing-32-bit-dlls-from-64-bit-code/
+http://forums.codeguru.com/showthread.php?524483-How-to-load-dll-which-is-win32-into-x64-environment
+http://stackoverflow.com/questions/2265023/load-32bit-dll-library-in-64bit-application
+http://stackoverflow.com/questions/3439845/register-32-bit-com-dll-to-64-bit-windows-7
+
+==============================================
+Below is what I had to do to get it working on Linux:
+
+R_2.15.2.tar.gz downloaded from: https://cran.r-project.org/src/base/R-2/
+ncdf_1.6.3.tar.gz downloaded from: https://cran.r-project.org/src/contrib/Archive/ncdf/
+netcdf_3.6.3.tar.gz downloaded from: ftp://ftp.unidata.ucar.edu/pub/netcdf/
+
+Info on ncdf3 and ncdf4 here:
+https://cran.r-project.org/web/packages/ncdf4/index.html
+http://cirrus.ucsd.edu/~pierce/ncdf/
+http://cirrus.ucsd.edu/~pierce/ncdf/install_ncdf_v4.html
+
+
+--------------------------
+
+# What I had to do before installing R version 2.15.2, after downloading and extracting R-2.15.2 from https://cran.r-project.org/src/base/R-2/:
+sudo yum install readline-devel
+sudo yum groups mark install "X Window System"
+sudo yum groups mark convert "X Window System"
+sudo yum groupinstall "X Window System"
+sudo yum install libXt-devel
+# Then I could get on with installing it, as instructed in the INSTALL file of the R-2.15.2 root directory:
+./configure
+make
+
+make check
+----------
+
+
+----------
+
+To get Tolu's R program working:
+
+
+I had to install netcdf version 3 from ftp://ftp.unidata.ucar.edu/pub/netcdf/  (netcdf-3.6.3.tar.gz), because the R ncdf library required by Tolu's GCMS library doesn't support netcdf version 4. To install, extract it, nagivate into its root directory, and follow the quick instructions in the INSTALL text file. Basically run:
+
+     ./configure
+     make check
+     sudo make install 
+( # to remove/undo?
+make distclean
+make clean 
+)
+
+I had to download an archived version of ncdf (ncdf_1.6.9.tar.gz) from 
+
+https://cran.r-project.org/src/contrib/Archive/ncdf/ because the ncdf package supplied by Tolu was built for x86_64-w64-mingw32, and ncdf is no longer in the CRAN repository (has been replaced with ncdf4, which has a different API).
+
+I then tried to install the ncdf package in R using:
+
+sudo ../R-2.15.2/bin/R CMD INSTALL ../ncdf_1.6.9.tar.gz
+
+This failed because: "libnetcdf.so.4: cannot open shared object file: No such file or directory".
+
+That file did indeed exist, and was located in /usr/local/lib. I needed to add /usr/local/lib to the search path as discussed here:
+
+http://stackoverflow.com/questions/4743233/is-usr-local-lib-searched-for-shared-libraries
+
+The way I ended up doing it was:
+
+cd /etc
+
+less ld.so.conf   # to see what it contains, which was to include everything in the ld.so.conf.d directory
+
+cd ld.so.conf.d
+
+sudo gedit R-x86_64.conf
+
+# then added this on a new line in R-x86_64.conf: /usr/local/lib
+
+# then saved and exited, then ran:
+
+sudo ldconfig -v   # to update the cache
+
+# then cd'd back to my working directory, and re-ran the command:
+
+sudo ../R-2.15.2/bin/R CMD INSTALL ../ncdf_1.6.9.tar.gz
+
+
+----------
+
+Error that I get in gui_set_edges(getwd()) when I select 6, 7 or 8 (move edges, set edges, delete edges)
+
+
+============================
+Plot Controls v.2
+
+1: Zoom in
+2: Zoom default
+3: Zoom out
+4: Pan left
+5: Pan right
+6: Move edges
+7: Set edges
+8: Delete edges
+9: Back
+
+Selection: 6
+Error in setGraphicsEventEnv(which, as.environment(list(...))) :
+  this graphics device does not support event handling
+In addition: Warning messages:
+1: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘signal’
+2: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘signal’
+3: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘signal’
+4: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘signal’
+5: In library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘signal’
+>
+
+
+http://stackoverflow.com/questions/16671073/setgraphicseventenv-not-supported-under-linux
+http://stackoverflow.com/questions/23692236/is-it-possible-to-configure-r-graphics-event-handling-on-osx-with-rstudio
+https://support.rstudio.com/hc/en-us/community/posts/200671697-Event-Handling-with-RStudio-getGraphicsEvent-
+
+http://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/getGraphicsEvent.html
+https://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/x11.html
+https://www.rdocumentation.org/packages/grDevices/versions/3.3.2/topics/getGraphicsEvent
+
+Info on setting X11 options:
+http://r.789695.n4.nabble.com/Xll-options-td3725879.html
+http://stackoverflow.com/questions/10777008/how-to-set-cairo-as-default-backend-for-x11-in-r
+https://stat.ethz.ch/pipermail/r-help/2007-November/145132.html
+https://stat.ethz.ch/pipermail/r-help/2008-November/179951.html
+https://stat.ethz.ch/R-manual/R-devel/library/base/html/options.html
+https://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/Devices.html
+http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html
+http://stackoverflow.com/questions/19226816/how-can-i-view-the-source-code-for-a-function
+
+----------
+
+
