@@ -45,6 +45,9 @@ library(stringr)
 csvFilenameMinusExtension <- "r45-60592-p0.01"
 mapFilenameMinusExtension <- "r45-60592-p0.01-map_js"
 
+# This will be used as a header for the map file that is generated to go along with the ouput data file of this routine. It must begin with a "#", to indicate it is a comment.
+outputMapFileHeader <- paste0("#Linkage groups of tabulated output of remove_duplicate_markers-VERSION2.R performed on the output of LepMAP2 OrderMarkers on ",csvFilenameMinusExtension," data, ordered by linkage group, marker id.")
+
 csvData <- read.csv(paste0(path,csvFilenameMinusExtension,".csv"))
 numDataColsInCsvData <- ncol(csvData)-1
 colnames(csvData)[1] <- "marker_id"
@@ -110,7 +113,8 @@ for (lg in linkageGroups)
 #  write.csv(combinedData, paste0(path,csvFilenameMinusExtension,"-lg",lg,".csv"), row.names=FALSE)
   
   # library(stringr) required for str_split_fixed:
-  combinedData$gene <- str_split_fixed(combinedData$marker_id,"-",2)[ ,1]
+  # TODO: set this in an input parameter
+  combinedData$gene <- str_split_fixed(combinedData$marker_id,"_",2)[ ,1]
 
   # -----
 
@@ -300,13 +304,83 @@ representativeMarkers <- finalUniqueGenes[ , c(9,13:ncol(finalUniqueGenes))]
 write.csv(representativeMarkers, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-uniqueGenes-justTheMarkers.csv"), row.names=FALSE)
 
 # build a map file that preserves the linkage group/gene relationship:
-mapHeader <- "#java JoinSingles /home/benrancourt/Downloads/LepMAP2-VERSION2-r45-60592-p0-test1/r45-60592-p0.01-uniqueGenes-map.txt data=/home/benrancourt/Downloads/LepMAP2-VERSION2-r45-60592-p0-test1/r45-60592-p0.01-uniqueGenes.linkage lodLimit=6"
-write(mapHeader, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-map_js.txt"), ncolumns=1,append=FALSE)
+write(outputMapFileHeader, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-map_js.txt"), ncolumns=1,append=FALSE)
 write(finalUniqueGenes$linkage_group, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-map_js.txt"), ncolumns=1,append=TRUE)
 
 
 write.csv(genesInMultipleLGs, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-genesInMoreThanOneLG.csv"), row.names=FALSE)
 
 write.csv(finalUniqueGenes, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-uniqueGenes.csv"), row.names=FALSE)
+
+
+# To output a version of the output where our LG numbers match Pinus consensus LG numbers, we need to change:
+# LG1->2
+# LG2->1
+# LG3->3
+# LG4->8
+# LG5->10
+# LG6->4
+# LG7->12
+# LG8->6
+# LG9->7
+# LG10->11
+# LG11->5
+# LG12->9a
+# LG13->9b
+
+finalUniqueGenesWithUpdateLGs <- finalUniqueGenes
+
+rowsPerOriginalLG <- list()
+originalLGs <- unique(finalUniqueGenesWithUpdateLGs$linkage_group)
+# record the row numbers of each LG
+for (i in originalLGs) # this assumes that the original LGs are all numeric
+{
+  rowsPerOriginalLG[[ i ]] <- which(finalUniqueGenesWithUpdateLGs$linkage_group %in% i)
+}
+
+#update the LG's to match the Pinus consensus LG numbers
+for (i in originalLGs) # this assumes that the original LGs are all numeric
+{
+  if (i == 1) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 2
+  } else if (i == 2) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 1
+  } else if (i == 3) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 3
+  } else if (i == 4) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 8
+  } else if (i == 5) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 10
+  } else if (i == 6) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 4
+  } else if (i == 7) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 12
+  } else if (i == 8) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 6
+  } else if (i == 9) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 7
+  } else if (i == 10) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 11
+  } else if (i == 11) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 5
+  } else if (i == 12) {
+    if (length(originalLGs) < 13) {
+      finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- 9
+    } else {
+      finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- "9a"
+    }
+  } else if (i == 13) {
+    finalUniqueGenesWithUpdateLGs[rowsPerOriginalLG[[i]], "linkage_group"] <- "9b"
+  }  
+
+}
+
+write.csv(finalUniqueGenesWithUpdateLGs, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-allChr-uniqueGenes-PinusConsensusLGs.csv"), row.names=FALSE)
+
+# build a map file that preserves the linkage group/gene relationship:
+write(outputMapFileHeader, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-PinusConsensusLGs-map_js.txt"), ncolumns=1,append=FALSE)
+write(finalUniqueGenesWithUpdateLGs$linkage_group, paste0(path,csvFilenameMinusExtension,"-postLepMAP2-uniqueGenes-PinusConsensusLGs-map_js.txt"), ncolumns=1,append=TRUE)
+
+
 
 message("remove_duplicate_markers-VERSION2 complete.")
