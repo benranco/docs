@@ -1,7 +1,7 @@
 #args <- commandArgs(trailingOnly = TRUE)
 #path <- args[1]
 
-path <- "/home/benrancourt/Downloads/LepMAP2-r45-60592-p0.01/"
+path <- "/home/benrancourt/Downloads/r38-remove86genes/5272-remove86genes-try2/output/"
 
 #MAF_CUTOFF <- args[2]
 #MAF_CUTOFF <- as.double(MAF_CUTOFF)
@@ -10,7 +10,11 @@ options(stringsAsFactors = FALSE, warn = 1)
 
 
 
-filenameMinusExtension <- "r45-60592-p0.01"
+filenameMinusExtension <- "r38-5186genes-LG13separateFromLG12"
+
+familyName <- "r38"
+
+
 reportc <- read.csv(paste0(path,filenameMinusExtension,".csv"))
 #reportc <- reportc[, -1]
 
@@ -61,6 +65,7 @@ reportLinkageGenotypes <- cbind(parent1 = c("A"), parent2 = c("H"), reportLinkag
 message(paste0("ncols: ",ncol(reportLinkageGenotypes)))
 reportLinkageGenotypes <- t(reportLinkageGenotypes) # transpose the report (so it's columns are now rows)
 message(paste0("nrows: ",nrow(reportLinkageGenotypes)))
+message(paste0("ncols: ",ncol(reportLinkageGenotypes)))
 
 reportLinkageGenotypes[reportLinkageGenotypes=="H"] <- "1 2"
 reportLinkageGenotypes[reportLinkageGenotypes=="A"] <- "1 1"
@@ -68,7 +73,7 @@ reportLinkageGenotypes[reportLinkageGenotypes=="B"] <- "2 2"
 reportLinkageGenotypes[is.na(reportLinkageGenotypes)] <- "0 0"
 reportLinkageGenotypes[reportLinkageGenotypes=="-"] <- "0 0" # in case NA "-" has already been substituted with "-"
 
-reportLinkage <- cbind(family = c("Try-1-S91"), id = c(paste0("S",(1:nrow(reportLinkageGenotypes))-2)), fatherId = c("P1"), motherId = c("P2"), gender = c(0), affectionStatus = c(0), reportLinkageGenotypes)
+reportLinkage <- cbind(family = c(familyName), id = c(paste0("S",(1:nrow(reportLinkageGenotypes))-2)), fatherId = c("P1"), motherId = c("P2"), gender = c(0), affectionStatus = c(0), reportLinkageGenotypes)
 reportLinkage[1,2:5] <- c("P1","0","0","1") # change id from S-1 to P1, no parents, male
 reportLinkage[2,2:5] <- c("P2","0","0","2") # change id from S0 to P2, no parents, female
 
