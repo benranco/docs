@@ -1,3 +1,5 @@
+How to replace a function in a package with your own modified version (I did this for beanplot):
+http://r.789695.n4.nabble.com/modify-function-in-a-package-td4697499.html
 
 
 Getting started with charts:
@@ -5,15 +7,31 @@ http://www.statmethods.net/graphs/
 https://flowingdata.com/2012/12/17/getting-started-with-charts-in-r/
 
 ------------------
+Saving plots as images to disk:
 
+http://stackoverflow.com/questions/7144118/how-to-save-a-plot-as-image-on-the-disk
+https://www.r-bloggers.com/automatically-save-your-plots-to-a-folder/
+https://www.stat.berkeley.edu/classes/s133/saving.html
+
+https://www.r-bloggers.com/high-resolution-figures-in-r/
+http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html
+https://stat.ethz.ch/pipermail/r-help/2010-August/250893.html
+
+------------------
+Adding a legend:
+http://www.sthda.com/english/wiki/add-legends-to-plots-in-r-software-the-easiest-way
+https://stat.ethz.ch/R-manual/R-devel/library/graphics/html/legend.html
+https://www.r-bloggers.com/adding-a-legend-to-a-plot/
+http://stackoverflow.com/questions/14883238/adding-simple-legend-to-plot-in-r
+
+------------------
 Stripcharts:
-http://www.cyclismo.org/tutorial/R/plotting.html
-https://www.programiz.com/r-programming/strip-chart
 
 Example, using built-in airquality data.frame:
 
 str(airquality)
 help(stripchart)
+stripchart(airquality,method="overplot",vertical=TRUE, pch=3)
 stripchart(airquality,method="stack",vertical=TRUE, pch=20)
 stripchart(list(airquality$Ozone,airquality$Solar.R),method="jitter",vertical=TRUE, pch=3)
 stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=3)
@@ -21,8 +39,35 @@ stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRU
 
 Boxplots and stripcharts in R:
 http://www.clayford.net/statistics/tag/strip-charts/
+https://www.r-bloggers.com/box-plot-with-r-tutorial/
 
+Stripcharts:
+http://www.cyclismo.org/tutorial/R/plotting.html
+https://www.programiz.com/r-programming/strip-chart
+http://stackoverflow.com/questions/26562541/grouping-similar-plots-together-in-a-stripchart
 
+Some useful tips for both the base stripchart function (and others) in R, and ggplot2:
+https://www.zoology.ubc.ca/~schluter/R/display/
+------------------
+Using R's ggplot2 (and the simpler qplot) with an eye to strip charts:
+
+http://sharpsightlabs.com/blog/data-analysis-example-r-supercars-part2/
+http://r4stats.com/examples/graphics-ggplot2/
+https://r4stats.wordpress.com/examples/mydata/
+https://www.r-bloggers.com/graphs-in-r-overlaying-data-summaries-in-dotplots/
+http://www.sthda.com/english/wiki/ggplot2-stripchart-jitter-quick-start-guide-r-software-and-data-visualization
+http://www.sthda.com/english/wiki/ggplot2-point-shapes
+https://www.r-bloggers.com/f-is-for-forecast/
+
+ggplot with geom_violin surrounding the strip charts:
+https://groups.google.com/forum/#!topic/ggplot2-dev/tEF6Xou7yOA
+
+ggplot tutorial (geom_line seems like it might do what I want):
+https://www.ling.upenn.edu/~joseff/rstudy/summer2010_ggplot2_intro.html
+
+------------------
+ggbio.pdf
+- chapter 11 karyogram autoplot
 ------------------
 
 Ladder plots:

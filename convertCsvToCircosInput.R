@@ -52,10 +52,10 @@ karyotypeOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-kary
 
 # prefixes to use for the labels on the chart
 # Pita_ for loblolly pine, Pipi_ for pinster (maritime pine), and Pifl_ for limber pine.
-chromosomeLabelPrefixGroup1 <- "Pifl_"
-chromosomeLabelPrefixGroup2 <- "Pipi_"
-#chromosomeLabelPrefixGroup1 <- "Pifl_"
-#chromosomeLabelPrefixGroup2 <- "Pita_"
+chromosomeLabelPrefixGroup1 <- "Pifl-"
+chromosomeLabelPrefixGroup2 <- "Pipi-"
+#chromosomeLabelPrefixGroup1 <- "Pifl-"
+#chromosomeLabelPrefixGroup2 <- "Pita-"
 
 # prefixes for circos to use internally for chromosome identifiers. 
 # This shouldn't be changed unless you also change the circos.conf file.
