@@ -1,0 +1,60 @@
+#!/bin/bash
+
+echo "Creating image circos.png and writing report to run.out."
+
+echo "Example takes ~45-60 seconds to generate."
+
+echo "Generating circos chart without ticks."
+echo "***********************************************" > run.out
+echo "Generating circos chart without ticks." >> run.out
+
+../bin/circos -conf circos-noTicks.conf -debug_group summary,timer >> run.out
+
+echo "Generating circos chart with ticks."
+echo "***********************************************" >> run.out
+echo "Generating circos chart with ticks." >> run.out
+
+../bin/circos -conf circos-withTicks.conf -debug_group summary,timer >> run.out
+
+echo "Converting circos-noTicks.svg to tiff."
+echo "***********************************************" >> run.out
+echo "Converting circos-noTicks.svg to tiff." >> run.out
+
+# if the following commands aren't recognized by linux (CentOS), you should be able to install them all by doing (installs inkscape and its dependencies):
+# sudo yum install inkscape
+
+echo "600 dpi, 6x6 inches."
+echo "600 dpi, 6x6 inches." >> run.out
+inkscape --without-gui --export-png="circos-noTicks-print-600dpi-6inches.png" --export-dpi 600 -w 3600 -h 3600 circos-noTicks.svg
+convert circos-noTicks-print-600dpi-6inches.png -compress LZW -alpha remove circos-noTicks-print-600dpi-6inches.tiff
+rm circos-noTicks-print-600dpi-6inches.png
+mogrify -alpha off circos-noTicks-print-600dpi-6inches.tiff
+
+echo "600 dpi, 12x12 inches."
+echo "600 dpi, 12x12 inches." >> run.out
+inkscape --without-gui --export-png="circos-noTicks-print-600dpi-12inches.png" --export-dpi 600 -w 7200 -h 7200 circos-noTicks.svg
+convert circos-noTicks-print-600dpi-12inches.png -compress LZW -alpha remove circos-noTicks-print-600dpi-12inches.tiff
+rm circos-noTicks-print-600dpi-12inches.png
+mogrify -alpha off circos-noTicks-print-600dpi-12inches.tiff
+
+
+echo "Converting circos-withTicks.svg to tiff."
+echo "***********************************************" >> run.out
+echo "Converting circos-withTicks.svg to tiff." >> run.out
+
+echo "600 dpi, 6x6 inches."
+echo "600 dpi, 6x6 inches." >> run.out
+inkscape --without-gui --export-png="circos-withTicks-print-600dpi-6inches.png" --export-dpi 600 -w 3600 -h 3600 circos-withTicks.svg
+convert circos-withTicks-print-600dpi-6inches.png -compress LZW -alpha remove circos-withTicks-print-600dpi-6inches.tiff
+rm circos-withTicks-print-600dpi-6inches.png
+mogrify -alpha off circos-withTicks-print-600dpi-6inches.tiff
+
+echo "600 dpi, 12x12 inches."
+echo "600 dpi, 12x12 inches." >> run.out
+inkscape --without-gui --export-png="circos-withTicks-print-600dpi-12inches.png" --export-dpi 600 -w 7200 -h 7200 circos-withTicks.svg
+convert circos-withTicks-print-600dpi-12inches.png -compress LZW -alpha remove circos-withTicks-print-600dpi-12inches.tiff
+rm circos-withTicks-print-600dpi-12inches.png
+mogrify -alpha off circos-withTicks-print-600dpi-12inches.tiff
+
+
+
