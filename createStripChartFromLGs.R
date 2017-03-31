@@ -10,7 +10,11 @@ if(!require(beanplot))
 }
 
 library(beanplot)
+
+#  mybeanplot.R replaces the beanplot function with a customized version, modified by Ben.
 source("mybeanplot.R")
+
+
 # ########################################################
 # Input Parameters:
 
@@ -18,30 +22,30 @@ location <- "/home/benrancourt/Downloads/stripcharts/"
 
 #outputFileNameSansPostfix <- "plot3"
 
-#outputFileNameSansPostfix <- "Plot-R38-m5,006"
-#outputFileNameSansPostfix <- "Plot-R38-m5,186"
-#outputFileNameSansPostfix <- "Plot-R45-m7,727"
-#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511"
+#outputFileNameSansPostfix <- "Plot-R38-m5,006-density"
+#outputFileNameSansPostfix <- "Plot-R38-m5,186-density"
+#outputFileNameSansPostfix <- "Plot-R45-m7,727-density"
+#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-density"
 
-#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-withRGA639-overlay"
-#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-withRGA639-underneath"
-#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-withRLK290-overlay"
-outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-withRLK290-underneath"
+#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-density-withRGA639-overlay"
+#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-density-withRGA639-underneath"
+#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-density-withRLK290-overlay"
+#outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-density-withRLK290-underneath"
 
-#outputFileNameSansPostfix <- "Plot-R38-m5,186-withRGA380-overlay"
-#outputFileNameSansPostfix <- "Plot-R38-m5,186-withRGA380-underneath"
+#outputFileNameSansPostfix <- "Plot-R38-m5,186-density-withRGA380-overlay"
+outputFileNameSansPostfix <- "Plot-R38-m5,186-density-withRGA380-underneath"
 
 # We assume the input csv file colums are organized: 
 # Column 1: LG, Column 2: position
 #inputFileName <- "R38-m5,006.csv"
-#inputFileName <- "R38-m5,186.csv"
+inputFileName <- "R38-m5,186.csv"
 #inputFileName <- "R45-m7,727.csv"
-inputFileName <- "LP-Merge-m9,511.csv"
+#inputFileName <- "LP-Merge-m9,511.csv"
 
 hasOverlayData <- TRUE
 #overlayInputFileName <- "RGA639.csv" # to overlay the 9,511 data
-overlayInputFileName <- "RLK290.csv" # to overlay the 9,511 data
-#overlayInputFileName <- "RGA380-from-R38-g5,186.csv" # to overlay the R38 5,186 data
+#overlayInputFileName <- "RLK290.csv" # to overlay the 9,511 data
+overlayInputFileName <- "RGA380-from-R38-g5,186.csv" # to overlay the R38 5,186 data
 
 hasSecondOverlayData <- FALSE
 #secondOverlayInputFileName <- "RGA639.csv"
@@ -74,6 +78,7 @@ if (hasOverlayData)
   }
 }
 
+# End of Input Parameters.
 # ########################################################
 
 
@@ -84,11 +89,6 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
 {
 
   input <- read.csv(paste0(path,dataFileName),header=TRUE)
-
-  # Convert NA's to 0? No, don't do this, instead remove all rows/links that contain NA values
-  #input[is.na(input)] <- 0
-  # Remove all rows/links that contain NA values:
-  #input <- na.omit(input)
 
   # We assume the input csv file colums are organized: Column 1: LG, Column 2: position
 
@@ -108,18 +108,14 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
   {
     pos <- input[ input[,1]==LGsInData[i], 2] # grab all the input data for the current LG
     positions <- c(positions, list(pos)) # add pos as a new vector element to the positions list by first creating a list of one with pos in it, and then concatenating it to positions
-    #positions[i] <- pos
     lgNames[i] <- paste0(lgLabelPrefix,LGsInData[i])
     minPositions[i] <- min(pos)
     maxPositions[i] <- max(pos)
-
-    bandwidths[i] <- (sd(pos)*0.9/10) / ( (length(pos)^(-1/5))*1.34 )
-    write(paste0(lgNames[i]," sd: ", sd(pos)," bandwidth: ",bandwidths[i]), stdout())
   }
 
   names(positions) <- lgNames
 
-  # Some Usage info for beanplot:
+  # Select Usage info for beanplot:
   #     beanplot(..., bw = "SJ-dpi", kernel = "gaussian", cut = 3, cutmin = -Inf, 
   #              cutmax = Inf, grownage = 10, what = c(TRUE, TRUE, TRUE, TRUE), 
   #              add = FALSE, col, axes = TRUE, log = "auto", handlelog = NA, 
@@ -201,11 +197,9 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
       mySide <- "first"
     }
   }
-  #cutmax=c(50,100,150,200,25,75,125,175,225,60,10,120)
-  beanplot(positions, kernel="gaussian", horizontal=TRUE, add=myAdd, col=c("lemonchiffon",tickColor,tickColor), what=myWhat, method="overplot", grownage=40,ll=myLl, side=mySide, innerborder=myInnerborder, maxwidth=myMaxwidth, cutmin=minPositions, cutmax=maxPositions, bw=bandwidths, las=1, cex.axis=1.1)
+  
+  beanplot(positions, kernel="gaussian", horizontal=TRUE, add=myAdd, col=c("lemonchiffon",tickColor,tickColor), what=myWhat, method="overplot", grownage=40,ll=myLl, side=mySide, innerborder=myInnerborder, maxwidth=myMaxwidth, cutmin=minPositions, cutmax=maxPositions, bw="SJ-dpi", las=1, cex.axis=1.1)
 
-# TODO:
-# custom cutmax, custom bw
 
   if (!isOverlay)
   {
@@ -291,31 +285,31 @@ dev.off()
 # create pdf image (useful if you need to scale it extra large)
 write("-----------------", stdout())
 write("Creating pdf (scalable).", stdout())
-#pdf(file=paste0(location,outputFileNameSansPostfix,"-scalable.pdf"), width=12, height=myHeightPdf)
-#generatePlot()
-#dev.off()
+pdf(file=paste0(location,outputFileNameSansPostfix,"-scalable.pdf"), width=12, height=myHeightPdf)
+generatePlot()
+dev.off()
 
 tiffFileName <- paste0(location,outputFileNameSansPostfix,"-print-600dpi-12inch.tiff")
 
 # create tiff image
 write("-----------------", stdout())
 write("Creating large tiff (12 inches wide at 600 dpi).", stdout())
-#tiff(file=tiffFileName, width=12, height=myHeightTiff, units = 'in', res=600, compression = "lzw", pointsize=10)
-#generatePlot()
-#dev.off()
+tiff(file=tiffFileName, width=12, height=myHeightTiff, units = 'in', res=600, compression = "lzw", pointsize=10)
+generatePlot()
+dev.off()
 
 smallerTiffFileName <- paste0(location,outputFileNameSansPostfix,"-print-600dpi-6inch.tiff")
 # Now create a scaled down tiff at 6x6 inches. I had to export it first as a 12x12 inch tiff (above) 
 #(7200 pixels at 600 dpi) because if I try to export it as a 6x6 inch tiff the lines are too thick 
 # and it doesn't look good. To created a version scaled to 6x6 inches at 600 dpi, use the following 
 # command-line command:
-# convert inputFile.tiff -resize 3600x3600 outputFile.tiff
+#    convert inputFile.tiff -resize 3600x3600 outputFile.tiff
 # (ImageMagick has to be installed for this to work, which you can install simply by installing
 # Inkscape via (on CentOS):
-# sudo yum install inkscape
+#    sudo yum install inkscape
 write("-----------------", stdout())
 write("Creating scaled down tiff (6 inches wide at 600 dpi).", stdout())
-#system(paste0("convert ",tiffFileName," -resize 3600x2700 ",smallerTiffFileName))
+system(paste0("convert ",tiffFileName," -resize 3600x2700 ",smallerTiffFileName))
 
 write(paste0("================================================"), stdout())
 

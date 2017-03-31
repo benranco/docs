@@ -16,9 +16,14 @@ function (..., bw = "SJ-dpi", kernel = "gaussian", cut = 3, cutmin = -Inf,
     frame.plot = axes, border = NULL, innerborder = NA, at = NULL, 
     boxwex = 1, ylim = NULL, xlim = NULL, show.names = NA) 
 {
+##################### New Code ######################
     write("Custom version of beanplot modified by Ben.", stdout())
+################## End of New Code ##################
 
     #internal functions (later on, mlog and mexp will be defined)
+
+##################### Old Code ######################
+    # This is the original unmodified mdensityxy function supplied with beanplot.
     mdensityxy <- function(x) {
         if (length(x) > 0) {
             from <- max(cutmin, (min(mlog(x)) - cut * bw))
@@ -28,7 +33,9 @@ function (..., bw = "SJ-dpi", kernel = "gaussian", cut = 3, cutmin = -Inf,
         }
         else list(x = numeric(), y = numeric())
     }
-
+##################### New Code ######################
+    # This is the function written by Ben, intended to replace the original mdensityxy 
+    # to enable a unique bw, cut, cutmin and cutmax for each dataset.
     mdensityxy_ben <- function(datasets, bwVect, cutVect, cutminVect, cutmaxVect) {
         densities <- list()
         if (length(datasets) > 0) {
@@ -63,6 +70,7 @@ function (..., bw = "SJ-dpi", kernel = "gaussian", cut = 3, cutmin = -Inf,
         names(densities) <- names(datasets)
         simplify2array(densities)
     }
+################## End of New Code ##################
 
     #get and store function arguments
     args <- match.call()
@@ -152,34 +160,27 @@ function (..., bw = "SJ-dpi", kernel = "gaussian", cut = 3, cutmin = -Inf,
         mexp <- mlog
     }
 
-    write(paste0("number of groups: ",length(groups)), stdout())
     #generate the necessary data for the density shapes from the group data
     if (!is.numeric(bw)) {
-write("NOT NUMERIC", stdout())
-        bw <- mean(sapply(groups, function(x) {
+##################### Old Code ######################
+        #bw <- mean(sapply(groups, function(x) {
+        #    ifelse(length(x) > 1, density(mlog(x), kernel = kernel, 
+        #        bw = bw)$bw, NA)
+        #}), na.rm = TRUE)
+##################### New Code ######################
+        bw <- sapply(groups, function(x) {
             ifelse(length(x) > 1, density(mlog(x), kernel = kernel, 
                 bw = bw)$bw, NA)
-        }), na.rm = TRUE)
+        })
+################## End of New Code ##################
         if (is.nan(bw)) 
             bw <- 0.5
     }
-    dens1 <- sapply(groups, mdensityxy)
+##################### Old Code ######################
+    #dens <- sapply(groups, mdensityxy)
+##################### New Code ######################
     dens <- mdensityxy_ben(groups, bw, cut, cutmin, cutmax)
-    #write(paste0("names: ",names(groups)), stdout())
-    write("====================", stdout())
-    write("dens1:", stdout())
-    write(paste0("class: ",class(dens1)), stdout())
-    write(paste0("nrow: ",nrow(dens1)), stdout())
-    write(paste0("ncol: ",ncol(dens1)), stdout())
-    write(str(dens1), stdout())
-    #write(head(dens1), stdout())
-    write("====================", stdout())
-    write("dens:", stdout())
-    write(paste0("class: ",class(dens)), stdout())
-    write(paste0("nrow: ",nrow(dens)), stdout())
-    write(paste0("ncol: ",ncol(dens)), stdout())
-    write(str(dens), stdout())
-    #write(head(dens), stdout())
+################## End of New Code ##################
     for (i in 1:n) dens[["y", i]] <- dens[["y", i]] * min(1, 
         length(groups[[i]])/grownage)
     if (is.na(wd)) 
