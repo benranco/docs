@@ -1,8 +1,28 @@
 #!/bin/bash
 
+# This creates Circos graphs using Circos with some customized configuration
+# files. It runs Circos twice, first to create a version without position ticks
+# along the edges of the circle, and second to create a version with postion
+# ticks. It then uses some command-line Inkscape and ImageMagick commands to 
+# copy the Circos output images to 600dpi tiff images of different sizes.
+#
+# The custom Circos configuration files it expects to see are:
+#   circos-noTicks.conf, ideogram-noTicks.conf, ticks-noTicks.conf
+#   circos-withTicks.conf, ideogram-withTicks.conf, ticks-withTicks.conf
+#
+# It also expects to see two data files, which are created using the R
+# script convertCsvToCircosInput.R. These two data files should be named:
+#   mykaryotype.txt, mydata.txt
+#
+# To run this script, type ./run from the command-line terminal, within the 
+# directory that the script is contained in.
+#
+# If you encounter errors while running, open the output text file run.out
+# in a text editor to see if it logs any helpful details on the errors.
+
 echo "Creating image circos.png and writing report to run.out."
 
-echo "Example takes ~45-60 seconds to generate."
+echo "It might take ~45-60 seconds to generate."
 
 echo "Generating circos chart without ticks."
 echo "***********************************************" > run.out

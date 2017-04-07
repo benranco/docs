@@ -22,6 +22,7 @@
 # ########################################################
 
 options(stringsAsFactors = FALSE, warn = 1)
+options(scipen = 999) # disable scientific notation for large numbers
 
 write("Running convertCsvToCircosInput.R.", stdout())
 
@@ -31,45 +32,61 @@ write("Running convertCsvToCircosInput.R.", stdout())
 
 path <- "/home/benrancourt/Downloads/Circos/"
 
+# Input file format:
 # We assume the input csv file colums are organized: 
 # Group1 LG, Group1 position, Group2 LG, Group2 position.
-inputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos.csv"
+#
+# These are all numeric values, with no non-numeric characters (so no "LG"
+# in the LG ids, for example).
+#inputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos.csv"
 #inputFileName <- "LPmerged-9511-PitaEcht4492-for-CIRCOS-Feb8-2017-preCircos.csv"
+inputFileName <- "To-Ben-4-Circos-3617-e-100.csv"
+#inputFileName <- "To-Ben-4-Circos-3093-e0.csv"
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
-dataOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-data.txt"
+#dataOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-data.txt"
 #dataOutputFileName <- "LPmerged-9511-PitaEcht4492-for-CIRCOS-Feb8-2017-preCircos-data.txt"
+dataOutputFileName <- "To-Ben-4-Circos-3617-e-100-data.txt"
+#dataOutputFileName <- "To-Ben-4-Circos-3093-e0-data.txt"
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
-karyotypeOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-karyotype.txt"
+#karyotypeOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-karyotype.txt"
 #karyotypeOutputFileName <- "LPmerged-9511-PitaEcht4492-for-CIRCOS-Feb8-2017-preCircos-karyotype.txt"
-
+karyotypeOutputFileName <- "To-Ben-4-Circos-3617-e-100-karyotype.txt"
+#karyotypeOutputFileName <- "To-Ben-4-Circos-3093-e0-karyotype.txt"
 
 # Group1 identifiers are intended for the data set that will be 
 # displayed on the left-hand side of circle graph.
 
 # prefixes to use for the labels on the chart
 # Pita_ for loblolly pine, Pipi_ for pinster (maritime pine), and Pifl_ for limber pine.
-chromosomeLabelPrefixGroup1 <- "Pifl-"
-chromosomeLabelPrefixGroup2 <- "Pipi-"
+#chromosomeLabelPrefixGroup1 <- "Pifl-"
+#chromosomeLabelPrefixGroup2 <- "Pipi-"
 #chromosomeLabelPrefixGroup1 <- "Pifl-"
 #chromosomeLabelPrefixGroup2 <- "Pita-"
+#chromosomeLabelPrefixGroup1 <- "Pifl-"
+#chromosomeLabelPrefixGroup2 <- "Pigl-"
+chromosomeLabelPrefixGroup1 <- "Pifl-"
+chromosomeLabelPrefixGroup2 <- "Pigl-"
 
 # prefixes for circos to use internally for chromosome identifiers. 
 # This shouldn't be changed unless you also change the circos.conf file.
 chromosomePrefixGroup1 <- "lg-"
 chromosomePrefixGroup2 <- "LG"
 
-# multiplier required to get rid of all decimal places in the positions.
+# IMPORTANT - multiplier required to get rid of all decimal places in the positions.
 # I believe circos likes to use integers for positional information when 
-# creating links.
-# The chromosomes_units parameter in the circos.conf file should also correspond
-# to this and the multiplier parameter in the ticks.conf file should be 
-# what is required to scale the numbers back down to a range you want to use 
-# for the labels, if using labeled ticks.
-positionMultiplier <- 100
+# creating links, so we use a multiplier to convert the positions to
+# integers without losing granularity.
+# The chromosomes_units parameter in the circos.conf file (or our circos-noTicks.conf 
+# and circos-withTicks.conf) should also correspond to this, and the multiplier 
+# parameter in the ticks.conf (or our ticks-noTicks.conf and ticks-withTicks.conf) file 
+# should be set to what is required to scale the numbers back down to a range you want 
+# to use for the labels, if using labeled ticks.
+# You shouldn't need to change this unless you have values with more than 7 decimal places.
+positionMultiplier <- 10000000
 
 
 # ########################################################
