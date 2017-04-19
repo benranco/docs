@@ -87,8 +87,8 @@
 # directory of your circos installation:
 circosExecutable="/home/benrancourt/Desktop/circos/circos-0.69-3/bin/circos"
 
-# The directory that your input .csv file is in. Remember to include a final "/":
-csvFilePath="/home/benrancourt/Documents/circosStuff/"
+# The directory that your input .csv file is in.
+csvFilePath="/home/benrancourt/Documents/temp"
 # The name of the .csv input file:
 csvFileName="To-Ben-4-Circos-3617-e-100.csv"
 
@@ -114,7 +114,7 @@ positionMultiplier=10000000
 ##########################################################################################
 # Execution code:
 
-Rscript convertCsvToCircosInput.R $csvFilePath $csvFileName $generatedDataFileName $generatedKaryotypeFileName $chromosomeLabelPrefixGroup1 $chromosomeLabelPrefixGroup2 $group1InternalPrefix $group2InternalPrefix $positionMultiplier
+Rscript convertCsvToCircosInput.R $csvFilePath $csvFileName `pwd` $generatedDataFileName $generatedKaryotypeFileName $chromosomeLabelPrefixGroup1 $chromosomeLabelPrefixGroup2 $group1InternalPrefix $group2InternalPrefix $positionMultiplier
 
 
 echo "Creating image circos.png and writing report to run.out."

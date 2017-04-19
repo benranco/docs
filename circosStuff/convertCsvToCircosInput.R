@@ -22,8 +22,8 @@ write("Running convertCsvToCircosInput.R.", stdout())
 
 args <- commandArgs(trailingOnly = TRUE)
 
-# The directory that your input .csv file is in. Remember to include a final "/":
-#path <- "/home/benrancourt/Downloads/Circos/"
+# The directory that your input .csv file is in.
+#path <- "/home/benrancourt/Downloads/Circos"
 path <- args[1]
 
 # Input file format:
@@ -35,15 +35,19 @@ path <- args[1]
 #inputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos.csv"
 inputFileName <- args[2]
 
+# This is the directory in which to save the mydata.txt and mykaryotype.txt circos
+# input files.  
+pathToSaveCircosOutputFiles <- args[3]
+
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
 #dataOutputFileName <- "mydata.txt"
-dataOutputFileName <- args[3]
+dataOutputFileName <- args[4]
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
 #karyotypeOutputFileName <- "mykaryotype.txt"
-karyotypeOutputFileName <- args[4]
+karyotypeOutputFileName <- args[5]
 
 # Group1 identifiers are intended for the data set that will be 
 # displayed on the left-hand side of circle graph.
@@ -52,15 +56,15 @@ karyotypeOutputFileName <- args[4]
 # Pita_ for loblolly pine, Pipi_ for pinster (maritime pine), and Pifl_ for limber pine.
 #chromosomeLabelPrefixGroup1 <- "Pifl-"
 #chromosomeLabelPrefixGroup2 <- "Pipi-"
-chromosomeLabelPrefixGroup1 <- args[5]
-chromosomeLabelPrefixGroup2 <- args[6]
+chromosomeLabelPrefixGroup1 <- args[6]
+chromosomeLabelPrefixGroup2 <- args[7]
 
 # prefixes for circos to use internally for chromosome identifiers. 
 # This shouldn't be changed unless you also change the circos.conf file.
 #chromosomePrefixGroup1 <- "lg-"
 #chromosomePrefixGroup2 <- "LG"
-chromosomePrefixGroup1 <- args[7]
-chromosomePrefixGroup2 <- args[8]
+chromosomePrefixGroup1 <- args[8]
+chromosomePrefixGroup2 <- args[9]
 
 # IMPORTANT - multiplier required to get rid of all decimal places in the positions.
 # I believe circos likes to use integers for positional information when 
@@ -73,12 +77,12 @@ chromosomePrefixGroup2 <- args[8]
 # to use for the labels, if using labeled ticks.
 # You shouldn't need to change this unless you have values with more than 7 decimal places.
 #positionMultiplier <- 10000000
-positionMultiplier <- strtoi(args[9])
+positionMultiplier <- strtoi(args[10])
 
 # ########################################################
 # Execution code:
 
-input <- read.csv(paste0(path,inputFileName),header=TRUE)
+input <- read.csv(paste(path,inputFileName,sep="/"),header=TRUE)
 
 # Convert NA's to 0? No, don't do this, instead remove all rows/links that contain NA values
 #input[is.na(input)] <- 0
@@ -151,9 +155,9 @@ for (i in length(LGsInGroup1):1)
 
 # write output
 
-write.table(karyotype, file= paste0(path,karyotypeOutputFileName), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
+write.table(karyotype, file= paste(pathToSaveCircosOutputFiles,karyotypeOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
 
-write.table(data, file= paste0(path,dataOutputFileName), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
+write.table(data, file= paste(pathToSaveCircosOutputFiles,dataOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
 
 
 write(paste0("Finished converting input .csv to circos input files mydata.txt and mykaryotype.txt."), stdout())
