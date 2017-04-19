@@ -6,6 +6,31 @@ This README contains:
 Note: much of this documentation is replicated from the documentation inside the run
 script.
 
+Assuming a complete and working installation of Circos on your Linux computer, these are the
+files and directory structure that should be present to run this script. In a folder, called  
+whatever you'd like it to be called (eg. CircosScript):
+Files:
+- README-CIRCOS-SCRIPT.TXT (not necessary, but good to keep here for reference)
+- run  (this is the main script that starts the whole process)
+- convertCsvToCircosInput.R (called by the run script, converts your .csv input Circos format)
+Sub-Folder:
+- config (this folder contains custom configuration files that will be used by Circos
+
+In the config sub-folder:
+Files:
+- circos-noTicks.conf
+- circos-withTicks.conf
+- ideogram-noTicks.conf
+- ideogram-withTicks.conf
+- ticks-noTicks.conf
+- ticks-withTicks.conf
+
+These .conf configuration files are set up to render the circos graphs in a certain way. 
+You shouldn't need to edit these files, but if you want to customize some element of the 
+graphs, read through these files and also browse some of the circos website links below.
+
+You will also supply a .csv file with the data you'd like to display in the graph. More 
+details on the format of that file below.
 
 ##########################################################################################
 # The main script is called "run", and it should be found in the same folder as this 
@@ -23,11 +48,12 @@ script.
 #
 # It also expects to see a .csv file (specified in the csvFilePath and csvFileName
 # input parameters below), this is the format in which you will provide the input data
-# to generate the Circos graphs. The csv must contains four columns, organized:
+# that you want to graph. The csv must contains four columns, organized:
 #   Group1 LG, Group1 position, Group2 LG, Group2 position.
 # The two LG columns must be numeric (integer), indicating linkage group number (eg. 3, 
 # not "LG3"). Do not use any non-numeric characters in the linkage group ids. The two 
 # position columns must also be numeric.
+# The four data columns will be expected to have headers, but their names are unimportant.
 #
 # Before running Circos, this script calls the R script "convertCsvToCircosInput.R", 
 # which converts the input .csv file into two data files which will be read by Circos.
@@ -113,20 +139,6 @@ Circos image examples:
 http://circos.ca/images/
 Circos guide to use in genomics and sequence analysis:
 http://circos.ca/guide/genomic/
-
-Circos intro guide to creating circular layouts of tabular data (using tableviewer):
-http://circos.ca/guide/tables/
-Circos visualizing tables, part 1:
-http://circos.ca/presentations/articles/vis_tables1/
-Circos visualizing tables, part2 (in-depth description of the configuration syntax for tableviewer script set):
-http://circos.ca/presentations/articles/vis_tables2/
-Circos tableviewer utlity quick tutorial:
-http://www.circos.ca/documentation/tutorials/utilities/visualizing_tables/
-
-Online Circos tableviewer utility (a more full one comes with Circos installation):
-http://mkweb.bcgsc.ca/tableviewer/
-Online Circos tableviewer sample input data files:
-http://mkweb.bcgsc.ca/tableviewer/samples/
 
 Circos installing perl modules:
 http://circos.ca/documentation/tutorials/configuration/perl_and_modules/
