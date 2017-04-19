@@ -1,24 +1,14 @@
 # ########################################################
-# To install Circos and the Circos-Tools package (on CentOS), download the current version of each from the Circos download page and unzip them. Move the "tools" folder and all its contents from the unzipped circos-tools location into the "circos" folder of the unzipped circos location.
+# This R script converts the specified input .csv file into two data files which will 
+# be read by Circos.
 #
-# To install perl modules on CentOS for Circos, from command-line:
-# perl -v # to determine if your perl version is at least 5.8 or newer
-# navigate to whichever directory you extracted circos to, and navigate to its bin directory  (eg. /home/benrancourt/Desktop/circos/circos-0.69-3/bin), then:
-# ./circos modules
-# copy the list of modules to a text file
-# sudo yum install perl-CPAN
-# sudo yum install gd-devel # this includes /usr/bin/gdlib-config, which is needed by some CPAN modules
-# sudo cpan Module::Build
-# sudo perl -MCPAN -e shell # opens the CPAN shell
-# to install the missing modules from the list, for each module, type:
-# install modulename
-# (eg: install Math::Bezier)
-# install module Statistics::Descriptive, which is needed by circos' tableviewer tool (distributed in the tools package) but which might not be included in the list of modules needed by circos:
-# install Statistics::Descriptive 
-# type q to quit
-# make sure you now have all the necessary modules:
-# ./circos modules
-# if some modules are still missing, go back into the CPAN shell and try installing them again, then read the ouput of the install operation and look for errors, such as modules that are required by this module which for some reason weren't automatically installed, or required non-perl linux libraries that need to be installed via yum. Then try installing those required modules, or resolving those dependency issues and retry installing the module that didn't work.
+# The .csv file (specified in the path and inputFileName input parameters below) must 
+# have four columns organized:
+#   Group1 LG, Group1 position, Group2 LG, Group2 position.
+#
+# The two output data files are named:
+#   mykaryotype.txt, mydata.txt
+# 
 # ########################################################
 
 options(stringsAsFactors = FALSE, warn = 1)
@@ -30,7 +20,11 @@ write("Running convertCsvToCircosInput.R.", stdout())
 # ########################################################
 # Input Parameters:
 
-path <- "/home/benrancourt/Downloads/Circos/"
+args <- commandArgs(trailingOnly = TRUE)
+
+# The directory that your input .csv file is in. Remember to include a final "/":
+#path <- "/home/benrancourt/Downloads/Circos/"
+path <- args[1]
 
 # Input file format:
 # We assume the input csv file colums are organized: 
@@ -39,23 +33,17 @@ path <- "/home/benrancourt/Downloads/Circos/"
 # These are all numeric values, with no non-numeric characters (so no "LG"
 # in the LG ids, for example).
 #inputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos.csv"
-#inputFileName <- "LPmerged-9511-PitaEcht4492-for-CIRCOS-Feb8-2017-preCircos.csv"
-inputFileName <- "To-Ben-4-Circos-3617-e-100.csv"
-#inputFileName <- "To-Ben-4-Circos-3093-e0.csv"
+inputFileName <- args[2]
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
-#dataOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-data.txt"
-#dataOutputFileName <- "LPmerged-9511-PitaEcht4492-for-CIRCOS-Feb8-2017-preCircos-data.txt"
-dataOutputFileName <- "To-Ben-4-Circos-3617-e-100-data.txt"
-#dataOutputFileName <- "To-Ben-4-Circos-3093-e0-data.txt"
+#dataOutputFileName <- "mydata.txt"
+dataOutputFileName <- args[3]
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
-#karyotypeOutputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos-karyotype.txt"
-#karyotypeOutputFileName <- "LPmerged-9511-PitaEcht4492-for-CIRCOS-Feb8-2017-preCircos-karyotype.txt"
-karyotypeOutputFileName <- "To-Ben-4-Circos-3617-e-100-karyotype.txt"
-#karyotypeOutputFileName <- "To-Ben-4-Circos-3093-e0-karyotype.txt"
+#karyotypeOutputFileName <- "mykaryotype.txt"
+karyotypeOutputFileName <- args[4]
 
 # Group1 identifiers are intended for the data set that will be 
 # displayed on the left-hand side of circle graph.
@@ -64,17 +52,15 @@ karyotypeOutputFileName <- "To-Ben-4-Circos-3617-e-100-karyotype.txt"
 # Pita_ for loblolly pine, Pipi_ for pinster (maritime pine), and Pifl_ for limber pine.
 #chromosomeLabelPrefixGroup1 <- "Pifl-"
 #chromosomeLabelPrefixGroup2 <- "Pipi-"
-#chromosomeLabelPrefixGroup1 <- "Pifl-"
-#chromosomeLabelPrefixGroup2 <- "Pita-"
-#chromosomeLabelPrefixGroup1 <- "Pifl-"
-#chromosomeLabelPrefixGroup2 <- "Pigl-"
-chromosomeLabelPrefixGroup1 <- "Pifl-"
-chromosomeLabelPrefixGroup2 <- "Pigl-"
+chromosomeLabelPrefixGroup1 <- args[5]
+chromosomeLabelPrefixGroup2 <- args[6]
 
 # prefixes for circos to use internally for chromosome identifiers. 
 # This shouldn't be changed unless you also change the circos.conf file.
-chromosomePrefixGroup1 <- "lg-"
-chromosomePrefixGroup2 <- "LG"
+#chromosomePrefixGroup1 <- "lg-"
+#chromosomePrefixGroup2 <- "LG"
+chromosomePrefixGroup1 <- args[7]
+chromosomePrefixGroup2 <- args[8]
 
 # IMPORTANT - multiplier required to get rid of all decimal places in the positions.
 # I believe circos likes to use integers for positional information when 
@@ -86,10 +72,11 @@ chromosomePrefixGroup2 <- "LG"
 # should be set to what is required to scale the numbers back down to a range you want 
 # to use for the labels, if using labeled ticks.
 # You shouldn't need to change this unless you have values with more than 7 decimal places.
-positionMultiplier <- 10000000
-
+#positionMultiplier <- 10000000
+positionMultiplier <- strtoi(args[9])
 
 # ########################################################
+# Execution code:
 
 input <- read.csv(paste0(path,inputFileName),header=TRUE)
 
@@ -169,9 +156,9 @@ write.table(karyotype, file= paste0(path,karyotypeOutputFileName), append=FALSE,
 write.table(data, file= paste0(path,dataOutputFileName), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
 
 
+write(paste0("Finished converting input .csv to circos input files mydata.txt and mykaryotype.txt."), stdout())
 
 write(paste0("================================================"), stdout())
 
-write(paste0("FINISHED."), stdout())
 
 
