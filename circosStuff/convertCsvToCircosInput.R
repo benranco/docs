@@ -82,7 +82,7 @@ positionMultiplier <- strtoi(args[10])
 # ########################################################
 # Execution code:
 
-input <- read.csv(paste(path,inputFileName,sep="/"),header=TRUE)
+input <- read.csv(paste(path.expand(path),inputFileName,sep="/"),header=TRUE)
 
 # Convert NA's to 0? No, don't do this, instead remove all rows/links that contain NA values
 #input[is.na(input)] <- 0
@@ -155,9 +155,9 @@ for (i in length(LGsInGroup1):1)
 
 # write output
 
-write.table(karyotype, file= paste(pathToSaveCircosOutputFiles,karyotypeOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
+write.table(karyotype, file= paste(path.expand(pathToSaveCircosOutputFiles),karyotypeOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
 
-write.table(data, file= paste(pathToSaveCircosOutputFiles,dataOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
+write.table(data, file= paste(path.expand(pathToSaveCircosOutputFiles),dataOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
 
 
 write(paste0("Finished converting input .csv to circos input files mydata.txt and mykaryotype.txt."), stdout())
