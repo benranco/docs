@@ -32,7 +32,7 @@ library(stringr)
 #        - sort by order of columns given above
 # 5. For each unique male_position (Col.2 above):
 #        - find the ones that aren't listed as duplicates, 
-#        - for each of these, find the ones listed as duplicates that share their genotype (first part of marker id) and their error estimate
+#        - for each of these, find the ones listed as duplicates that share their gene (first part of marker id) and their error estimate
 #        - then find in that group (including the non-duplicate) the one with the most complete data and save its rownum in a vector which we'll use at the end to take only those rows that we're not deleting.
 # 6. Delete all the rows we aren't keeping.
 # 7. Delete the duplicate/phases column.
@@ -86,7 +86,7 @@ for (lg in linkageGroups)
   combinedData$record_number <- seq.int(nrow(combinedData)) 
   
   # library(stringr) required for str_split_fixed:
-  combinedData$genotype <- str_split_fixed(combinedData$marker_id,"-",2)[ ,1]
+  combinedData$gene <- str_split_fixed(combinedData$marker_id,"-",2)[ ,1]
 
   index <- 1
   rowsToKeep <- numeric(nrow(combinedData)) # initializes all elements to 0
@@ -95,16 +95,16 @@ for (lg in linkageGroups)
   # This while-loop is used to determine which rows to keep and which rows (duplicates)
   # to get rid of. The indexes of the rows to keep are stored in rowsToKeep.
   # NOTE: this while-loop only works in this iterative fashion because combinedData is 
-  # already sorted by the columns position, marker_id (from which genotype is derived),
+  # already sorted by the columns position, marker_id (from which gene is derived),
   # and error_estimate.
   while (index <= nrow(combinedData))
   {
     curPos <- combinedData[index, "position"][[1]]
     curErrorEst <- combinedData[index, "error_estimate"][[1]]
-    curGenotype <- combinedData[index, "genotype"][[1]]
+    curGene <- combinedData[index, "gene"][[1]]
 
-    # for our purposes a rowGroup is defined as all rows that match the current position, genotype, and error_estimate
-    rowGroup <- combinedData[ combinedData$position == curPos & combinedData$genotype == curGenotype & combinedData$error_estimate == curErrorEst, ]
+    # for our purposes a rowGroup is defined as all rows that match the current position, gene, and error_estimate
+    rowGroup <- combinedData[ combinedData$position == curPos & combinedData$gene == curGene & combinedData$error_estimate == curErrorEst, ]
     if (nrow(rowGroup) == 1)
     {
       rowsToKeep[rowsToKeepIndex] <- rowGroup[1, "record_number"]
@@ -127,7 +127,7 @@ for (lg in linkageGroups)
     }
     else
     {
-      message(paste0("Keeping all rows at postion ",curPos,", genotype ",curGenotype,", error_estimate ",curErrorEst,". Num rows: ",nrow(rowGroup),". Num rows marked as duplicate: ",( nrow(rowGroup[rowGroup$duplicate_or_phases=="duplicate*", ]) ),"."  ))
+      message(paste0("Keeping all rows at postion ",curPos,", gene ",curGene,", error_estimate ",curErrorEst,". Num rows: ",nrow(rowGroup),". Num rows marked as duplicate: ",( nrow(rowGroup[rowGroup$duplicate_or_phases=="duplicate*", ]) ),"."  ))
       # keep them all, because something unusual is going on
       updatedRowsToKeepIndex <- rowsToKeepIndex+nrow(rowGroup)
       rowsToKeep[rowsToKeepIndex:(updatedRowsToKeepIndex-1)] <- rowGroup[1:nrow(rowGroup), "record_number"]
@@ -142,7 +142,7 @@ for (lg in linkageGroups)
   # remove all rows we don't want to keep
   combinedData <- combinedData[rowsToKeep, ]
   # remove unnecessary and temporary columns
-  combinedData <- subset(combinedData , select=-c(duplicate_or_phases, record_number, genotype))
+  combinedData <- subset(combinedData , select=-c(duplicate_or_phases, record_number, gene))
 
   # re-arrange the order of the columns to make more visual sense (column 4 (after removing the duplicate_or_phases column) is the marker_id, col1 is marker_number, col2 is position, col3 is error_estimate)
   combinedData <- combinedData[ , c(2,3,4,1,5:ncol(combinedData))]
