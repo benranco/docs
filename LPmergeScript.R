@@ -7,6 +7,8 @@
 # Documentation for LPmerge can be found at:
 # https://cran.r-project.org/web/packages/LPmerge/
 # https://academic.oup.com/bioinformatics/article/30/11/1623/284175/LPmerge-an-R-package-for-merging-genetic-maps-by
+# Example use-case based tutorial available at:
+# http://potatobreeding.cals.wisc.edu/software
 #
 # The LPmerge package must be installed before you can run this script. See below for 
 # instructions on how to install it on CentOS Linux, if it hasn't already been installed.
