@@ -56,6 +56,15 @@
 #    source("LPmergeScript.R")
 #
 #
+# To interpret the output:
+#
+# The output of this script is a separate map (.csv file) for each max interval that was 
+# tried (see the maxInterval input parameter in the Input Parameters section below).
+# According to the LPmerge documentation, one way to select which map to use is to use the
+# one with the minimum average root-mean-squared error (RMSE) and with a total map length
+# that is closest to the mean of the input LG maps. These values are all displayed in the 
+# console output of the LPmergeScript run.
+#
 ##########################################################################################
 # To install the R package LPmerge (on CentOS):
 # 
