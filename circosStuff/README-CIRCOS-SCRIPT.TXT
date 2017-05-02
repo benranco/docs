@@ -15,7 +15,7 @@ script.
 # - run  (this is the main script that starts the whole process)
 # - convertCsvToCircosInput.R (called by the run script, converts your .csv into Circos format)
 # Sub-Folder:
-# - config (this folder contains custom configuration files that will be used by Circos
+# - config (this folder contains custom configuration files that will be used by Circos)
 #
 # In the config sub-folder:
 # Files:
@@ -37,37 +37,33 @@ script.
 # The main script is called "run", and it should be found in the same folder as this 
 # readme file.
 #
-# The script creates Circos graphs using Circos with some customized configuration
+# The run script creates Circos graphs using Circos with some customized configuration
 # files. It runs Circos twice, first to create a version without position ticks
 # along the edges of the circle, and second to create a version with postion
 # ticks. It then uses some command-line Inkscape and ImageMagick commands to 
 # copy the Circos output images to 600dpi tiff images of different sizes.
 #
-# The custom Circos configuration files this script expects to see are:
-#   circos-noTicks.conf, ideogram-noTicks.conf, ticks-noTicks.conf
-#   circos-withTicks.conf, ideogram-withTicks.conf, ticks-withTicks.conf
-#
-# It also expects to see a .csv file (specified in the csvFilePath and csvFileName
-# input parameters below), this is the format in which you will provide the input data
-# that you want to graph. The csv must contains four columns, organized:
+# In addition to the scripts and configuration files outlined above, this script requires
+# input from you in the form of a .csv file (specified in the csvFilePath and csvFileName
+# input parameters below). The .csv file must contains four columns, organized:
 #   Group1 LG, Group1 position, Group2 LG, Group2 position.
 # The two LG columns must be numeric (integer), indicating linkage group number (eg. 3, 
 # not "LG3"). Do not use any non-numeric characters in the linkage group ids. The two 
-# position columns must also be numeric.
+# position columns must also be numeric, but do not need to be integers.
 # The four data columns will be expected to have headers, but their names are unimportant.
 #
 # Before running Circos, this script calls the R script "convertCsvToCircosInput.R", 
-# which converts the input .csv file into two data files which will be read by Circos.
-# These two data files are named:
+# which converts your input .csv file into two data files which will be read by Circos.
+# These two data files will be named:
 #   mykaryotype.txt, mydata.txt
 # They will be deleted after running Circos to generate the graphs. 
 #
 # To run this script:
-# First, review and set the input parameters (open and edit the "run" script in a text 
-# editor) appropriately.
+# First, open the run script in a text editor, review and set the input parameters 
+# appropriately, and save your changes.
 # Then, from a command-line terminal, within the directory that the script is contained in, 
 # type: ./run
-# The custom Circos configuration files named above must be in a directory named "config"
+# The custom Circos configuration files named above must be in a sub-directory named "config"
 # within the directory that contains the run script. 
 #
 # If you encounter errors while running, open the output text file run.out
