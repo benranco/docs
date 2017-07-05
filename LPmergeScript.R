@@ -41,7 +41,8 @@
 # - (2) Second, open the script in a text editor, edit the input parameters (see the Input 
 # Parameters section below), and save the file. It is good practice to make a copy of the 
 # file first and edit the copy in case you mess something up. If you make a copy with a 
-# new file name, use the new file name in the commands below instead of LPmergeScript.R.
+# new file name, use the new file name instead of LPmergeScript.R where the instructions
+# on how to run the script (below) tell you to use LPmergeScript.R.
 #
 #
 # - (3) Third, and finally, execute the command to run the script. You can either do this from 
@@ -58,7 +59,7 @@
 #
 # To interpret the output:
 #
-# The output of this script is a separate map (.csv file) for each max interval that was 
+# The output of this script is a map (.csv file) for each max interval that was 
 # tried (see the maxInterval input parameter in the Input Parameters section below).
 # According to the LPmerge documentation, one way to select which map to use is to use the
 # one with the minimum average root-mean-squared error (RMSE) and with a total map length
@@ -84,18 +85,18 @@
 
 # The directory path of the folder that the input .csv files are in. This is also the 
 # folder that the output files will be saved to.
-path <- "/home/benrancourt/Downloads/LPmerge"
+path <- "/home/benrancourt/Downloads/LPmerge/test"
 
 # This is a list of the file names of the input .csv files, without the ".csv" postfix. The list 
 # must be surrounded by the characters "c( )", and the names of the files must be in 
 # quotes "", and delimited by a comma , . For example:
 # map-names <- c("filename1withoutPostfix","filename2withoutPostfix","filename3withoutPostfix")
-map.names <- c("LG9-r45-g7727-for-2ndLPmerge-run-nonNumericLG","LG9-r38-g5006-for-2ndLPmerge-run-nonNumericLG")
+map.names <- c("LiminPut-r45-gene7727","G&Htest")
 
 # The base name of the output files, without the ".csv" postfix. This name will have 
 # "-maxIntervalX.csv" appended to it for each output file, where X is the number of the 
 # current max interval.
-finalOutputCsvNameBase <- "LPmergeOutput-r45gene7727-r38gene5006-LG9-try3repeated"
+finalOutputCsvNameBase <- "LPmergeOutput-G&H"
 
 # This is an integer list of different max intervals to try when making the concensus map.
 # The list must be surrounded by the characters "c( )", and delimited by commas. If the 

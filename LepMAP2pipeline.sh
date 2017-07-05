@@ -32,7 +32,9 @@ familyName="test"
 missingDataIndicator="NA"
 
 # TODO:
-# - overall script info, how to run, the iterative process.
+# - overall script info, how to run, the iterative process, why tabulate... must be done separately, out of memory error.
+# - check code to determine how many instances to run in parallel
+# - choose to run OrderMarkers only on specific LGs
 #
 # Scenarios below:
 #- skip the Filtering module because you've determined Filtering isn't needed

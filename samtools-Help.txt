@@ -179,3 +179,35 @@ Options:
       --reference FILE
                Reference sequence FASTA FILE [null]
 
+
+===========
+depth options
+===========
+
+[benrancourt@localhost fluidigm-sampleData]$ ../SNPpipelineDevel/tools/samtools-1.3.1/samtools depth
+
+Usage: samtools depth [options] in1.bam [in2.bam [...]]
+Options:
+   -a                  output all positions (including zero depth)
+   -a -a (or -aa)      output absolutely all positions, including unused ref. sequences
+   -b <bed>            list of positions or regions
+   -f <list>           list of input BAM filenames, one per line [null]
+   -l <int>            read length threshold (ignore reads shorter than <int>)
+   -d/-m <int>         maximum coverage depth [8000]
+   -q <int>            base quality threshold
+   -Q <int>            mapping quality threshold
+   -r <chr:from-to>    region
+      --input-fmt-option OPT[=VAL]
+               Specify a single input file format option in the form
+               of OPTION or OPTION=VALUE
+      --reference FILE
+               Reference sequence FASTA FILE [null]
+
+The output is a simple tab-separated table with three columns: reference name,
+position, and coverage depth.  Note that positions with zero coverage may be
+omitted by default; see the -a option.
+
+[benrancourt@localhost fluidigm-sampleData]$ 
+../SNPpipelineDevel/tools/samtools-1.3.1/samtools depth -a MI.M03992_0050.001.FLD0289.Fluidigm_301_sorted.bam > depth.txt
+
+
