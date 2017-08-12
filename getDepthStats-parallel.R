@@ -10,7 +10,8 @@ options(scipen = 999) # disable scientific notation for large numbers
 args <- commandArgs(trailingOnly = TRUE)
 sampleNumber <- as.numeric(args[1])
 
-path <- "/home/benrancourt/Desktop/junjun/fluidigm-SNPpipelineFupan-dev"
+#path <- "/home/benrancourt/Desktop/junjun/fluidigm-SNPpipelineFupan-dev"
+path <- args[1]
 
 reportsSubDir <- "reports"
 inputMAFcutoffReportName <- "MAF_cutoff_report.csv"
@@ -28,7 +29,7 @@ bamFileNamePostFix <- "_sorted.bam"
 depthFilesSubDir <- "dataTemp/depthfiles"
 depthFileNamePostFix <- "_depth.txt"
 
-samtoolsPathAndExecutable <- "/home/benrancourt/Desktop/junjun/fluidigm-SNPpipelineFupan-dev/tools/samtools-1.3.1/samtools"
+samtoolsPathAndExecutable <- paste(path.expand(path), "tools/samtools-1.3.1/samtools",sep="/")
 
 # ########################################################
 # Execution code:
