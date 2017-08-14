@@ -1,7 +1,7 @@
 options(stringsAsFactors = FALSE, warn = 1)
 options(scipen = 999) # disable scientific notation for large numbers
 
-#write("Running getDepthStats.R.", stdout())
+write("Running getDepthStats.R.", stdout())
 
 
 # ########################################################
