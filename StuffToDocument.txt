@@ -11,11 +11,14 @@ Circos
 
 createStripChartFromLGs.R, mybeanplot.R
 
+- what is ncdf/netcdf used for again? - I think it was for David Dunn.
 ----------------------
 removeRows.R
 scratch10, scratch10_2
 extractRowsFromCsvForJunJun.R
 combineCsvTablesByColumn.R
+getDepthStats-parallel.R
+filter46sampleData.R
 
 ----------------------
 Helpful:
@@ -48,34 +51,56 @@ Snippet of some possible scenarios for SNPpipeline documentation:
 
 
 
-
-
-
 CONTINUE HERE: 
-- I finished the new parallel getDepthStats, so update git, save files, and transfer to holly's computer, then update SNPpipeline.
+
+!!!! - make a version of MAF_cutoff_report_1000rows_filtered.csv with a few doctored rows to truly test out the functionality in the new filter46sampleData.R script
 
 
 
+- check on progress of SNPpipeline run of Jun-Jun's 46 sample dataset (new report gen)
+x- check-in code to fix check.names bug, and make sure code in SNPpipelineDevel and SNPpipelineDevel-fluidigm is up-to-date
+x- test and check-in latest code to: choose which half of the pipeline to run, which optional reports to generate, to run the new depth stats report, and the new required folder for depth files.
+- separate large ref file into chunks, and run SNPpipeline on a chunk
+- continue updating code in SNPpipelineDevel-fluidigm (including a more graceful bug fix for raw data file name lengths and formats...)
 
 
+---
+Ideas for raw data file name bug fix:
+
+if [[ "H5Positive_Control_2_R1.fastq.gz" == *".fastq.gz" ]]; then echo "yeah"; fi 
+ 
+or ???:
+for i in *R1.hello ; do mv "$i" "${i/-[0-9.]*.pkg/.pkg}" ; done
+
+or (I used this one):
+for file in *R1.fastq ; do mv $file $(echo $file | rev | cut -c 9- | rev)---R1.fastq; done
+for file in *R2.fastq ; do mv $file $(echo $file | rev | cut -c 9- | rev)---R2.fastq; done
+
+...and then rename them back at the end
+---
 
 
 Overall Todo:
 x- update and rerun depth stats (investigate empty cells)
-- check on changes not staged for commit, see if there's anything wrong there
-- transfer to isabel's computer
+x- check on changes not staged for commit, see if there's anything wrong there
+x- transfer to isabel's computer
 - follow up with Holly about desktop icon
 - update SNPpipeline to:
-    - capture bowtie console alignment summary output. Also write a script to go back and rerun bowtie for each sample and save the summary.
-    - include depth stats
-    - enable you to choose which reports to run
-    - run only pre-reports, or run only reports
-    - investigate why SNPpipeline is only doing A/A for some (maybe NA originally?) cells, and just A/ for others.
-    - find out how the tab_to_vcf is choosing whether to display the ALT or the REF. Does it just take the larger
+    x- capture bowtie console alignment summary output. Also write a script to go back and rerun bowtie for each sample and save the summary.
+    - fix the bug on line 96 and 117 of start.sh (cut -c 13- assumes fastq.gz) (see above for ideas)
+    x- integrate depth stats script 
+    x- check-in to git the new subdirectory dataTemp/depthfiles required for depth stats script
+    x- enable you to choose which reports to run
+    x- run only pre-reports, or run only reports
+    - investigate why SNPpipeline is only doing A/A for some (maybe NA originally?) cells, and just A/ for others. (seems to be related to whether input to freebayes is haploid or diploid)
+    - find out how the vcf_to_tab is choosing whether to display the ALT or the REF. Does it just take the larger
   of RO and AO, or has that already been decided by freebayes when it created the .vcf, if the -p (default
   ploidy) is (1) haploid (Jun-Jun) as opposed to (2) diploid (Isabel).
+    - investigate, can parallel_process.R be sped up by traversing down each col first rather than across?
+    - introduce R parallelism where possible
+    - write a script to load all required R libraries before beginning (to run both in standalone as sudo and in the pipeline)
 - run SNPpipeline on Jun-Jun's new data
-
+- update all my scripts that use read.table or read.csv to specify check.names=FALSE (to prevent from converting dashes into periods), and make sure the code doesn't use col names as variables (see report_subset.R in latest SNPpipeline code).
 
 
 
