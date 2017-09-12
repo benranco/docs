@@ -11,9 +11,13 @@ args <- commandArgs(trailingOnly = TRUE)
 
 path <- "/home/benrancourt/Desktop/junjun/newSNPpipeline/reports-snppipeline-exom14706ref"
 
-inputMAFcutoffReportName <- "MAF_cutoff_report_1000rows_tweaked.csv"
+#inputMAFcutoffReportName <- "MAF_cutoff_report_1000rows_tweaked.csv"
+inputMAFcutoffReportName <- "MAF_cutoff_report.csv"
 
-outputMAFcutoffReportName <- "MAF_cutoff_report_1000rows_tweaked_filtered.csv"
+#outputMAFcutoffReportName <- "MAF_cutoff_report_1000rows_tweaked_filtered.csv"
+outputMAFcutoffReportName <- "MAF_cutoff_report_filtered_no_overlap.csv"
+
+accept10percentOverlap <- FALSE
 
 # ########################################################
 # Execution code:
@@ -116,110 +120,127 @@ for (rowNum in 1:nrow(mafReport1))
     
     numRsAlleles <- length(tabulatedRsRowDataNames)
     numSsAlleles <- length(tabulatedSsRowDataNames)
-
-    # keep row if RS and SS samples each have only one allele, and not the same allele    
-    if (numRsAlleles == 1 && numSsAlleles == 1 && tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]])
+    
+    if (!accept10percentOverlap)
     {
-      rowsToKeep[rowNum] <- TRUE
-    }
-    else if (numRsAlleles == 1 && numSsAlleles == 2)
-    {
-      # keep row if RS has 1 allele and SS samples have two alleles, and the first SS allele is not the 
-      # same as the RS allele, and the second SS allele matches the RS allele but only occurs once in 
-      # the SS data set
-      if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
-              && tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[2]] 
-              && tabulatedSsRowData[[ tabulatedSsRowDataNames[[2]] ]] == 1 )
+      # keep row if RS and SS samples each have only one allele, and not the same allele    
+      if (numRsAlleles == 1 && numSsAlleles == 1 && tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]])
       {
         rowsToKeep[rowNum] <- TRUE
       }
-      # keep row if RS has 1 allele and SS samples have two alleles, and the second SS allele is not the 
-      # same as the RS allele, and the first SS allele matches the RS allele but only occurs once in 
-      # the SS data set
-      else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[2]] 
-              && tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] 
-              && tabulatedSsRowData[[ tabulatedSsRowDataNames[[1]] ]] == 1 )
-      {
-        rowsToKeep[rowNum] <- TRUE
-      }
-    }
-    else if (numRsAlleles == 2 && numSsAlleles == 1)
-    {
       # keep row if RS has 2 alleles and SS samples have one allele, and not the same as RS alleles
-      if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+      else if ( numRsAlleles == 2 && numSsAlleles == 1
+              && tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
               && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] )
       {
         rowsToKeep[rowNum] <- TRUE
       }
-      # keep row if RS has 2 alleles and SS samples have one allele that matches the second RS allele, 
-      # but the second RS allele only occurs once in the RS data set
-      else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
-              && tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[1]] 
-              && tabulatedRsRowData[[ tabulatedRsRowDataNames[[2]] ]] == 1 )
-      {
-        rowsToKeep[rowNum] <- TRUE
-      }
-      # keep row if RS has 2 alleles and SS samples have one allele that matches the first RS allele, 
-      # but the first RS allele only occurs once in the RS data set
-      else if ( tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] 
-              && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
-              && tabulatedRsRowData[[ tabulatedRsRowDataNames[[1]] ]] == 1 )
-      {
-        rowsToKeep[rowNum] <- TRUE
-      }
     }
-    else if (numRsAlleles == 2 && numSsAlleles == 2)
+    else
     {
-      # keep row if RS has 2 alleles and SS samples have two alleles, and the first SS allele does not match
-      # the RS alleles, and the second SS allele only occurs once and matches either of the RS alleles
-      if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
-        && (tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[2]] || tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[2]])
-        && tabulatedSsRowData[[ tabulatedSsRowDataNames[[2]] ]] == 1 )
+      # keep row if RS and SS samples each have only one allele, and not the same allele    
+      if (numRsAlleles == 1 && numSsAlleles == 1 && tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]])
       {
         rowsToKeep[rowNum] <- TRUE
       }
-      # keep row if RS has 2 alleles and SS samples have two alleles, and the second SS allele does not match
-      # the RS alleles, and the first SS allele only occurs once and matches either of the RS alleles
-      else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[2]] 
-        && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[2]] 
-        && (tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] || tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[1]])
-        && tabulatedSsRowData[[ tabulatedSsRowDataNames[[1]] ]] == 1 )
+      else if (numRsAlleles == 1 && numSsAlleles == 2)
       {
-        rowsToKeep[rowNum] <- TRUE
+        # keep row if RS has 1 allele and SS samples have two alleles, and the first SS allele is not the 
+        # same as the RS allele, and the second SS allele matches the RS allele but only occurs once in 
+        # the SS data set
+        if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+                && tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[2]] 
+                && tabulatedSsRowData[[ tabulatedSsRowDataNames[[2]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
+        # keep row if RS has 1 allele and SS samples have two alleles, and the second SS allele is not the 
+        # same as the RS allele, and the first SS allele matches the RS allele but only occurs once in 
+        # the SS data set
+        else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[2]] 
+                && tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] 
+                && tabulatedSsRowData[[ tabulatedSsRowDataNames[[1]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
       }
-    }
-    else if (numRsAlleles == 3 && numSsAlleles == 1)
-    {
-      # keep row if RS has 3 alleles and SS samples have one allele, and the first two RS alleles don't match
-      # the SS allele, and the third RS allele only occurs once and matches the SS allele
-      if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[3]] == tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowData[[ tabulatedRsRowDataNames[[3]] ]] == 1 )
+      else if (numRsAlleles == 2 && numSsAlleles == 1)
       {
-        rowsToKeep[rowNum] <- TRUE
+        # keep row if RS has 2 alleles and SS samples have one allele, and not the same as RS alleles
+        if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+                && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
+        # keep row if RS has 2 alleles and SS samples have one allele that matches the second RS allele, 
+        # but the second RS allele only occurs once in the RS data set
+        else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+                && tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[1]] 
+                && tabulatedRsRowData[[ tabulatedRsRowDataNames[[2]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
+        # keep row if RS has 2 alleles and SS samples have one allele that matches the first RS allele, 
+        # but the first RS allele only occurs once in the RS data set
+        else if ( tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] 
+                && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
+                && tabulatedRsRowData[[ tabulatedRsRowDataNames[[1]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
       }
-      # keep row if RS has 3 alleles and SS samples have one allele, and the first and third RS alleles don't 
-      # match the SS allele, and the second RS allele only occurs once and matches the SS allele
-      else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[3]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowData[[ tabulatedRsRowDataNames[[2]] ]] == 1 )
+      else if (numRsAlleles == 2 && numSsAlleles == 2)
       {
-        rowsToKeep[rowNum] <- TRUE
+        # keep row if RS has 2 alleles and SS samples have two alleles, and the first SS allele does not match
+        # the RS alleles, and the second SS allele only occurs once and matches either of the RS alleles
+        if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
+          && (tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[2]] || tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[2]])
+          && tabulatedSsRowData[[ tabulatedSsRowDataNames[[2]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
+        # keep row if RS has 2 alleles and SS samples have two alleles, and the second SS allele does not match
+        # the RS alleles, and the first SS allele only occurs once and matches either of the RS alleles
+        else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[2]] 
+          && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[2]] 
+          && (tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] || tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[1]])
+          && tabulatedSsRowData[[ tabulatedSsRowDataNames[[1]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
       }
-      # keep row if RS has 3 alleles and SS samples have one allele, and the second and third RS alleles don't 
-      # match the SS allele, and the first RS allele only occurs once and matches the SS allele
-      else if ( tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[3]] != tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] 
-        && tabulatedRsRowData[[ tabulatedRsRowDataNames[[1]] ]] == 1 )
+      else if (numRsAlleles == 3 && numSsAlleles == 1)
       {
-        rowsToKeep[rowNum] <- TRUE
+        # keep row if RS has 3 alleles and SS samples have one allele, and the first two RS alleles don't match
+        # the SS allele, and the third RS allele only occurs once and matches the SS allele
+        if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[3]] == tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowData[[ tabulatedRsRowDataNames[[3]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
+        # keep row if RS has 3 alleles and SS samples have one allele, and the first and third RS alleles don't 
+        # match the SS allele, and the second RS allele only occurs once and matches the SS allele
+        else if ( tabulatedRsRowDataNames[[1]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[3]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[2]] == tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowData[[ tabulatedRsRowDataNames[[2]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
+        # keep row if RS has 3 alleles and SS samples have one allele, and the second and third RS alleles don't 
+        # match the SS allele, and the first RS allele only occurs once and matches the SS allele
+        else if ( tabulatedRsRowDataNames[[2]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[3]] != tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowDataNames[[1]] == tabulatedSsRowDataNames[[1]] 
+          && tabulatedRsRowData[[ tabulatedRsRowDataNames[[1]] ]] == 1 )
+        {
+          rowsToKeep[rowNum] <- TRUE
+        }
       }
-    }
-
+    } # end of 10-percent overlap else-statement
   } 
   
 } # end for-loop
