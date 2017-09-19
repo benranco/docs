@@ -28,7 +28,7 @@ write("Running convertCsvToCircosInput.R.", stdout())
 #
 # Input Parameters:
 
-path <- "/home/benrancourt/Downloads/"
+path <- "/home/benrancourt/Downloads"
 
 inputFileName <- "Mapped9546-Scaffolds-Pila-v15_--8619e-100.csv"
 #inputFileName <- "Mapped9546-Scaffolds-Pila-v15_--9546-scaffold-posi.csv"
@@ -41,7 +41,7 @@ secondOutputFileName <- "Mapped9546-Scaffolds-Pila-v15_--8619e-100-simplified.cs
 
 # ########################################################
 
-input <- read.csv(paste0(path,inputFileName),header=TRUE)
+input <- read.csv(paste(path.expand(path),inputFileName,sep="/"),header=TRUE, check.names=FALSE) # using check.names=FALSE in case the column names have dashes (-) in them. This will prevent them from being converted to periods. However, a column name with a dash in it will not be able to be used as a variable name, so we'll have to refer to columns by their index if accessing them.
 
 # col5 = accesion (E-value), col10 = LG, col12 = consensus
 
@@ -133,9 +133,9 @@ for (i in 1:length(LGs))
 
 colnames(allSimplifiedData) <- c("accession (E-value)","gene","consensus difference","LG","consensus mean")
 
-write.table(allFilteredData, file= paste0(path,firstOutputFileName), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
+write.table(allFilteredData, file= paste(path.expand(path),firstOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
 
-write.table(allSimplifiedData, file= paste0(path,secondOutputFileName), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
+write.table(allSimplifiedData, file= paste(path.expand(path),secondOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
 
 
 write(paste0("================================================"), stdout())

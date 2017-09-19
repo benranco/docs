@@ -7,7 +7,7 @@ write("Running removeRows.R.", stdout())
 # ########################################################
 # Input Parameters:
 
-path <- "/home/benrancourt/Downloads/r38-remove86genes/5272-remove86genes-try2/"
+path <- "/home/benrancourt/Downloads/r38-remove86genes/5272-remove86genes-try2"
 
 rowsToRemoveFileName <- "genesToRemove.csv"
 rowsRemovedOutputFileName <- "rowsThatWereRemoved.csv"
@@ -27,14 +27,14 @@ mainOutputFileName <- "Data-5,092originalLGs+751-finalOutputOfLepMAP2-manuallyCo
 # ########################################################
 
 
-rowsToRemove <- read.csv(paste0(path,rowsToRemoveFileName),header=TRUE,col.names=c("gene","position","linkage_group"))
-dataToModify <- read.csv(paste0(path,dataToModifyFileName),header=TRUE)
+rowsToRemove <- read.csv(paste(path.expand(path),rowsToRemoveFileName, sep="/"),header=TRUE,col.names=c("gene","position","linkage_group"))
+dataToModify <- read.csv(paste(path.expand(path),dataToModifyFileName, sep="/"),header=TRUE, check.names=FALSE) # using check.names=FALSE in case the column names have dashes (-) in them. This will prevent them from being converted to periods. However, a column name with a dash in it will not be able to be used as a variable name, so we'll have to refer to columns by their index if accessing them.
 
 rowsThatWereRemoved <- dataToModify[(dataToModify$gene %in% rowsToRemove$gene), ]
 dataToModify <- dataToModify[!(dataToModify$gene %in% rowsToRemove$gene), ]
 
-write.csv(rowsThatWereRemoved, paste0(path,rowsRemovedOutputFileName), row.names=FALSE)
-write.csv(dataToModify, paste0(path,mainOutputFileName), row.names=FALSE)
+write.csv(rowsThatWereRemoved, paste(path.expand(path),rowsRemovedOutputFileName, sep="/"), row.names=FALSE)
+write.csv(dataToModify, paste(path.expand(path),mainOutputFileName, sep="/"), row.names=FALSE)
 
 write(paste0("FINISHED."), stdout())
 

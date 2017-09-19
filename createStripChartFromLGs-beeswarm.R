@@ -25,7 +25,7 @@ source("mybeanplot.R")
 # ########################################################
 # Input Parameters:
 
-location <- "/home/benrancourt/Downloads/stripcharts/"
+location <- "/home/benrancourt/Downloads/stripcharts"
 
 #outputFileNameSansPostfix <- "plot3"
 
@@ -93,7 +93,7 @@ if (hasOverlayData)
 mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,tickColor="black")
 {
 
-  input <- read.csv(paste0(path,dataFileName),header=TRUE)
+  input <- read.csv(paste(path.expand(path),dataFileName, sep="/"),header=TRUE)
 
   # We assume the input csv file colums are organized: Column 1: LG, Column 2: position
 
@@ -318,18 +318,18 @@ if (hasOverlayData && plotOverlayUnderneath)
 # create png image
 write("-----------------", stdout())
 write("Creating png.", stdout())
-png(filename=paste0(location,outputFileNameSansPostfix,"-web.png"), width=1200, height=myHeightPng)
+png(filename=paste(path.expand(location),paste0(outputFileNameSansPostfix,"-web.png"),sep="/"), width=1200, height=myHeightPng)
 generatePlot()
 dev.off()
 
 # create pdf image (useful if you need to scale it extra large)
 write("-----------------", stdout())
 write("Creating pdf (scalable).", stdout())
-pdf(file=paste0(location,outputFileNameSansPostfix,"-scalable.pdf"), width=12, height=myHeightPdf)
+pdf(file=paste(path.expand(location),paste0(outputFileNameSansPostfix,"-scalable.pdf"), sep="/"), width=12, height=myHeightPdf)
 generatePlot()
 dev.off()
 
-tiffFileName <- paste0(location,outputFileNameSansPostfix,"-print-600dpi-12inch.tiff")
+tiffFileName <- paste(path.expand(location),paste0(outputFileNameSansPostfix,"-print-600dpi-12inch.tiff"), sep="/")
 
 # create tiff image
 write("-----------------", stdout())
@@ -338,7 +338,7 @@ tiff(file=tiffFileName, width=12, height=myHeightTiff, units = 'in', res=600, co
 generatePlot()
 dev.off()
 
-smallerTiffFileName <- paste0(location,outputFileNameSansPostfix,"-print-600dpi-6inch.tiff")
+smallerTiffFileName <- paste(path.expand(location),paste0(outputFileNameSansPostfix,"-print-600dpi-6inch.tiff"), sep="/")
 # Now create a scaled down tiff to 6 inches wide. I had to export it first as a 12 inch wide tiff (above) 
 #(7200 pixels at 600 dpi) because if I try to export it as a 6 inch wide tiff the lines are too thick 
 # and it doesn't look good. To created a version scaled to 6 inches wide at 600 dpi, use the following 

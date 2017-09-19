@@ -1,7 +1,7 @@
 #args <- commandArgs(trailingOnly = TRUE)
 #path <- args[1]
 
-path <- "/home/benrancourt/Downloads/r38-753+5092/"
+path <- "/home/benrancourt/Downloads/r38-753+5092"
 
 #MAF_CUTOFF <- args[2]
 #MAF_CUTOFF <- as.double(MAF_CUTOFF)
@@ -15,7 +15,7 @@ filenameMinusExtension <- "Data-753+5,092"
 familyName <- "r38"
 
 
-reportc <- read.csv(paste0(path,filenameMinusExtension,".csv"))
+reportc <- read.csv(paste(path.expand(path),paste0(filenameMinusExtension,".csv"), sep="/"), check.names=FALSE) # using check.names=FALSE in case the column names have dashes (-) in them. This will prevent them from being converted to periods. However, a column name with a dash in it will not be able to be used as a variable name, so we'll have to refer to columns by their index if accessing them.
 #reportc <- reportc[, -1]
 
 if(!("COMBINED" %in% colnames(reportc)))
@@ -76,6 +76,6 @@ reportLinkage <- cbind(family = c(familyName), id = c(paste0("S",(1:nrow(reportL
 reportLinkage[1,2:5] <- c("P1","0","0","1") # change id from S-1 to P1, no parents, male
 reportLinkage[2,2:5] <- c("P2","0","0","2") # change id from S0 to P2, no parents, female
 
-write.table(reportLinkage, file= paste0(path,filenameMinusExtension,".linkage"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
+write.table(reportLinkage, file= paste(path.expand(path),paste0(filenameMinusExtension,".linkage"), sep="/"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
 
 message("report_gen part 2 complete")

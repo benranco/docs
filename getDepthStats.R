@@ -47,7 +47,8 @@ samtoolsPathAndExecutable <- "/home/benrancourt/Desktop/junjun/fluidigm-SNPpipel
 #               copy 1 and copy 2 tables, using NA for the other three values in copy 2.
 # - write output to .csv files
 
-mafReport1 <- read.csv(paste(path.expand(path),reportsSubDir,inputMAFcutoffReportName,sep="/"),header=TRUE)
+mafReport1 <- read.csv(paste(path.expand(path),reportsSubDir,inputMAFcutoffReportName,sep="/"),header=TRUE, check.names=FALSE) # using check.names=FALSE in case the column names have dashes (-) in them. This will prevent them from being converted to periods. However, a column name with a dash in it will not be able to be used as a variable name, so we'll have to refer to columns by their index if accessing them.
+
 
 # check if first col is not CHROM, and remove it if so (it's just a left-over old index column if it exists)
 if (colnames(mafReport1)[1] != "CHROM")

@@ -9,7 +9,7 @@ write("Running convertCsvToCircosInput.R.", stdout())
 # ########################################################
 # Input parameters:
 
-path <- "/home/benrancourt/Downloads/combine/"
+path <- "/home/benrancourt/Downloads/combine"
 
 inputMAFFile <- "MAF_cutoff_report.csv"
 inputPercentSNPFile <- "percentage_snps.csv"
@@ -21,9 +21,10 @@ reducedOutputFileName <- "reduced_output.csv"
 
 # ########################################################
 
-inputMAF <- read.csv(paste0(path,inputMAFFile),header=TRUE)
-inputPercentSNP <- read.csv(paste0(path,inputPercentSNPFile),header=TRUE)
-inputHolly <- read.csv(paste0(path,inputHollyFile),header=TRUE)
+# using check.names=FALSE for these tables in case the column names have dashes (-) in them. This will prevent them from being converted to periods. However, a column name with a dash in it will not be able to be used as a variable name, so we'll have to refer to columns by their index if accessing them.
+inputMAF <- read.csv(paste(path.expand(path),inputMAFFile,sep="/"),header=TRUE, check.names=FALSE)
+inputPercentSNP <- read.csv(paste(path.expand(path),inputPercentSNPFile,sep="/"),header=TRUE, check.names=FALSE)
+inputHolly <- read.csv(paste(path.expand(path),inputHollyFile,sep="/"),header=TRUE, check.names=FALSE)
 
 # - create a column for the allele in inputPercentSNP (and figure out what the allele is)
 # - rename columns in inputHolly that are used in the key, so they are the same as the column names in inputPercentSNP
@@ -80,11 +81,11 @@ mergedData <- merge(x=inputPercentSNP, y=inputHolly, all.x=TRUE, by=c("CHROM","P
 
 # - merge the mergedData with inputMAF, and write result to .csv
 mergedData <- merge(x=inputMAF, y=mergedData, all.x=TRUE, by=c("CHROM","POS","REF"))
-write.table(mergedData, file= paste0(path,fullOutputFileName), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
+write.table(mergedData, file= paste(path.expand(path),fullOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
 
 # - create a copy that removes all rows with NA in the inputHolly columns, and write result to .csv
 reducedData <- mergedData[ !(is.na(mergedData$Frequency)), ]
-write.table(reducedData, file= paste0(path,reducedOutputFileName), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
+write.table(reducedData, file= paste(path.expand(path),reducedOutputFileName,sep="/"), append=FALSE, quote=FALSE, sep=",", row.names=FALSE, col.names=TRUE)
 
 write(paste0("================================================"), stdout())
 
