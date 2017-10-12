@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # TODO:
-# - overall script info, requirements, how to run, the iterative process, why tabulate... must be done separately, because of out of memory error in OrderMarkers.
+# - software requirements
 # - check code to determine how many instances to run in parallel
-# - choose to run OrderMarkers only on specific LGs
 # - create a repository containing LepMAP2 software and any other requirements
 
 ##########################################################################################
@@ -83,7 +82,7 @@ lepMap2Bin="/home/benrancourt/Desktop/LepMAP2/binary/bin"
 # dataPath: The directory path of the folder that any input files are in. This is also the 
 # folder that the output files will be saved to. Since lots of output files are generated,
 # I recommend using a dedicated directory that doesn't have anything else in it.
-dataPath="/home/benrancourt/Downloads/r45-LepMAP2-final-copyForTesting/r45-inThreeStages/test2"
+dataPath="/home/benrancourt/Documents/LepMAP2pipelineLean/testData"
 
 # inputCsvFilenameWithoutExtension: The base name of the input .csv file, without the
 # ".csv" postfix. This name will be used to read the .csv input file, but it will also be
@@ -98,10 +97,10 @@ familyName="test"
 
 # missingDataIndicator: This parameter relates to the data in the original .csv data 
 # file that you supplied. Some of the data in your original input .csv will likely be
-# missing, in which case it might be represented as NA or "-" or maybe even be empty,
+# missing, in which case it might be represented as "NA" or "-" or maybe even be empty,
 # or something like that to indicate that it is missing.
 # Indicate what your .csv file uses to represent missing data.
-missingDataIndicator="NA"
+missingDataIndicator="-"
 
 # Choosing which LepMAP2 modules to run:
 # You may wish to skip some of these LepMAP2 modules for any particular pass of the LepMAP2
@@ -128,8 +127,8 @@ missingDataIndicator="NA"
 # 1==do the module, 0==skip the module
 doFiltering=0
 doSeparateChromosomes=1
-doJoinSingles=0
-doOrderMarkers=0
+doJoinSingles=1
+doOrderMarkers=1
 
 # sizeLimitSeparateChr: This is used as an input parameter for the SeparateChromosomes
 # module, which forms the Linkage Groups. Any Linkage Group with fewer than sizeLimit
@@ -146,6 +145,15 @@ lodLimitSeparateChr=10
 # JoinSingles module.
 lodLimitJoinSingles=6
 
+# doOrderMarkersOnOnlyTheseLGs: If you want to run the OrderMarkers module on all linkage 
+# groups, leave this parameter as the default of:
+#  doOrderMarkersOnOnlyTheseLGs=(0)
+# If you want to run OrderMarkers on only one or a few specificed linkage groups, indicate
+# which linkage groups you want to run by replacing the zero with a list of linkage group
+# id numbers, separated by spaces, like so:
+#  doOrderMarkersOnOnlyTheseLGs=(2 5 9 11)
+# The above would tell the script to run OrderMarkers on linkage groups 2, 5, 9 and 11.
+doOrderMarkersOnOnlyTheseLGs=(0)
 
 # End of input parameters.
 ##########################################################################################
@@ -331,9 +339,21 @@ then
   counter=0
   ncore="$(( ($(grep -c ^processor /proc/cpuinfo) -4) ))"
 
+  # The user can specify which LGs to run OrderMarkers on using the doOrderMarkersOnOnlyTheseLGs
+  # parameter in the input parameters section, but if the first element in doOrderMarkersOnOnlyTheseLGs
+  # is 0 or less than 0, then we assume the user wants to run OrderMarkers on all the LGs.
+  if [[ ${doOrderMarkersOnOnlyTheseLGs[0]} -le 0 ]]
+  then
+    doOrderMarkersOnOnlyTheseLGs=(0)
+    for i in `seq 1 $numLinkageGroups`
+    do
+      doOrderMarkersOnOnlyTheseLGs[$i-1]=$i
+    done  
+  fi
+
   echo "running parallel processing"
 
-  for i in `seq 1 $numLinkageGroups`
+  for i in ${doOrderMarkersOnOnlyTheseLGs[@]}
   do
     if [ $counter -ge $ncore ]; then
       wait

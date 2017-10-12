@@ -129,7 +129,7 @@
 
 # path: The directory path of the folder that the input files are in. This is also the 
 # folder that the output files will be saved to.
-path <- "/home/benrancourt/Downloads/r45-LepMAP2-final-copyForTesting/r45-inThreeStages/test1"
+path <- "/home/benrancourt/Documents/LepMAP2pipelineLean/testData"
 
 # csvFilenameMinusExtension: The name of the .cvs input file, minus the ".csv" extension.
 csvFilenameMinusExtension <- "r45-60592-p0.01"
@@ -247,9 +247,14 @@ for (lg in linkageGroups)
     next; # lg 0 is not a linkage group, skip to the next for-loop iteration
   }
   message(paste0("Processing linkage group ",lg))
+  orderMarkersFile <- paste(path.expand(path),paste0(orderMarkersFilenamesMainPart,"-chr",lg,".SA.txt"),sep="/")
+  if (!file.exists(orderMarkersFile))
+  {
+    message(paste0("No OrderMarkers output found for linkage group ",lg,". Skipping to next linkage group."))
+    next; # skip to the next for-loop iteration
+  }
   # The file output from the LepMAP2 OrderMarkers module is organized into space/tab
   # delimited columns, which the below read.table command reads in (it excludes the first few lines because they're metadata and don't match the column pattern):
-  orderMarkersFile <- paste(path.expand(path),paste0(orderMarkersFilenamesMainPart,"-chr",lg,".SA.txt"),sep="/")
   orderMarkersData <- read.table(orderMarkersFile, col.names = c("marker_number","position","female_position","left_paren","error_estimate","right_paren","duplicate_or_phases"))
   
   # get rid of unnecessary columns:
