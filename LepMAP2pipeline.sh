@@ -1,16 +1,32 @@
 #!/bin/bash
 
 # TODO:
-# - software requirements
 # - check code to determine how many instances to run in parallel
 # - create a repository containing LepMAP2 software and any other requirements
 
 ##########################################################################################
-# This script runs the LepMAP2 software on an input .csv file containing SNP data in the 
-# form of a chi square root table. 
+# Software Requirements/Dependencies:
 #
+# - locally installed LepMAP2
 # Software downloads and background information on LepMAP2 can be found at:
 # https://sourceforge.net/p/lepmap2/wiki/browse_pages/
+#
+# - locally installed R programming language/software environment
+#
+# - the R package "stringr" must also be installed in your R environment for the 
+# tabulate_OrderMarkers_results.R script to work. If you don't already have it installed, 
+# the tabulate_OrderMarkers_results.R script will attempt to install it automatically, but 
+# it could potentially be prohibited from doing so if you don't run it from an R instance
+# that has been initialized with root priviledges. If you encounter such problems, or want
+# to avoid the issue, simply start R from a command-line terminal as root with the 
+# command:
+#     sudo R
+# and then, once you are in R, enter the command:
+#     install.packages('stringr', repos='http://cran.us.r-project.org')
+# 
+##########################################################################################
+# This script runs the LepMAP2 software on an input .csv file containing SNP data in the 
+# form of a chi square root table. 
 #
 #The purpose of this pipeline is to divide the SNPs into
 # linkage groups/chromosomes. This is handled by LepMAP2 modules. However, our
