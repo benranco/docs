@@ -176,7 +176,7 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
   #myFramePlot <- FALSE
   #myBty <- "l"
 
-  verticalOffset <- 0.4
+  verticalOffset <- 0.4  
 
   myLineLevel <- (1:length(LGsInData)) + verticalOffset
 
@@ -190,14 +190,15 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
   myLl <- 1.8
   if (overlayUnderneath)
   {
-    myLl <- 0.16 # this sets the line height, so needs to be adjusted even if this layer isn't the overlay
-    myMaxwidth <- 0.16 # this sets the height of the density plot, so needs to be adjusted even if this layer isn't the overlay
+    myLl <- 0.3 # this sets the line height, so needs to be adjusted even if this layer isn't the overlay
+    myMaxwidth <- 0.3 # this sets the height of the density plot, so needs to be adjusted even if this layer isn't the overlay
   }
 
   # adjust some of the input parameters for beanplot if this is an overlay layer to be plotted 
   # on top of an already existing plot
   if (isOverlay)
   {
+    #myAt <- (1:length(LGsInData)) - 0.054 + verticalOffset
     myAt <- (1:length(LGsInData)) - 0.054 + verticalOffset
     beeswarmSide <- -1
     myWhat <- c(F,F,F,T)
@@ -223,6 +224,18 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
     myAt[9] <- myAt[9] + 0.1
   }
 
+  # do some custom positioning for some of the LG's of the RLK290 data because a one of them
+  # has a slightly longer beeswarm line:
+  if (hasOverlayData && overlayInputFileName == "RLK290.csv")
+  {
+    myLineLevel[12] <- myLineLevel[12] + 0.1
+    myAt[12] <- myAt[12] + 0.1
+  }
+
+  # set margins
+  myMar <- c(2,3.5,0.2,0.5) + 0.1
+  par(mar=myMar)
+
   if (!isOverlay)
   {
     # plot the "beanplot" (although, not using the bean feature). Some of these parameters aren't 
@@ -232,7 +245,7 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
   else
   {
     # plot the beeswarm (underneath)
-    beeswarm(positions, spacing=1, side=beeswarmSide, vertical=FALSE, add=myAdd, at=myAt, col=c(tickColor,tickColor), pch=22)
+    beeswarm(positions, spacing=1, side=beeswarmSide, vertical=FALSE, add=myAdd, at=myAt, col=c(tickColor,tickColor), cex=0.5, pch=22)
   }
 
   if (!isOverlay)
@@ -240,7 +253,7 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
     # draw the long base lines explicitly
     for (i in 1:length(LGsInData))
     {
-      lines( c(minPositions[i],maxPositions[i]), c(myLineLevel[i],myLineLevel[i]), lwd=4, col=c(lineColor)) # horizontal
+      lines( c(minPositions[i],maxPositions[i]), c(myLineLevel[i],myLineLevel[i]), lwd=3, col=c(lineColor)) # horizontal
     }
 
   }
@@ -295,22 +308,22 @@ myHeightTiff <- 8
 
 if (hasOverlayData && plotOverlayUnderneath)
 {
-  myHeightPng <- 1400
-  myHeightPdf <- 18
-  myHeightTiff <- 18
+  myHeightPng <- 1000
+  myHeightPdf <- 12
+  myHeightTiff <- 10
 
   if (overlayInputFileName == "RGA639.csv")
   {
-    myHeightPng <- 1400
-    myHeightPdf <- 20
-    myHeightTiff <- 20
+    myHeightPng <- 1000
+    myHeightPdf <- 12
+    myHeightTiff <- 12
   }
 
   if (overlayInputFileName == "RGA380-from-R38-g5,186.csv")
   {
-    myHeightPng <- 1400
-    myHeightPdf <- 21.5
-    myHeightTiff <- 21.5
+    myHeightPng <- 1000
+    myHeightPdf <- 12
+    myHeightTiff <- 11
   }
 
 }
@@ -318,29 +331,29 @@ if (hasOverlayData && plotOverlayUnderneath)
 # create png image
 write("-----------------", stdout())
 write("Creating png.", stdout())
-png(filename=paste(path.expand(location),paste0(outputFileNameSansPostfix,"-web.png"),sep="/"), width=1200, height=myHeightPng)
+png(filename=paste(path.expand(location),paste0(outputFileNameSansPostfix,"-web.png"),sep="/"), width=1000, height=myHeightPng)
 generatePlot()
 dev.off()
 
 # create pdf image (useful if you need to scale it extra large)
 write("-----------------", stdout())
 write("Creating pdf (scalable).", stdout())
-pdf(file=paste(path.expand(location),paste0(outputFileNameSansPostfix,"-scalable.pdf"), sep="/"), width=12, height=myHeightPdf)
+pdf(file=paste(path.expand(location),paste0(outputFileNameSansPostfix,"-scalable.pdf"), sep="/"), width=10, height=myHeightPdf)
 generatePlot()
 dev.off()
 
-tiffFileName <- paste(path.expand(location),paste0(outputFileNameSansPostfix,"-print-600dpi-12inch.tiff"), sep="/")
+tiffFileName <- paste(path.expand(location),paste0(outputFileNameSansPostfix,"-print-600dpi-10inch.tiff"), sep="/")
 
 # create tiff image
 write("-----------------", stdout())
 write("Creating large tiff (12 inches wide at 600 dpi).", stdout())
-tiff(file=tiffFileName, width=12, height=myHeightTiff, units = 'in', res=600, compression = "lzw", pointsize=10)
+tiff(file=tiffFileName, width=10, height=myHeightTiff, units = 'in', res=600, compression = "lzw", pointsize=10)
 generatePlot()
 dev.off()
 
 smallerTiffFileName <- paste(path.expand(location),paste0(outputFileNameSansPostfix,"-print-600dpi-6inch.tiff"), sep="/")
-# Now create a scaled down tiff to 6 inches wide. I had to export it first as a 12 inch wide tiff (above) 
-#(7200 pixels at 600 dpi) because if I try to export it as a 6 inch wide tiff the lines are too thick 
+# Now create a scaled down tiff to 6 inches wide. I had to export it first as a 10 inch wide tiff (above) 
+#(6000 pixels at 600 dpi) because if I try to export it as a 6 inch wide tiff the lines are too thick 
 # and it doesn't look good. To created a version scaled to 6 inches wide at 600 dpi, use the following 
 # command-line command:
 #    convert inputFile.tiff -resize 3600x6000 outputFile.tiff
