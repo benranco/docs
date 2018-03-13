@@ -1,0 +1,134 @@
+
+
+
+- he used edgeR to create a matrix of all genes that are differentially expressed. The process was basically: 
+    - do pairwise comparisons between samples and save a list of genes that are differentially expressed for each pair. Put these lists of gene names together and eliminate duplicates. Then, for each sample (which we list in columns in the new matrix), put the value associated with each gene in its column.
+- edgeR can also be used to produce heatmaps (hierarchical clustering)
+
+- he used CountClust (R package) to do grade of membership modeling. He isn't interested in the final output of CountClust, rather he wants two matrices produced in the process:
+    - samples vs topics/groups (the omega matrix)
+    - transcripts/genes vs topics/groups (the theta matrix)
+- see the paper "Grade of Membership Model and Visualization for RNA-seq data using CountClust" by Kushal K Dey, pdf linked at:
+    https://www.bioconductor.org/packages/3.3/bioc/html/CountClust.html
+most up-to-date version of CountClust (and documentation) at:
+    https://bioconductor.org/packages/release/bioc/html/CountClust.html
+    https://bioconductor.org/packages/release/bioc/vignettes/CountClust/inst/doc/count-clust.html
+- also see "Visualizing the structure of RNA-seq expression data using grade of membership models" by Kushal K Dey
+- we use the omega matrix first: 
+    - we pick an abritrary number of topics first of all and see if the samples vs topics are organized in a way that makes sense (Holly & Isabel) based on heat map representation. If not, we try a different number.
+    - then we pick the topics we find interesting, and go to the theta matrix (I think). We sort each topic (column) by descending value, and pick the top 10 (or whatever) values).
+
+- the randomForest R package can be used for a different kind of modeling.
+
+
+
+
+
+
+-------------------------
+Backup of stuff I probably don't need:
+
+omega5 <- gomOutput$clust_5$omega
+theta5 <- gomOutput$clust_5$theta
+
+omega6 <- gomOutput$clust_6$omega
+theta6 <- gomOutput$clust_6$theta
+
+omega7 <- gomOutput$clust_7$omega
+theta7 <- gomOutput$clust_7$theta
+
+write.csv(omega5, paste(path.expand(path), paste0(outputFileNameBase, "-omega5.csv"),sep="/"), row.names=FALSE)
+write.csv(theta5, paste(path.expand(path), paste0(outputFileNameBase, "-theta5.csv"),sep="/"), row.names=FALSE)
+
+write.csv(omega6, paste(path.expand(path), paste0(outputFileNameBase, "-omega6.csv"),sep="/"), row.names=FALSE)
+write.csv(theta6, paste(path.expand(path), paste0(outputFileNameBase, "-theta6.csv"),sep="/"), row.names=FALSE)
+
+write.csv(omega7, paste(path.expand(path), paste0(outputFileNameBase, "-omega7.csv"),sep="/"), row.names=FALSE)
+write.csv(theta7, paste(path.expand(path), paste0(outputFileNameBase, "-theta7.csv"),sep="/"), row.names=FALSE)
+
+
+gomOutput <- FitGoM(t(input),
+            K=c(9,10,11), tol=0.1)
+
+omega9 <- gomOutput$clust_9$omega
+theta9 <- gomOutput$clust_9$theta
+
+omega10 <- gomOutput$clust_10$omega
+theta10 <- gomOutput$clust_10$theta
+
+omega11 <- gomOutput$clust_11$omega
+theta11 <- gomOutput$clust_11$theta
+
+write.csv(omega9, paste(path.expand(path), paste0(outputFileNameBase, "-omega9.csv"),sep="/"), row.names=FALSE)
+write.csv(theta9, paste(path.expand(path), paste0(outputFileNameBase, "-theta9.csv"),sep="/"), row.names=FALSE)
+
+write.csv(omega10, paste(path.expand(path), paste0(outputFileNameBase, "-omega10.csv"),sep="/"), row.names=FALSE)
+write.csv(theta10, paste(path.expand(path), paste0(outputFileNameBase, "-theta10.csv"),sep="/"), row.names=FALSE)
+
+write.csv(omega11, paste(path.expand(path), paste0(outputFileNameBase, "-omega11.csv"),sep="/"), row.names=FALSE)
+write.csv(theta11, paste(path.expand(path), paste0(outputFileNameBase, "-theta11.csv"),sep="/"), row.names=FALSE)
+
+
+gomOutput <- FitGoM(t(input),
+            K=c(13,14), tol=0.1)
+
+omega13 <- gomOutput$clust_13$omega
+theta13 <- gomOutput$clust_13$theta
+
+omega14 <- gomOutput$clust_14$omega
+theta14 <- gomOutput$clust_14$theta
+
+write.csv(omega13, paste(path.expand(path), paste0(outputFileNameBase, "-omega13.csv"),sep="/"), row.names=FALSE)
+write.csv(theta13, paste(path.expand(path), paste0(outputFileNameBase, "-theta13.csv"),sep="/"), row.names=FALSE)
+
+write.csv(omega14, paste(path.expand(path), paste0(outputFileNameBase, "-omega14.csv"),sep="/"), row.names=FALSE)
+write.csv(theta14, paste(path.expand(path), paste0(outputFileNameBase, "-theta14.csv"),sep="/"), row.names=FALSE)
+
+
+
+
+
+# write versions with rownames:
+
+#write.csv(omega4, paste(path.expand(path), paste0(outputFileNameBase, "-omega4-withRowNames.csv"),sep="/"), row.names=TRUE)
+#write.csv(theta4, paste(path.expand(path), paste0(outputFileNameBase, "-theta4-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega5, paste(path.expand(path), paste0(outputFileNameBase, "-omega5-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta5, paste(path.expand(path), paste0(outputFileNameBase, "-theta5-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega6, paste(path.expand(path), paste0(outputFileNameBase, "-omega6-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta6, paste(path.expand(path), paste0(outputFileNameBase, "-theta6-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega7, paste(path.expand(path), paste0(outputFileNameBase, "-omega7-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta7, paste(path.expand(path), paste0(outputFileNameBase, "-theta7-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+#write.csv(omega8, paste(path.expand(path), paste0(outputFileNameBase, "-omega8-withRowNames.csv"),sep="/"), row.names=TRUE)
+#write.csv(theta8, paste(path.expand(path), paste0(outputFileNameBase, "-theta8-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega9, paste(path.expand(path), paste0(outputFileNameBase, "-omega9-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta9, paste(path.expand(path), paste0(outputFileNameBase, "-theta9-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega10, paste(path.expand(path), paste0(outputFileNameBase, "-omega10-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta10, paste(path.expand(path), paste0(outputFileNameBase, "-theta10-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega11, paste(path.expand(path), paste0(outputFileNameBase, "-omega11-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta11, paste(path.expand(path), paste0(outputFileNameBase, "-theta11-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+#write.csv(omega12, paste(path.expand(path), paste0(outputFileNameBase, "-omega12-withRowNames.csv"),sep="/"), row.names=TRUE)
+#write.csv(theta12, paste(path.expand(path), paste0(outputFileNameBase, "-theta12-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega13, paste(path.expand(path), paste0(outputFileNameBase, "-omega13-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta13, paste(path.expand(path), paste0(outputFileNameBase, "-theta13-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+write.csv(omega14, paste(path.expand(path), paste0(outputFileNameBase, "-omega14-withRowNames.csv"),sep="/"), row.names=TRUE)
+write.csv(theta14, paste(path.expand(path), paste0(outputFileNameBase, "-theta14-withRowNames.csv"),sep="/"), row.names=TRUE)
+
+
+
+
+
+
+
+
+==============
+
