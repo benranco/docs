@@ -1,0 +1,137 @@
+All work has been done on CentOS 7.
+
+
+===================================================
+Requirements for SNPpipeline:
+
+---------
+System-level tools:
+
+bash -version
+GNU bash, version 4.2.46(1)-release (x86_64-redhat-linux-gnu)
+
+java -version
+openjdk version "1.8.0_101"
+OpenJDK Runtime Environment (build 1.8.0_101-b13)
+OpenJDK 64-Bit Server VM (build 25.101-b13, mixed mode)
+
+perl 5, version 16, subversion 3 (v5.16.3) built for x86_64-linux-thread-multi
+(with 29 registered patches, see perl -V for more detail)
+
+R version 3.3.3
+
+
+---------
+Local tools:
+
+Picard Tools 2.3.0 .jar package:
+https://broadinstitute.github.io/picard/
+
+bowtie2 2.2.9
+
+samtools 1.3.1
+
+freebayes v1.0.2-16-gd466dde
+
+VCFtools (unable to verify version, but Jun-Jun thinks it's 0.1.12b): 
+https://vcftools.github.io/ 
+
+
+---------
+Additional R packages:
+
+
+if(!require(seqinr))
+{
+  install.packages('seqinr', repos='http://cran.us.r-project.org')
+}
+library(seqinr)
+
+
+if(!require(VariantAnnotation))
+{
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("VariantAnnotation")
+}
+library(VariantAnnotation)
+
+
+
+===================================================
+Requirements for LepMAP2pipeline:
+
+bash
+R version 3.3.3
+
+LepMAP2:
+https://sourceforge.net/p/lepmap2/wiki/Home/
+https://sourceforge.net/p/lepmap2/wiki/browse_pages/
+https://sourceforge.net/p/lepmap2/wiki/Modules/
+https://sourceforge.net/p/lepmap2/wiki/General%20Usage%20example/
+
+
+R package:
+if(!require(stringr))
+{
+  install.packages('stringr', repos='http://cran.us.r-project.org')
+}
+library(stringr)
+
+
+
+===================================================
+Requirements for LPmergeScript.R:
+
+R version 3.3.3
+
+
+R packages:
+
+library(methods) # the methods package is loaded by default in R, but not in Rscript, so explicitly load it here.
+
+if(!require(LPmerge))
+{
+  install.packages('LPmerge', repos='http://cran.us.r-project.org')
+}
+library(LPmerge)
+
+
+
+===================================================
+Requirements for Circos scripts:
+
+bash
+R version 3.3.3
+
+Circos
+
+Inskape and its dependencies:
+sudo yum install inkscape
+
+
+
+===================================================
+Requirements for createStripChartFromLGs.R:
+
+R package:
+if(!require(beanplot))
+{
+  install.packages('beanplot', repos='http://cran.us.r-project.org')
+}
+
+
+
+===================================================
+Requirements for getDepthStats-parallel.R (this will be incorporated into the SNPpipeline):
+
+R version 3.3.3
+samtools 1.3.1
+
+R package:
+if(!require(doParallel))
+{
+  install.packages('doParallel', repos='http://cran.us.r-project.org')
+}  
+library(doParallel) 
+
+

@@ -36,6 +36,8 @@ stripchart(airquality,method="stack",vertical=TRUE, pch=20)
 stripchart(list(airquality$Ozone,airquality$Solar.R),method="jitter",vertical=TRUE, pch=3)
 stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=3)
 stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=20)
+stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=1)
+stripchart(list(airquality$Ozone,airquality$Solar.R),method="stack",vertical=TRUE, pch=22)
 
 Boxplots and stripcharts in R:
 http://www.clayford.net/statistics/tag/strip-charts/
