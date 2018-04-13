@@ -161,6 +161,12 @@ echo "Deleting circos input files mydata.txt and mykaryotype.txt."
 rm mydata.txt
 rm mykaryotype.txt
 
+echo "Converting .svg images to .eps format (also a vector format)."
+echo "***********************************************" >> run.out
+echo "Converting .svg images to .eps format (also a vector format)." >> run.out
+inkscape --without-gui circos-noTicks.svg -E circos-noTicks.eps
+inkscape --without-gui circos-withTicks.svg -E circos-withTicks.eps
+
 echo "Converting circos-noTicks.svg to tiff."
 echo "***********************************************" >> run.out
 echo "Converting circos-noTicks.svg to tiff." >> run.out
