@@ -1,0 +1,104 @@
+[centos@ben-grdi-vm DeconSeq]$ perl deconseq.pl -h
+Usage:
+    deconseq [options] -f <file> -dbs <list> -dbs_retain <list> ...
+
+perl deconseq.pl -i 90 -c 90 -out_dir /work/testout -f /work/test/HI.4542.002.Index_10.HC4_R1-firstMillionSeq.fastq -dbs hsref > /work/testout/benslog.txt
+
+nohup perl deconseq.pl -i 90 -c 90 -out_dir /work/testout -f /work/test/HI.4542.002.Index_10.HC4_R1-firstMillionSeq.fastq -dbs hsref > /work/testout/benslog.txt
+
+sudo nohup perl deconseq.pl -i 90 -c 90 -out_dir /work/testout -f /work/test/HI.4542.002.Index_10.HC4_R1-firstMillionSeq.fastq -dbs hsref > /work/testout/benslog.txt
+
+
+Options:
+    -help | -h
+            Prints the help message and exists.
+
+    -man    Prints the full documentation.
+
+    -version
+            Prints the version of the program.
+
+    -show_dbs
+            Prints a list of available databases.
+
+    -f <file>
+            Input file in FASTA or FASTQ format that contains the query
+            sequences.
+
+    -dbs <list>
+            Name of database(s) to use (default: hsref). Names are according
+            to their definition in the config file. Separate multiple
+            database names by comma without spaces.
+
+            Example: -dbs hs1,hs2,hsref
+
+    -dbs_retain <list>
+            Name of database(s) to use for cross-check. Query sequences with
+            hit against any dbs will be compared to these databases.
+            Databases have to be different from names in dbs. Names are
+            according to their definition in the config file. Separate
+            multiple database names by comma without spaces.
+
+            Example: -dbs_retain bact,vir
+
+    -out_dir <dir>
+            Directory where the results should be written (default: .). If
+            the directory does not exist, it will be created.
+
+    -i <integer>
+            Alignment identity threshold in percentage (integer from 1-100
+            without %) used to define matching sequences as similar. The
+            identity is calculated for the part of the query sequence that
+            is aligned to a reference sequence. For example, a query
+            sequence of 100 bp that aligns to a reference sequence over the
+            first 50 bp with 40 matching positions has an identity value of
+            80%.
+
+    -c <integer>
+            Alignment coverage threshold in percentage (integer from 1-100
+            without %) used to define matching sequences as similar. The
+            coverage is calculated for the part of the query sequence that
+            is aligned to a reference sequence. For example, a query
+            sequence of 100 bp that aligns to a reference sequence over the
+            first 50 bp with 40 matching positions has an coverage value of
+            50%.
+
+    -group <integer>
+            If dbs_retain is set, then this option can be used to group the
+            sequences similar to dbs anthe contamination output file. If group is not set
+            and dbs_retain is set, then three sepad dbs_retain databases with either
+            the clean or rate files will be
+            generated.
+
+            Use -group 1 for grouping "Clean + Both" and use -group 2 for
+            grouping "Contamination + Both".
+
+    -no_seq_out
+            Prevents the generation of the fasta/fastq output file for the
+            given coverage and identity thresholds. This feature is e.g.
+            useful for the web-version since -i and -c are set interactively
+            and not yet defined at the data processing step.
+
+    -keep_tmp_files
+            Prevents from unlinking the generated tmp files. These usually
+            include the id file and the .tsv file(s). This feature is e.g.
+            useful for the web-version since .tsv files are used to
+            dynamically generate the output files.
+
+    -id <string>
+            Optional parameter. If not set, ID will be automatically
+            generated to prevent from overwriting previous results. This
+            option is useful if integrated into other tools and the output
+            filenames need to be known.
+
+    -S <integer>
+            Chunk size of reads in bp as used by BWA-SW (default: 10000000).
+
+    -z <integer>
+            Z-best value as used by BWA-SW (default: 1).
+
+    -T <integer>
+            Alignment score threshold as used by BWA-SW (default: 30).
+
+[centos@ben-grdi-vm DeconSeq]$ 
+

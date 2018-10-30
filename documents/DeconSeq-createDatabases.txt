@@ -1,0 +1,83 @@
+
+# Based on instructions from http://deconseq.sourceforge.net/manual.html , near the bottom of the page.
+
+# -----------------------------------------------------------------------
+# These are the steps I went through to create the human genome database.
+
+# Download human genome sequence data:
+for i in {1..22} X Y MT; do wget ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/Assembled_chromosomes/seq/hs_ref_GRCh38.p12_chr$i.fa.gz; done
+
+# Extract the data and write them to a single file, and delete originals:
+for i in {1..22} X Y MT; do gzip -dvc hs_ref_GRCh38.p12_chr$i.fa.gz >>hs_ref_GRCh38_p12.fa; rm hs_ref_GRCh38.p12_chr$i.fa.gz; done
+
+# Remove ambiguous bases (N's):
+cat hs_ref_GRCh38_p12.fa | perl -p -e 's/N\n/N/' | perl -p -e 's/^N+//;s/N+$//;s/N{200,}/\n>split\n/' >hs_ref_GRCh38_p12_split.fa; rm hs_ref_GRCh38_p12.fa
+
+# Next command needs prinseq-lite-pl from: https://sourceforge.net/projects/prinseq/
+# Remove short sequences and duplicates, and rename sequence id's to ensure unique ids in whole data set:
+perl prinseq/prinseq-lite.pl -log -verbose -fasta hs_ref_GRCh38_p12_split.fa -min_len 200 -ns_max_p 10 -derep 12345 -out_good hs_ref_GRCh38_p12_split_prinseq -seq_id hs_ref_GRCh38_p12_ -rm_header -out_bad null; rm hs_ref_GRCh38_p12_split.fa
+
+# Create db 
+# the normal way to run in background:
+bwa64 index -p hs_ref_GRCh38_p12 -a bwtsw hs_ref_GRCh38_p12_split_prinseq.fasta >bwa64.log 2>&1 &
+tail -f bwa64.log
+# The nohup way to run in background, when logged into an ssh session:
+nohup bwa64 index -p hs_ref_GRCh38_p12 -a bwtsw hs_ref_GRCh38_p12_split_prinseq.fasta >bwa64.log 2>&1
+tail -f bwa64.log
+
+
+# -----------------------------------------------------------------------
+# These are the steps I went through to create the bacterial genomes database.
+
+# Followed instructions to download through the genome download service as outlined here:
+#   https://www.ncbi.nlm.nih.gov/genome/doc/ftpfaq/#allcomplete
+
+
+--------------------------------------
+
+---
+from: https://groups.google.com/forum/#!topic/edwardslabtools/LSWMb_YqbaE
+Q:Also, what are the default values for identity and coverage for the stand alone? The manual doesn't say. Or are they calculated on the go?
+
+A:The standalone version does not have defaults set for coverage or identidy. The thresholds should be set based on the data that is processed either with higher or lower stringency (depending on the expected similarity to the reference) or you could use the defaults from the web version that were used in the publication.
+
+Example dataset output: http://edwards.sdsu.edu/cgi-bin/deconseq/deconseq.cgi?i=1&id=1278970172&p=1&o=1
+---
+from: https://groups.google.com/forum/#!topic/edwardslabtools/LSWMb_YqbaE
+Hi all,
+
+I am getting the exact same error as above, but I have already attempted to make my own database. The only thing I can figure out is that the manual (as listed above:http://deconseq.sourceforge.net/manual.html#DB) says that the index should make 8 files, and I am only getting 5.
+
+I'm making my own db from a bunch of combined .fasta files and this is how I have built the index:
+
+./bwa64 index -p hsref -a div Bacterial.genomes_split_prinseq.fasta >bwa.log 2>&1 &
+
+Have I missed a step here?
+
+
+A:Hi! I have changed something and it seemed to work: try using -a is
+
+That resulted in 8 files + the output.txt.
+
+Also see: 
+https://www.biostars.org/p/171763/
+https://www.biostars.org/p/53546/
+---
+Database download issues:
+from: https://groups.google.com/forum/#!topic/edwardslabtools/Yw73OhiyYGw
+I am trying to download the DeconSeq databases from: ftp://edwards.sdsu.edu:7009/deconseq/db/ however I cannot get the link to connect.
+https://groups.google.com/forum/#!topic/edwardslabtools/dt36WCF8SUA
+https://groups.google.com/forum/#!topic/edwardslabtools/5S_f0yqYC14
+https://groups.google.com/forum/#!topic/edwardslabtools/eQiRk5uRQXU
+---
+from: https://groups.google.com/forum/#!topic/edwardslabtools/S7Q580eLQmQ
+about the results no longer being paired ended
+---
+Modifications to deconseq:
+https://groups.google.com/forum/#!topic/edwardslabtools/LVB6YRqNn3Q
+---
+On using deconseq for paired data:
+https://groups.google.com/forum/#!topic/edwardslabtools/H3368d__SSY
+I don't know if Deconseq will handle paired end data.  But you can do it manually.  Just run deconseq on both files.  Then any reads that are removed from one file, you will need to remove the paired read from the other file.
+---
+

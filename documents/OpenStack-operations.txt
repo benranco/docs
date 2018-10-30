@@ -1,0 +1,190 @@
+To log into the NFIS openstack system:
+ssh username@borealjump.nfis.org
+Then:
+source quickstart/openrc.sh
+
+
+
+
+List of OpenStack commands:
+https://docs.openstack.org/python-openstackclient/latest/cli/command-list.html
+
+
+===========================
+
+The thing to do when you want a larger root disk (larger than 20 GB), is create the VM using a volume.  In the web interface or using ansible it is easier.  But on the command-line you can do it like so:
+
+openstack volume create --image grdi --bootable --size 44 grdi_vol
+
+openstack server create \
+	--volume grdi_vol2 \
+  --flavor gp2e.4xlarge \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	ben_grdi_vm2
+
+For ansible, use the example script and add the “boot_from_volume”, “terminate_volume”, and “volume_size”  declarations for the “os_server” task.  See: http://docs.ansible.com/ansible/latest/modules/os_server_module.html
+
+
+===========================
+
+[<myusername>@jump ~]$ source quickstart/openrc.sh
+[<myusername>@jump ~]$ openstack keypair create brancourt > brancourt.pem
+[<myusername>@jump ~]$ chmod 0600 mynewkeypair.pem
+
+openstack image list
+openstack flavor list
+
+
+openstack server create \
+	--image CentOS7_SNPpipeline \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor gp2.xlarge \
+	brancourt_vm
+
+openstack server create \
+	--image CentOS7_SNPpipeline \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor gp2.medium \
+	ben_small_vm
+
+
+
+openstack floating ip list
+openstack floating ip create External
+
+openstack server add floating ip brancourt_vm 10.20.0.54
+openstack server add floating ip ben_small_vm 10.20.0.134
+
+openstack server stop brancourt_vm
+openstack volume create --size 10 volname_vol
+openstack volume create --type qnap1 --size 600 volname_vol # use this if creating a large volume
+openstack server add volume brancourt_vm volname_vol
+openstack server remove volume brancourt_vm volname_vol
+openstack server start brancourt_vm
+
+ssh -i brancourt.pem centos@10.20.0.54
+scp -i brancourt.pem ./file centos@10.20.0.54:~
+
+[Can copy/download stuff to /projects/genomics on the borealjump server. Can also download directly to my own volume attached to a vm if I want. Could also possibly mount specific folders in /projects/genomics to my vm's?]
+
+# to mount a volume to /work:
+sudo mount -t xfs /dev/vdb1 /work
+# to unmount:
+sudo umount /work
+
+To format and mount a new disk drive to a folder on CentOS 7, from:
+https://unix.stackexchange.com/questions/385769/mount-an-entire-drive-to-a-subforlder-centos-7
+First:
+ls /dev
+[It should be something like vdb]
+[Create a new partition:]
+sudo fdisk /dev/vdb
+[follow the directions, select n to create a new partition, use the defaults to fill up the whole disk, then select w to save and exit]
+[Format the new partition as xfs:]
+sudo mkfs.xfs /dev/vdb1
+[Then create a directory at root level to mount it to:]
+sudo mkdir /work
+sudo mount -t xfs /dev/vdb1 /work
+[Then do chmod and chown as desired. These permissions will be saved on the drive itself so you only need to do it once.]
+sudo chmod 775 /work
+sudo chown centos:centos /work
+[To unmount:]
+sudo umount /work
+
+
+For vm's based on the GRDI image, I couldn't format or mount xfs volumes, so I had to do:
+sudo yum install xfsprogs-devel
+Then I was able to use the mkfs.xfs command to format the volume to xfs, and then mount it. I may or may not have also had to do:
+sudo modprobe xfs
+But I did this before installing xfsprogs-devel, so I don't know if I actually needed it.
+
+
+
+To run a command as a background process, end with an &, but this will terminate if you exit from an ssh session in which you ran the command, so when you want the process to continue even after your ssh session ends, use the nohup (no hangups) command:
+nohup command > log.txt
+
+To searck for process id by command name:
+ps -e | grep name
+To kill all processes of a certain command:
+pkill -9 name
+
+===================================================
+Steps I used to make a CentOS image for running the SNPpipeline on the NFIS boreal cloud:
+
+
+sudo yum update
+sudo yum install nano
+sudo yum install git
+sudo yum install wget
+sudo yum install epel-release
+sudo yum install R libcurl-devel.x86_64 libxml2-devel.x86_64
+
+# these were necessary to install so that some required R packages could be successfully installed:
+sudo yum install openssl-devel
+sudo yum install mariadb-devel
+
+#from wherever you want the SNPpipeline to be downloaded to, enter:
+git clone https://github.com/benranco/SNPpipeline.git
+
+# this is where I'll mount an external volume:
+mkdir /work
+cd ~
+ln -s /work work
+
+# after setting the VM up the way i you want it, exit, shut it down, and do:
+openstack server image create --name image_name vm_name
+
+===================================================
+
+
+
+
+==============
+
+# To create a new security group and add rules to enable ssh in and out:
+
+openstack security group create benssh --description "Intended to allow ssh ingress on port 22, as well as egress."
+
+openstack security group rule create benssh \
+    --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0 \
+    --ingress --ethertype IPv4
+
+openstack security group rule create benssh \
+    --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0 \
+    --egress --ethertype IPv4
+
+
+
+
+# Or, just to add the rules to enable ssh in and out to the default security group:
+
+openstack security group rule create default \
+    --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0 \
+    --ingress --ethertype IPv4
+
+openstack security group rule create default \
+    --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0 \
+    --egress --ethertype IPv4
+
+
+
+
+
+==============
+
+
+=======================
+[brancourt@jump ~]$ openstack server create --image CentOS7 --key-name brancourt --nic net-id=Private --flavor m4.16xlarge brancourt_vm
+Quota exceeded for cores, ram: Requested 50, 262144, but already used 0, 0 of 20, 51200 cores, ram (HTTP 403) (Request-ID: req-bfa42b54-05d7-41b7-b1c8-404f902ee7fc)
+[brancourt@jump ~]$ 
+
+
+
+
+

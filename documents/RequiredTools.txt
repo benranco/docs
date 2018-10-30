@@ -56,6 +56,13 @@ if(!require(VariantAnnotation))
 library(VariantAnnotation)
 
 
+if(!require(doParallel))
+{
+  install.packages('doParallel', repos='http://cran.us.r-project.org')
+}  
+library(doParallel)  
+
+
 
 ===================================================
 Requirements for LepMAP2pipeline:

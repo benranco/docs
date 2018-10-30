@@ -65,9 +65,6 @@ Snippet of some possible scenarios for LepMAP2pipeline documentation:
 
 
 
-# REMEMBER TO UNCOMMENT THE SAMTOOLS CALL IN GETDEPTHSTATS !!!!!!!!!!!!!!!!!!!!!
-
-
 
 
 OLD CONTINUE HERE: 
@@ -84,11 +81,6 @@ OLD CONTINUE HERE:
 
 
 
-Files to commit to Git:
-- updates to the files in Documents/stripChartMods
-- MyCountClustScript.R, MyThetaMatrixScript.R, MyTemppUpdateThetaMatrixScript.R,MyHeatmapScript.R
-- scripts on Isabel's computer
-
 =======================================
 
 
@@ -98,6 +90,13 @@ x- check-in code to fix check.names bug, and make sure code in SNPpipelineDevel 
 x- test and check-in latest code to: choose which half of the pipeline to run, which optional reports to generate, to run the new depth stats report, and the new required folder for depth files.
 - separate large ref file into chunks, and run SNPpipeline on a chunk (jun-jun's new SNP piplines for his 46-sample data set, using his two larger reference files rather than the 14706 ref)
 - continue updating code in SNPpipelineDevel-fluidigm 
+
+
+
+- research grdi and programs for cleaning raw data and assembling genomes sent by Jun-Jun
+- check on grace pipeline, remodify code back, and check in update to getDepthStats.R
+
+
 
 
 ---
@@ -128,20 +127,20 @@ x- transfer to isabel's computer
     x- check-in to git the new subdirectory dataTemp/depthfiles required for depth stats script
     x- enable you to choose which reports to run
     x- run only pre-reports, or run only reports
-    - fix row names = true for mutation report
+    x- fix row names = true for mutation report (I set it to true?)
     ~ investigate why SNPpipeline is only doing A/A for some (maybe NA originally?) cells, and just A/ for others. (seems to be related to whether input to freebayes is haploid or diploid)
     ~ find out how the vcf_to_tab is choosing whether to display the ALT or the REF. Does it just take the larger
   of RO and AO, or has that already been decided by freebayes when it created the .vcf, if the -p (default
   ploidy) is (1) haploid (Jun-Jun) as opposed to (2) diploid (Isabel).
     ~ investigate, can parallel_process.R be sped up by traversing down each col first rather than across?
     ~ introduce R parallelism where possible (see getDepthStats-parallel.R as an example)
-    ~ write a script to load all required R libraries before beginning (to run both in standalone as sudo and in the pipeline)
+    x- write a script to load all required R libraries before beginning (to run both in standalone as sudo and in the pipeline)
 x- run SNPpipeline on Jun-Jun's new data
 x- update all my scripts that use read.table or read.csv to specify check.names=FALSE (to prevent from converting dashes into periods), and make sure the code doesn't use col names as variables (see report_subset.R in latest SNPpipeline code).
 ~ organize scripts into folders, with example input/ouput data files
 - install second hard drive
 - finish thoroughly documenting stuff
-- ?(emailed myself on Dec 6:) Fix rownames=TRUE for mutation report
+x- ?(emailed myself on Dec 6:) Fix rownames=TRUE for mutation report
 
 Todo:
 x- using MAF_cutoff_report, for each sample (col) go back to the sam or bam file, and find out, for each position (row/cell), how many of the most ocurring [A,T,C,G] for jun-jun's, and top two occuring for isabel.
@@ -354,4 +353,171 @@ AF		1 | 1= "Estimated allele frequency in the range (0,1]"
 ***NUMALT		1 | 1= "Number of unique non-reference alleles in called genotypes at this position."
 ***MEANALT		1 | 2= "Mean number of unique non-reference allele observations per sample with the corresponding alternate alleles."
 ***LEN		1 | 1= "allele length"
+
+
+
+==============================================
+
+y064 - Last Thursday at 9:03 AM
+felt so tired in looking prices :grinning: , begin to find and research which coin that have a potency to be used in real world in the near future, not just for trading/speculative commodity :grinning:(edited)
+there are several platform that i think maybe have a potency to be used in real world: bluzelle, nimiq, dfinity, zilliqa, orchid protocol, theta token(edited)
+but thats only my subjective oppinion
+y064 - Last Thursday at 9:34 PM
+@balance, all those project, i think, solve real problem that already exist, have strong team/advisor, and relatively short time to mainnet launch, but maybe i am wrong :sweat_smile: :grinning:
+for example theta token, going to provide decentralized CDN for video streaming, platform like youtube and twitch will become potential user, also founder of youtube and twitch become their advisor
+bluzelle, going to create decentralized database (more like oracle not just data cloud), the team claimed it will be more secure and faster than traditional cloud database
+
+Rocketh - Last Saturday at 10:42 AM
+@wilhelm no not selling any DGD, as I'm in for longterm rewards
+Unless it gets really crazy
+My bet is that there will be an enormous pump once the first rewards distribution is on the horizon. That could be still 6+ months away though
+balance - Last Saturday at 5:16 PM
+Yes. Might be good strategy. Me, for instance, don't even know what this distribution is. So, enough room for the potential growth. What this distribution is, btw?
+Rocketh - Last Saturday at 5:57 PM
+The DAO is collecting fres from onchain-Digix transactions. Those collected fees are distributed among the holders of DGD when they participate (vote) for proposals for the DAO
+But because there is no governance model yet, the collected fees are going to accumulate until the community is able to vote on the first proposals. So the first proposals are going to be super rewarding to vote on
+But there is also a downside potential. If the launch of Digix is unsucscessful and not a lot of people buy Digix, investors of DGD are going to be disillusioned and the price drops hard
+balance - Last Saturday at 5:59 PM
+Ah, I see. Interesting aspect.
+Would you like to add this insight into Santiment.net platform?
+Rocketh - Last Saturday at 6:02 PM
+If it's not too time-consuming, sure
+
+balance - Last Saturday at 7:00 PM
+Looks like we are entering 'capitulation' phase
+If you have done cash free, might be good idea to place some 'fishing' orders
+Market might easily overreact and give amazingly good entry prices
+As the finally some fear is coming into the market - it's getting time to rebuild positions
+Imo
+
+charlesng - Last Sunday at 6:09 AM
+@balance lol.... some of my tokens actually return back to buy price after witnessing 10X ......
+It was just a sight seeing ride lol
+I feel that it is hard to gather enough momentum like in 1st jan to 10th jan where all coins go ATH
+Maybe need another few years
+The ordinary Koreans students and household already starts to lose interest
+It is sad i didnt identify the top
+balance - Last Sunday at 6:18 AM
+Some coins will make new ATH. There have been some nice 5 waves patterns to see
+But probably not all, yes.
+
+Rocketh - Last Sunday at 11:57 AM
+Guys. It you are qualified as an accredited investor, you should seriously have a look into "hadera hashgraph". The last time I was blown away this much only 2 times before. First time Bitcoin, second time Ethereum
+They are going to directly compete with Ethereum by using Solidity. They have already solved all problems of Ethereum. They are like 3 years ahead
+https://m.youtube.com/watch?v=OS9AALj0kHA
+Mohak - Last Sunday at 12:42 PM
+Hashgraph is very interesting but they are selling like 5% supply for $100-200M
+Notice the range :p
+
+ideas - Last Tuesday at 5:52 AM [March 20, 2018]
+I lost interest in crypto world lately anyway... It's the Cryptowinter
+Boring red and cold
+balance - Last Tuesday at 5:54 AM
+it's not yet winter, I'm afraid..
+:wink:
+probably the wave 4 "only"
+but you can imagine how winter will feel like
+most people will get disgusted and really depressed
+moneymoney - Last Tuesday at 6:00 AM
+we are in wave 4 and then after that we go to the moon right ?
+balance - Last Tuesday at 6:01 AM
+yep
+probably, one more intensive drop to finish the wave 4
+and to eliminate the rest of the weak hands
+and then one and the last moon
+after which the real harsh winter will come(edited)
+should be much worse than what we've experience so far since January
+I mean "the real winter"
+Right now most long-term holders haven't been really scared (yet)
+moneymoney - Last Tuesday at 6:05 AM
+how can I get out before the winter  ????
+you said it's like breaking up with your gf when everything is good
+i dont know if I can do that :frowning:
+balance - Last Tuesday at 6:06 AM
+yeah.. it's hard
+ad - Last Tuesday at 8:01 AM
+@balance  What are the odds of wave 4 being more prolonged like wave 2 in chart above?
+balance - Last Tuesday at 8:08 AM
+Typically waves 2 and 4 are different.
+If the waves 2 was long (in time) and complicated in shape, then wave 4 should be fast, sharp and rather simple.
+May be double zigzag
+Crypto Wolf - Last Tuesday at 8:43 AM
+do you really think that after wave 5 we can go down so far ? back to 1B ?:tired_face:(edited)
+balance - Last Tuesday at 8:58 AM
+Yeah. Unfortunately
+Crypto Wolf - Last Tuesday at 9:00 AM
+it would mean the real burst as for  the dot com bubble :weary:
+scary
+y064 - Last Tuesday at 7:43 PM
+@balance i can not imagine if wave 5 can bring market cap to 1 billion, thats disaster, many people will cry especially new comers who come with their hard earned money :cold_sweat: :cry: :cry:
+balance - Last Tuesday at 8:57 PM
+honestly, that will also be institutionals who will lose quite a lot too
+balance - Last Tuesday at 9:10 PM
+and my second honest opinion. unless you really know what "risks" are and to deal with them, stay away from speculations
+better find the projects in crypto which are doing something in the are of your interest
+and join them
+in this way you will increase your chance of holding tight through the difficult stages
+and accumulating at the dips
+because you will understand and participate in what project is doing
+this is, imo, the main benefit of crypto
+it's now possible to mix the financial and professional participations
+create the value together
+and share the results
+moneymoney - Last Tuesday at 9:22 PM
+@balance but sir tether marketcap is 2b, how can whole marketcap go lower than tether ?
+balance - Last Tuesday at 9:26 PM
+oh. sorry, didn't pay attention to the exact number/wording
+"billion" in German is "trillion" in English(edited)
+moneymoney - Last Tuesday at 9:29 PM
+@balance bitcoin is 9000$, can this be the end of wave 4 and beginning of wave 5 :smile: ?
+charlesng - Last Tuesday at 9:35 PM
+So @balance if u say u r mistaking billion and trillion from german, you mean crypto will shot ass $1 trillion in wave 5 and then it will crash hard to $1 trillion for harsh winter?
+Doesnt make sense tho as $1T is definitely higher than now
+Crypto Wolf - Yesterday at 1:38 AM
+@charlesng#3366  EW guidelines suggests that if wave 3 is the longest then wave 5 will be same as wave 1. So probably we will see wave 5 up to 3 trillion. Then crypto winter..Usually correction reaches point 4 so we should come back to levels of MC we are today..
+
+ideas - Yesterday at 9:06 AM
+I think at some point there will be a purge (aren't we there in some way already? ) and when this happens, the fundamentals will be more important
+balance - Yesterday at 9:07 AM
+yes, that is likely to happen
+
+
+Mohak - Last Friday at 4:52 AM
+Constellation and 0chain also looked very good to me in this quarter
+wilhelm - Last Friday at 4:53 AM
+0chain partnered with NEO right?
+Mohak - Last Friday at 4:53 AM
+There's no one doing smart contracts on DAG yet, Infact all DAG ones have one or other problems, constellation or 0chain might solve it(edited)
+Yes, they did.
+
+
+
+
+garbonzo607 - Last Wednesday at 10:23 PM
+@balance I like your approach of gauging community sentiment. Do you understand this to be like a data sample which you can extrapolate to the larger overall market? (For example, a representative sample of 900 people is enough to gauge the entire United States population within 4 percentage points, as long as the sample is representative and you can trust the participants to tell the truth.)
+So for every 1 person to express a "loss of hope" sentiment, it represents 250 others?
+What I don't understand is that "loss of hope" can signal a bear market. Is it wise to try and catch a falling knife? Wouldn't a better indicator be a bull sentiment very soon after the "loss of hope" comment?
+So that you get the lower end of the bull market.
+balance - Last Wednesday at 10:30 PM
+One thing first - we are just reducing the risks of "buying hight" (in this case)
+garbonzo607 - Last Wednesday at 10:30 PM
+Agreed
+balance - Last Wednesday at 10:30 PM
+"loss of hope" never signals the beginning of the bear market
+quite opposite
+As the markets fall -> there is always more hope than despair
+garbonzo607 - Last Wednesday at 10:31 PM
+I don't necessarily think it signals the end either though :wink:
+balance - Last Wednesday at 10:31 PM
+That's correct
+This is the second point -> we can never be sure
+There is always risk
+We just try to reduce it. Address it.
+I came to the conclusion that there is no needs to be "perfectly right"
+It's enough to identify approximately "buy" and "sell" zones
+Once the "crowd mood" really turns from "excitement" to "loos of hope/concerns/lack of interest"
+it is very likely we are in a good "buy zone"
+Of cause - it depends also a lot on your experience and skills
+For this kind of analyses  - your mind should be quiet and able be in "observer" position
+So, that is much more complicated that just look and find "lose of hope" pattern
 
