@@ -25,7 +25,7 @@ source("mybeanplot.R")
 # ########################################################
 # Input Parameters:
 
-location <- "/home/benrancourt/Downloads/stripcharts"
+location <- "/home/benrancourt/Downloads/figures-Sept2018/stripcharts"
 
 #outputFileNameSansPostfix <- "plot3"
 
@@ -36,19 +36,22 @@ location <- "/home/benrancourt/Downloads/stripcharts"
 
 #outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-withRGA639"
 #outputFileNameSansPostfix <- "Plot-LP-Merge-m9,511-withRLK290"
-outputFileNameSansPostfix <- "Plot-R38-m5,186-withRGA380"
+#outputFileNameSansPostfix <- "Plot-R38-m5,186-withRGA380"
+outputFileNameSansPostfix <- "Plot-composite-g8780"
 
 # We assume the input csv file colums are organized: 
 # Column 1: LG, Column 2: position
 #inputFileName <- "R38-m5,006.csv"
-inputFileName <- "R38-m5,186.csv"
+#inputFileName <- "R38-m5,186.csv"
 #inputFileName <- "R45-m7,727.csv"
 #inputFileName <- "LP-Merge-m9,511.csv"
+inputFileName <- "Tab-S3-composite-g8780.csv"
 
 hasOverlayData <- TRUE
 #overlayInputFileName <- "RGA639.csv" # to overlay the 9,511 data
 #overlayInputFileName <- "RLK290.csv" # to overlay the 9,511 data
-overlayInputFileName <- "RGA380-from-R38-g5,186.csv" # to overlay the R38 5,186 data
+#overlayInputFileName <- "RGA380-from-R38-g5,186.csv" # to overlay the R38 5,186 data
+overlayInputFileName <- "NBS-639-g8780map.csv"
 
 hasSecondOverlayData <- FALSE
 #secondOverlayInputFileName <- "RGA639.csv"
@@ -213,6 +216,14 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
     }
   }
   
+  # do some custom positioning for some of the LG's of the NBS-639-g8780map data because a couple of them
+  # have long beeswarm lines:
+  if (hasOverlayData && overlayInputFileName == "NBS-639-g8780map.csv")
+  {
+    myLineLevel[11:12] <- myLineLevel[11:12] + 0.4
+    myAt[11:12] <- myAt[11:12] + 0.4
+  }
+
   # do some custom positioning for some of the LG's of the RGA639 data because a couple of them
   # have long beeswarm lines:
   if (hasOverlayData && overlayInputFileName == "RGA639.csv")
@@ -240,7 +251,7 @@ mapData <- function(path,dataFileName,isOverlay=FALSE,overlayUnderneath=FALSE,ti
   {
     # plot the "beanplot" (although, not using the bean feature). Some of these parameters aren't 
     # necessary unless also plotting the density graph behind the lines, but it doesn't hurt to leave them in.
-    beanplot(positions, kernel="gaussian", horizontal=TRUE, add=myAdd, at=myAt, col=c(lineColor,tickColor,tickColor), what=myWhat, method="overplot", grownage=40,ll=myLl, side=mySide, innerborder=myInnerborder, maxwidth=myMaxwidth, cutmin=minPositions, cutmax=maxPositions, bw="SJ-dpi", las=1, cex.axis=1.1)
+    beanplot(positions, kernel="gaussian", horizontal=TRUE, add=myAdd, at=myAt, col=c(lineColor,tickColor,tickColor), what=myWhat, method="overplot", grownage=40,ll=myLl, side=mySide, innerborder=myInnerborder, maxwidth=myMaxwidth, cutmin=minPositions, cutmax=maxPositions, bw="SJ-dpi", las=1, cex.axis=1.3)
   }
   else
   {
