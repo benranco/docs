@@ -226,7 +226,7 @@ mainLog=$dl$inputFileNameMainPart$logFileNameSuffix
 # build the commands using above parameters
 
 #default dataTolerance is 0.01
-filterCommand="java -cp "$lepMap2Bin" Filtering data="$dl$inputFileNameMainPart$inputFileNameDotSuffix
+filterCommand="java -cp "$lepMap2Bin" Filtering dataTolerance=0.001 data="$dl$inputFileNameMainPart$inputFileNameDotSuffix
 
 separateChromosomesCommand="java -cp "$lepMap2Bin" SeparateChromosomes data="$dl$inputFileNameMainPart$mainInputFileSuffix" lodLimit="$lodLimitSeparateChr" sizeLimit="$sizeLimitSeparateChr
 
