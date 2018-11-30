@@ -505,6 +505,24 @@ for (lg in linkageGroups)
   }
 } # end outer for-loop (iterates through the linkage groups)
 
+##############
+# Now dealing with final data presentation stuff after the for-loop.
+
+
+
+# This section calculates the percentage of missing data for each row and inserts
+# a column into the table representing this data.
+metaColumns <- finalUniqueGenes[,1:12]
+dataColumns <- finalUniqueGenes[,13:ncol(finalUniqueGenes)]
+
+totalNAsPerRow <- rowSums(is.na(dataColumns))
+percentMissingData <- round( (totalNAsPerRow / ncol(dataColumns))*100, digits=1)
+
+finalUniqueGenes <- cbind(metaColumns, percentMissingData, dataColumns)
+colnames(finalUniqueGenes)[13] <- "percent_missing"
+
+
+
 
 # after outer for-loop, remove all rows whose "gene" field occurs more than once in the table, and save their data in a new table
 message("Separating genes that occur in more than one linkage group into their own table.")
@@ -519,7 +537,7 @@ genesInMultipleLGs <- genesInMultipleLGs[order(genesInMultipleLGs$gene,genesInMu
 
 # output a stripped-down csv file that just has the data from the representative
 # marker for each gene
-representativeMarkers <- finalUniqueGenes[ , c(9,13:ncol(finalUniqueGenes))]
+representativeMarkers <- finalUniqueGenes[ , c(9,14:ncol(finalUniqueGenes))]
 write.csv(representativeMarkers, paste(path.expand(path),paste0(csvFilenameMinusExtension,"-postLepMAP2-allChr-uniqueGenes-justTheMarkers.csv"),sep="/"), row.names=FALSE)
 
 # build a map file that preserves the linkage group/gene relationship:
