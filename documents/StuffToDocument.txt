@@ -128,11 +128,12 @@ x- transfer to isabel's computer
     x- enable you to choose which reports to run
     x- run only pre-reports, or run only reports
     x- fix row names = true for mutation report (I set it to true?)
-    ~ investigate why SNPpipeline is only doing A/A for some (maybe NA originally?) cells, and just A/ for others. (seems to be related to whether input to freebayes is haploid or diploid)
+    x- investigate why SNPpipeline is only doing A/A for some (maybe NA originally?) cells, and just A/ for others. (seems to be related to whether input to freebayes is haploid (jun-jun, the .tab displays A/, often diff from ref) or diploid (isabel, the .tab displays C/A, always at least one allele diff from ref)
     ~ find out how the vcf_to_tab is choosing whether to display the ALT or the REF. Does it just take the larger
   of RO and AO, or has that already been decided by freebayes when it created the .vcf, if the -p (default
   ploidy) is (1) haploid (Jun-Jun) as opposed to (2) diploid (Isabel).
-    ~ investigate, can parallel_process.R be sped up by traversing down each col first rather than across?
+    - make sure the reports display in this format "A/" when haploid and "A/A" when diploid
+    x~ investigate, can parallel_process.R be sped up by traversing down each col first rather than across?
     ~ introduce R parallelism where possible (see getDepthStats-parallel.R as an example)
     x- write a script to load all required R libraries before beginning (to run both in standalone as sudo and in the pipeline)
 x- run SNPpipeline on Jun-Jun's new data
@@ -141,6 +142,8 @@ x- update all my scripts that use read.table or read.csv to specify check.names=
 - install second hard drive
 - finish thoroughly documenting stuff
 x- ?(emailed myself on Dec 6:) Fix rownames=TRUE for mutation report
+- fix problem in LepMAP2 pipeline when running the filter module (some of my file name assumptions become incorrect)
+- update all R scripts to put the starting { at the end of the line
 
 Todo:
 x- using MAF_cutoff_report, for each sample (col) go back to the sam or bam file, and find out, for each position (row/cell), how many of the most ocurring [A,T,C,G] for jun-jun's, and top two occuring for isabel.

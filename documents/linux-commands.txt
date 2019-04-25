@@ -1,0 +1,328 @@
+
+
+
+    Redirect stdout to one file and stderr to another file: command > out 2>error.
+    Redirect stderr to stdout ( &1 ), and then redirect stdout to a file: command >out 2>&1.
+    Redirect both to a file: command &> out.
+
+
+Mounting and reading/writing to NTFS on CentOS:
+
+https://wiki.centos.org/TipsAndTricks/NTFS
+
+
+Use rsync, instead of scp! Better for updating/regular backups. Some useful options:
+  -a : archive mode, same as -rlptgoD
+  -u : skip files that are newer on the receiver
+  -v : verbose
+  --ignore-existing : skip updating files that exist on receiver
+rsync -au /src/dir/ host:/dest/dir/
+rsync -a --ignore-existing /src/dir/ host:/dest/dir/
+
+To run a command as a background process, end with an &, but this will terminate if you exit from an ssh session in which you ran the command, so when you want the process to continue even after your ssh session ends, use the nohup (no hangups) command:
+
+nohup command > log.txt
+
+
+
+Grep:
+
+Use grep on all lines of a file except the first line:
+
+option1: cat R28-S91-M28K-Ben-filtered-map_js.txt | sed -n '1!p' | grep -c "expression"
+
+option2: cat R28-S91-M28K-Ben-filtered-map_js.txt | awk '{if(NR>1)print}' | grep -c "expression"
+
+Use grep to search for matches of an entire line: grep "^expression$" file
+
+List line numbers of occurences: grep -n "expression" file
+
+Count the number of occurences: grep -c "expression" file
+
+
+Use grep to only print the segment of the matching lines that contains the matching string with padding of 0-20 characters on either side:
+
+grep -oE ".{0,20}searchpattern.{0,20}"
+
+An alternative way to truncate lines, piping it to cut to print only characters 10 to 90:
+
+grep "searchpattern" | cut -c10-90
+ 
+
+Count how many unique lines there are in a file:
+
+option1: sort -u R28-S91-M28K-Ben-filtered-map_js.txt | wc -l
+
+option2: sort R28-S91-M28K-Ben-filtered-map_js.txt | uniq | wc -l
+
+
+head -10 file  <-- print the first 10 lines of file
+
+tail -10 file  <-- print the last 10 lines of file
+
+tail +10 file  <- print file beginning 10 lines from the front
+
+wc -l  <-- count the number of lines in a file
+
+ls | wc -l  <-- count the number of files in a directory
+
+
+Read a file from line number X to line number Y (there are other ways too):
+
+awk 'NR >= X && NR <= Y' filename 
+
+
+To print out a range of lines from a file using sed:
+sed -n 'startline,endline p; endline+1 q' in.txt > out.txt
+  -n suppresses echoing the input as output
+   p prints out the relevant lines
+   q exit sed without processing rest of file
+
+
+du -sch * --exclude=pattern <-- calculate total size of everything (in current dir), and give a grand total, human readable, excluding any file names that contain the given pattern
+
+df <-- displays the directory path, size and used/available of your various drives
+
+df -h <-- human readable sizes
+
+
+Commands to find out how much free memory/RAM there is:
+
+free -g
+
+vmstat -s
+
+
+If having problems formatting a drive or usb, install gparted (sudo yum install gparted), and use it. To apply any pending operations in gparted, click the green check mark. See:
+
+https://www.unixmen.com/how-to-format-usb-properly-in-linux/ 
+
+How to format usb drive in the terminal:
+
+https://www.unixmen.com/how-to-format-usb-drive-in-the-terminal/
+
+
+To searck for process id by command name:
+ps -e | grep name
+To kill all processes of a certain command:
+pkill -9 name
+
+
+Rename a common portion of all filenames in a directory:
+
+rename ABC XYZ *.txt
+
+or if you have a version of rename that takes perl regex:
+
+rename 's/ABC/XYZ/' *.txt
+
+
+Replace first occurrence of a comma within each line of a file with a dash:
+
+sed -i 's/,/-/' filename
+
+ 
+
+Replace all occurrences of a string within a file:
+
+http://askubuntu.com/questions/20414/find-and-replace-text-within-a-file-using-commands
+
+sed -i 's/original/new/g' filename
+
+
+sed -i 's/\"X\/\"/\"X\/X\"/g' filename
+
+
+sed -i 's/\"A\/\"/\"A\/A\"/g' filename
+
+sed -i 's/\"C\/\"/\"C\/C\"/g' filename
+
+sed -i 's/\"G\/\"/\"G\/G\"/g' filename
+
+sed -i 's/\"T\/\"/\"T\/T\"/g' filename
+
+
+Replace the first part of each line in a file:
+
+sed 's/^[^ ]* /_/' filename # replaces all characters before the first space that aren't space on each line with _
+sed 's/^[^\t]*/_/' filename # replaces all characters before the first tab that aren't tab on each line with _
+sed 's/^[^\t]*\t//' filename # replaces all characters before the first tab as well as the first tab on each line with nothing
+
+
+# bash script to do the above for each file in a folder:
+
+path="/path/to/folder/"
+for filename in $(ls $path)
+do
+    sed 's/^[^\t]*/_/' $path$filename > $path$filename"-edited.txt"
+done
+
+
+
+To format and mount a new disk drive to a folder on CentOS 7, from:
+https://unix.stackexchange.com/questions/385769/mount-an-entire-drive-to-a-subforlder-centos-7
+First:
+ls /dev
+[It should be something like sdb]
+[Create a new partition:]
+sudo fdisk /dev/sdb
+[follow the directions, select n to create a new partition, use the defaults to fill up the whole disk, then select w to save and exit]
+[Format the new partition as xfs:]
+sudo mkfs.xfs /dev/sdb1
+[Then create a directory at root level to mount it to:]
+sudo mkdir /work
+sudo mount -t xfs /dev/sdb1 /work
+[Then do chmod and chown as desired. These permissions will be saved on the drive itself so you only need to do it once.]
+[To unmount:]
+sudo umount /work
+
+To create a symbolic link to a directory or file, from:
+https://stackoverflow.com/questions/9587445/how-to-create-a-link-to-a-directory
+Symbolic or soft link (files or directories, more flexible and self documenting)
+#     Source                             Link
+ln -s /home/jake/doc/test/2000/something /home/jake/xxx
+Hard link (files only, less flexible and not self documenting)
+#   Source                             Link
+ln /home/jake/doc/test/2000/something /home/jake/xxx
+
+
+
+Very handy guides to disk drive management in CentOS (6).
+
+Adding a separate mountable (and automountable) disk drive:
+
+http://www.techotopia.com/index.php/Adding_a_New_Disk_Drive_to_a_CentOS_System
+
+Adding a drive/managing your Volume Group/Logical Volume(s) and Logical Volume Management (LVM) in CentOS. Very cool.
+
+http://www.techotopia.com/index.php/Adding_a_New_Disk_to_a_CentOS_Volume_Group_and_Logical_Volume
+
+Some useful info commands: mount, vgdisplay (volume group(s)), lvdisplay (logical volumes), pvdisplay (physical volumes), ls /dev/sd*, cat /proc/partitions
+
+Some useful create commands:
+
+(I first created an xfs partition on the new drive using gparted. could also use fdisk)
+
+sudo pvcreate /dev/sdb1 # for example
+
+sudo vgextend centos /dev/sdb1 # add it to the volume group
+
+sudo lvextend -l+953861 /dev/centos/home # add 953861 logical extents to the home logical volume. alternatively:
+
+sudo lvextend -L+3.6T /dev/centos/home # 3.6 Terrabytes to the home logical volume
+
+# last step, revise the filesystem to use the new space (for centos 7 had to use xfs_growfs rather than resize2fs:
+
+sudo xfs_growfs /dev/centos/home
+
+# confirm:
+
+df -h
+
+The most popular answer in this thread has a good summary of what this guy did for the whole process:
+
+https://stackoverflow.com/questions/26305376/resize2fs-bad-magic-number-in-super-block-while-trying-to-open
+
+
+
+
+==============================
+Automatic security updates in CentOS:
+https://serversforhackers.com/video/automatic-security-updates-centos
+
+
+sudo yum install name
+
+yum search string
+
+# yum search is not a reliable way to find the packages. Use yum provides instead and use a filename that you know should be in the package that you want to find - e.g yum provides '*/File/Glob.pm'
+
+yum list available 'name*'
+sudo yum install 'name*'
+
+sudo yum list installed | grep string
+
+repoquery --list name
+
+locate name
+
+
+-----
+yum grouplist
+yum grouplist hidden
+yum grouplist hidden ids
+yum groupinstall "Group Name"
+yum groupremove "Group Name"
+# if this doesn't work: yum groupinstall "Group Name"
+yum groups mark install "Group Name"
+yum groups mark convert "Group Name"
+yum groupinstall "Group Name"
+----------
+
+
+cat /etc/redhat-release
+
+sudo yum clean all
+
+sudo yum update
+
+sudo yum --security upgrade
+
+sudo yum install yum-cron
+
+sudo gedit /etc/yum/yum-cron.conf
+
+      update_cmd = security
+      apply_updates = yes
+
+sudo systemctl status yum-cron
+sudo systemctl enable yum-cron
+# Or "restart" if already started
+sudo systemctl start yum-cron
+
+
+----------
+
+cat /etc/redhat-release  - for CentOS version
+
+----------
+
+glibc /libc6 version:
+
+https://ubuntuforums.org/showthread.php?t=1173797
+
+yum list glibc
+
+
+To update glibc and check that the fix is in place (from:
+
+https://www.subhosting.net/kb/how-to-fix-glibc-vulnerability-cve-2015-7547-on-centos-linux/):
+
+yum clean all
+yum -y update glibc
+
+Check changelog of newly installed glibc and make sure that fix for CVE-2015-7547 is listed there:
+rpm -q --changelog glibc | grep CVE-2015-7547
+
+
+========================
+
+Patched Outputs:
+
+
+[benrancourt@localhost Downloads]$ java -version
+openjdk version "1.8.0_101"
+OpenJDK Runtime Environment (build 1.8.0_101-b13)
+OpenJDK 64-Bit Server VM (build 25.101-b13, mixed mode)
+[benrancourt@localhost Downloads]$ openssl version
+OpenSSL 1.0.1e-fips 11 Feb 2013
+[benrancourt@localhost Downloads]$ rpm -q --changelog glibc | grep CVE-2015-7547
+  CVE-2015-7547 fix (#1296030).
+- Fix CVE-2015-7547: getaddrinfo() stack-based buffer overflow (#1296030).
+[benrancourt@localhost Downloads]$
+
+========================
+
+
+
+

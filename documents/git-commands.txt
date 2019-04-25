@@ -1,0 +1,69 @@
+
+
+Git pro book, all online here:
+https://git-scm.com/book/en/v2 
+
+
+Git getting started guide:
+https://guides.github.com/activities/hello-world/
+
+-----
+Commands:
+
+# git doesn't care what name the directory you've cloned the repository into is, you can use the mv command to rename it and it won't mess anything up.
+
+git    # lists common commands
+git help <command>  # more info on the command
+
+git clone ...
+
+git branch # list, create or delete branches
+git branch -a # list all branches, including remote branches
+git branch <branchname> # create a new branch
+git checkout <branchname> # switches to the named branch (commit any uncommitted modified files first)
+git checkout -b <branchname> # create a new branch and check it out
+git push -u origin <branchname> # push your newly created and checked out local branch to github (-u origin sets the upstream (and remote tracking branch) - you should only need to do this in your first push)
+git branch -d <branchname> # delete locally the given branch if it is fully merged (-D will force it if it isn't merged)
+git push origin --delete <branchname> # delete remote branch
+
+git pull # Fetch from and merge with another repository or a local branch (do this before editing, committing, etc)
+git merge <branchname> # merge with another branch - any conflicts will be flagged in the conflicting files (always commit and push your current branch first. Once a merge is completed, you will need to push your changes, even if you didn't have conflicts)
+
+# compare two branches:
+git diff branch_1..branch_2 # That will produce the diff between the tips of the two branches. If you'd prefer to find the diff from their common ancestor to test, you can use three dots instead of two:
+git diff branch_1...branch_2
+
+git add *.txt # adds all .txt files to repository
+git rm <filename> # remove files from working tree and index
+git commit -a  # commit, while first adding any changes made (the -a is necessary)
+     (in vi editor type i to switch to edit mode, Esc to switch to command mode, :wq or :xto save and exit)
+git commit -am "Commit message." # like above but the -m lets you skip the vi editor
+git status
+git push
+
+git remote -v # checks the current remote git repository location
+# to change the current remote git repository location:
+git remote set-url origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
+
+To add an empty folder to a git repository, create the folder, then add a file to it. You can use a file called .gitignore, which contains 2 lines:
+*
+!.gitignore
+The * tells git to ignore everything in this directory. The second line tells git not to ignore the .gitignore file. If you want to add an empty folder to a folder which already has a .gitignore file, you have to remove the first folder's .gitignore file.
+
+git log # show commit history, with the SHA of each commit
+git log -p -2 # also show the difference in each commit, and limit to the previous two
+https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History
+
+git reset HEAD~  # undo recent commit # actually, be careful before applying this, there's a better way, see:
+https://github.com/blog/2019-how-to-undo-almost-anything-with-git
+git reset <last good SHA> # undo local commit
+
+# show differences between index and working tree
+# that is, changes you haven't staged to commit
+git diff [filename]
+# show differences between current commit and index
+# that is, what you're about to commit
+git diff --cached [filename]
+# show differences between current commit and working tree
+git diff HEAD [filename]
+

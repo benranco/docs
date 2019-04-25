@@ -1,0 +1,129 @@
+
+(also see: text file about graphing charts/plots in R)
+
+
+R Programming Language
+
+Optimizations:
+https://www.r-bloggers.com/faster-higher-stonger-a-guide-to-speeding-up-r-code-for-busy-people/
+https://www.r-bloggers.com/strategies-to-speedup-r-code/
+
+About R:
+https://www.tutorialspoint.com/r/index.htm
+http://www.i-programmer.info/programming/other-languages/1706-a-programmers-guide-to-r.html?start=1
+
+
+========
+
+Optimizations Summary:
+
+- parallel processing (apply() functions are good for this)
+- pre-compiling functions (cmpfn()) - best for new numerical computations, not so good for paste, or manipulations, etc)
+- benchmarking using library(microbenchmark) and plotting using library(ggplot2) - autoplot()
+- profiling code to determine which functions are taking the most time (Rprof())
+- using faster functions/packages (eg. data.table library for processing data frames)
+
+
+Improving your code:
+
+- use vector math instead of for loops
+     - eg. condition checking computations inside for loops can be moved outside the for loop and done in a vectorized way
+     - most base r functions handle vectors as well as scalars
+     - but apply() functions are actually wrappers for for loops
+-- pre-allocate memory and then fill it rather than appending to a vector or list and making it resize
+     - apply functions do pre-allocation for you
+-- use a matrix instead of a data frame (only one data type), etc
+- use Internal(mean(x)) instead of mean(x) - (with some caveats/warnings)
+-- use C++ (RCpp) for loops that can't be vectorized, or functions that get called millions of times
+-- for simple loops, use the ifelse notation instead (like Java's ? : condition) -> really fast
+- use which() to select rows instead of a for loop
+- parallelization with vectorization (see strategies article above)
+-- remove objects (rm()) and flush memory (gc()) as soon and often as possible
+-- use data.table() instead of data frame, it consumes less memory and faster
+
+
+========
+
+Not about optimizations, just coding questions:
+
+- To discover the directory that R installs packages to: .libPaths()
+- To change the directory that R installs packages to: .libPaths("/directory/path")
+- To install a package for a library: install.packages("name", repos="http://cran.us.r-project.org")
+- To load a library: library("name")
+- To load an R script into an R session: source("script.R")
+
+
+R packages:
+http://r-pkgs.had.co.nz/r.html
+http://stackoverflow.com/questions/13102149/extracting-source-code-from-r-package
+https://www.biostars.org/p/146490/
+
+
+More on installing packages:
+https://www.tutorialspoint.com/r/r_packages.htm
+https://www.r-bloggers.com/installing-r-packages/
+
+Install packages from local source:
+http://stackoverflow.com/questions/13940688/installing-package-from-a-local-tar-gz-file-on-linux
+https://stat.ethz.ch/R-manual/R-devel/library/utils/html/install.packages.html
+
+Install packages in your home directory:
+https://www.stat.osu.edu/computer-support/mathstatistics-packages/installing-r-libraries-locally-your-home-directory
+
+Customizing where R installs packages:
+http://stackoverflow.com/questions/2615128/where-does-r-store-packages
+
+
+paste, paste0, sprintf:
+https://www.r-bloggers.com/paste-paste0-and-sprintf/
+
+About data.frame [-1] vs [, -1]:
+http://stackoverflow.com/questions/21137385/are-dataframe-1-and-dataframe-1-the-same
+
+Returning the actual element at a list index, rather than a new list containing the element (use [[]]):
+http://www.i-programmer.info/programming/other-languages/1706-a-programmers-guide-to-r.html?start=1
+
+About the table function (eg. calculates a factor of a vector and reports them (totals of each value) in tabular form):
+https://www.r-bloggers.com/r-function-of-the-day-table/
+
+Substr, substring examples:
+https://stat.ethz.ch/R-manual/R-devel/library/base/html/substr.html
+http://www.endmemo.com/program/R/substr.php
+
+Write .csv:
+http://rprogramming.net/write-csv-in-r/
+
+Read.table / read.delim:
+http://stackoverflow.com/questions/10599708/difference-between-read-table-and-read-delim-functions
+https://stat.ethz.ch/R-manual/R-devel/library/utils/html/read.table.html
+
+Useful, good statistics/summary example:
+https://www.r-bloggers.com/extracting-information-from-objects-using-names/
+
+Counting occurrences of a character in a string:
+https://techoverflow.net/blog/2012/11/10/r-count-occurrences-of-character-in-string/
+http://stackoverflow.com/questions/12427385/how-to-calculate-the-number-of-occurrence-of-a-given-character-in-each-row-of-a
+
+
+========
+
+Using an interactive R script (that uses readline()) in batch mode:
+http://bitc.bme.emory.edu/~lzhou/blogs/?p=224
+- basically, replace all uses of readline with a custom readlineB() function that uses scan() instead
+
+Running R scripts in batch mode with arguments (i.e. non-interactive):
+https://shihho.wordpress.com/2012/11/30/r-how-to-run-r-scripts-in-batch-mode-with-arguments/
+http://quantitative-ecology.blogspot.ca/2007/08/including-arguments-in-r-cmd-batch-mode.html
+
+
+========
+
+Science-specific:
+
+read.fasta:
+http://www.rdocumentation.org/packages/seqinr/versions/3.3-0/topics/read.fasta
+http://davetang.org/muse/2013/05/09/using-the-r-seqinr-package/
+
+
+
+

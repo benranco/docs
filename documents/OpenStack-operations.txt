@@ -1,10 +1,40 @@
 To log into the NFIS openstack system:
-ssh username@borealjump.nfis.org
+ssh brancourt@borealjump.nfis.org
 Then:
 source quickstart/openrc.sh
 
 
+              RAM   CPU AVAILABLE
+x1.16xlarge   1015  64  2          not public (but I have access)
+mm2e.16xlarge 1000  56  1          not public
+x1.8xlarge    507   32  4          not public
+mm1.16xlarge  252   56  8
+gp2e.4xlarge  122   56  10
+gp2.4xlarge   57    56  22
+gp1.4xlarge   28    56  4
+mm1.8xlarge   126   28  16
+mm1.4xlarge   72    16  28
 
+To mount a folder in /public as a volume:
+From jump:
+cd /public
+df to show full path of /public
+From your vm:
+mount a folder from /public as nfs
+
+[brancourt@jump2 ~]$ ls /public/genomics/
+junjun_Conifer_192gDNA  out01  out02  out03  out04  out05  out06  out07  out08  out09  out10
+[brancourt@jump2 genomics]$ df
+Filesystem          1K-blocks       Used   Available Use% Mounted on
+/dev/vda1            51474024    4015968    44820288   9% /
+devtmpfs              1001040          0     1001040   0% /dev
+tmpfs                 1023732          0     1023732   0% /dev/shm
+tmpfs                 1023732     115020      908712  12% /run
+tmpfs                 1023732          0     1023732   0% /sys/fs/cgroup
+10.20.0.6:/Public 99962978816 7547415552 92415563264   8% /public
+
+sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun_Conifer_192gDNA /workin
+sudo mount -t nfs 10.20.0.6:/Public/genomics/out01 /work
 
 List of OpenStack commands:
 https://docs.openstack.org/python-openstackclient/latest/cli/command-list.html
@@ -37,13 +67,22 @@ openstack image list
 openstack flavor list
 
 
+
 openstack server create \
 	--image CentOS7_SNPpipeline \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
-	--flavor gp2.xlarge \
-	brancourt_vm
+	--flavor x1.8xlarge \
+	ben_vm1
+
+openstack server create \
+	--image CentOS7_SNPpipeline \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor x1.16xlarge \
+	ben_pipeline_vm
 
 openstack server create \
 	--image CentOS7_SNPpipeline \
@@ -53,6 +92,16 @@ openstack server create \
 	--flavor gp2.medium \
 	ben_small_vm
 
+openstack server add floating ip ben_vm1 10.20.0.153         
+openstack server add floating ip ben_vm2 10.20.0.210         
+openstack server add floating ip ben_vm3 10.20.0.200         
+openstack server add floating ip ben_vm4 10.20.0.203         
+openstack server add floating ip ben_vm5 10.20.0.155         
+openstack server add floating ip ben_vm6 10.20.0.152         
+openstack server add floating ip ben_vm7 10.20.0.196         
+openstack server add floating ip ben_vm8 10.20.0.120         
+openstack server add floating ip ben_vm9 10.20.0.183         
+openstack server add floating ip ben_vm10 10.20.0.207    
 
 
 openstack floating ip list
@@ -67,6 +116,7 @@ openstack volume create --type qnap1 --size 600 volname_vol # use this if creati
 openstack server add volume brancourt_vm volname_vol
 openstack server remove volume brancourt_vm volname_vol
 openstack server start brancourt_vm
+openstack server delete brancourt_vm
 
 ssh -i brancourt.pem centos@10.20.0.54
 scp -i brancourt.pem ./file centos@10.20.0.54:~
@@ -138,7 +188,7 @@ cd ~
 ln -s /work work
 
 # after setting the VM up the way i you want it, exit, shut it down, and do:
-openstack server image create --name image_name vm_name
+openstack server image create --name image_name server_name
 
 ===================================================
 
