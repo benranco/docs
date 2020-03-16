@@ -1,0 +1,637 @@
+TODO:
+xsearch for charsInType
+xprocess TODOs in chi sq report gen
+QUESTION: should the chi sq report automatically set all indels to "-" instead of H or A or B?
+  x- make 2 new columns that record which is H, A, B
+  x- update code to generate linkage file in both pipeline and LepMAP2 because of two new columns
+THEN:
+xcode check by searching for allelesInType
+xthen make sure nothing else needs to be updated
+xmake sure in latest code halpoid data is still formatted like "G/" (relevant to lines 402-420)
+
+xbefore running, make sure the start.sh is updated, and report_gen_p2.R is modified to start with edited report.
+
+------
+for percentage_snps.csv:
+x- three new columns: indel1, indel2, other_indels
+x- include indel1 and indel2 in formula to find max and second max, and sum
+
+x- set up proper input parameter for HAS_INDELS
+
+x- check in updated code
+x- integrate script to generate new indels report into pipeline
+
+All above this line is done
+---------------------------------------------------
+
+====> HERE
+x- run SNPpipeline on remainder of 42 sample set, until filled_report is done
+x- merge folders of temp output, output, temp data, data from first and second sets of 42 sample data
+x- merge report and filled report of 14 and 28 sample sets (but missing 1000 lines from p35 of 28 filled report)
+- copy 28 samples raw data
+- keep both sets of reporttemp?
+x- kill getDepthStats (if still running)
+x- backup latest reports as reports-42samples-missing1000rowsFromP35
+x- copy newly created p35 filled Rds, 
+x- merge it with the filled_report of 28 sampleset, 
+x- then re-merge 14 and 28 sample reports
+x- regenerate rest of reports (after filled report for 42 sample set
+x- regenerate depths stats reports
+x- does filled_report get affected by having indels? !!!!!!!!! Yes, treat the full indel.
+x    - it compares the first character of line one of the samtools query to the REF, which will always return false in the case that a REF is an indel. To test, manually do the query on a ref that is an indel.
+x- summarize how the two most common alleles are selected, especially in the case of indels. Is there a possibility that neither will be the REF, or is the REF always chosen as one of the two?
+- research what . and , mean in the bam files
+- why does the align.sh call to bowtie use referenceTemp/formatted_output ????
+- delete or update standalone tally_indels.R
+x- deal with the problem where it tries to chmod all the raw data files but can't because it isn't the owner
+- consider updating first half of pipeline to continue where it left off if it was interrupted
+
+xNOTE:
+x- the only scripts that have commented code are gen_report.sh and report_gen_p2.R. Anything else that have been modified this year is new code that needs to be checked in.
+
+
+ncore="$(( ($(grep -c ^processor /proc/cpuinfo) -4)*2 ))"
+
+============
+
+TODO:
+- backup/store data from big SNPpipeline run
+- put clc on cloud
+- RealPhy?
+
+
+=====
+
+x- CHECK IN UPDATED CODE
+?- find out why chi report only produced 6000 rows
+x- regenerate reports (after edited report) with MAF cutoff of 0.05 instead of 0.3
+x- add Cr4 row to the input file used for LepMAP2 (probably the MAF chi report), setting all its samples whose column name has an MS in it to A, and all the others to -.
+x- try the filter module of LepMAP2 to see if it works, if not let jun-jun filter it
+x- run LepMAP2
+x- generate depth stats?
+
+=====
+
+TODO (see Unsaved Document 19):
+x- figure out how to remove duplicates (using samtools or picard), at what stage in 
+the pipeline to do this, and test it using 1 or 5 samples.
+x- what about just counting duplicates?
+- also consider whether the freebayes part of the pipeline can be updated to run in parallel
+      - see freebayes-parallel here: https://github.com/ekg/freebayes/blob/master/README.md
+- TEST NEWER SAMTOOLS WITH MARKDUP
+- in modified pipeline, should we always mark duplicates, or make that optional?
+
+
+mv SNPpipeline/scripts SNPpipeline/scripts-old-preRemDup
+cp -a forRemDup/start-remDup-startAfterSortBam.sh SNPpipeline/
+cp -a forRemDup/scripts/ SNPpipeline/scripts
+cp -a forRemDup/picard-2.20.7/ SNPpipeline/tools/picard-2.20.7
+
+cd SNPpipeline
+nohup ./start-remDup-startAfterSortBam.sh > withRemDup_pipeline_log_pipe0.txt &
+
+
+---
+
+---
+
+---
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Liu_Conifer_192gDNA /workin
+sudo mount -t nfs 10.20.0.6:/Public/genomics/pipe0 /work
+
+ssh brancourt@borealjump.nfis.org
+-------------------
+restart vm3, vm5, vm10
+done: vm2, vm4, vm6, vm7
+still running: vm1, vm3
+ben_vm10             | ACTIVE  | Private=192.168.0.123, 10.20.0.207 | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm9              | SHUTOFF | Private=192.168.0.69, 10.20.0.183  | CentOS7_SNPpipeline | x1.8xlarge  |
+ben_vm8              | SHUTOFF | Private=192.168.0.91, 10.20.0.120  | CentOS7_SNPpipeline | x1.8xlarge  |
+ben_vm7              | SHUTOFF | Private=192.168.0.71, 10.20.0.196  | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm6              | SHUTOFF | Private=192.168.0.126, 10.20.0.152 | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm5              | SHUTOFF | Private=192.168.0.68, 10.20.0.155  | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm4              | SHUTOFF | Private=192.168.0.86, 10.20.0.203  | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm3              | SHUTOFF | Private=192.168.0.130, 10.20.0.200 | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm2              | SHUTOFF | Private=192.168.0.54, 10.20.0.210  | CentOS7_SNPpipeline | mm1.8xlarge |
+ben_vm1              | SHUTOFF | Private=192.168.0.55, 10.20.0.153  | CentOS7_SNPpipeline | mm1.8xlarge |
+
+Already there: 2, 6, 10
+Todo: 1, 3, 4, 5, 7, 8, 9
+Done:
+sudo mkdir /work9
+sudo mount -t nfs 10.20.0.6:/Public/genomics/33sampleRNA_pipeline/xpipe0 /work9
+nohup cp -av /work/* /work9 > copylog0 &
+
+ssh brancourt@borealpfc.nfis.org
+
+-------------------
+cp -a start-remDup-startAfterSortBam.sh start-remDup-startAfterSortBam-pt2-remaining21bams.sh
+nano start-remDup-startAfterSortBam-pt2-genAllReports.sh
+nohup ./start-remDup-startAfterSortBam-pt2-remaining21bams.sh > withRemDup_pipeline_log_pt2_pipe0.txt &
+
+-------------------
+nohup java -jar picard.jar MarkDuplicates I=testDuplicates/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted.bam O=testDuplicatesOutput/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted-PicardDupRem.bam M=testDuplicatesOutput/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_Picard_metrics.txt REMOVE_DUPLICATES=true > testDuplicatesOutput/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_Picard_log.txt &
+
+nohup SNPpipeline/tools/samtools-1.3.1/samtools markdup -o testDuplicatesSamOut/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_SamtoolsDupRem.bam testDuplicates/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted.bam > testDuplicatesSamOut/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_Samtools_log.txt &
+
+nohup ~/samtools-1.9/samtools fixmate -m testDuplicates/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted.bam testDuplicatesFixmate/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted.bam > testDuplicatesFixmate/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_fixmate_log.txt
+
+nohup ~/samtools-1.9/samtools markdup -rsS testDuplicates/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted.bam testDuplicatesNewSam19Out/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_SamtoolsDupRem.bam  > testDuplicatesNewSam19Out/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_Samtools_log.txt &
+
+nohup SNPpipeline/tools/samtools-1.3.1/samtools rmdup testDuplicates/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted.bam testDuplicatesSamOut/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_SamtoolsDupRem.bam  > testDuplicatesSamOut/NS.1125.002.IDT_i7_10---IDT_i5_10.MR323_sorted_Samtools_log.txt &
+
+
+============
+https://digdeeper.neocities.org/ghost/email.html
+
+ssh brancourt@borealpfc.nfis.org
+
+==============================================================
+Notes for running the 33sample RNA pipeline:
+
+  91M Oct 24 20:47 Trinity_RS_SS_ALL20.01.00000001.fasta
+  70M Oct 24 20:48 Trinity_RS_SS_ALL20.02.00064167.fasta
+  67M Oct 24 20:48 Trinity_RS_SS_ALL20.03.00128333.fasta
+  62M Oct 24 20:48 Trinity_RS_SS_ALL20.04.00192499.fasta
+  84M Oct 24 20:48 Trinity_RS_SS_ALL20.05.00256665.fasta
+  58M Oct 24 20:48 Trinity_RS_SS_ALL20.06.00320831.fasta
+  30M Oct 24 20:48 Trinity_RS_SS_ALL20.07.00384997.fasta
+  28M Oct 24 20:49 Trinity_RS_SS_ALL20.08.00449163.fasta
+  25M Oct 24 20:49 Trinity_RS_SS_ALL20.09.00513329.fasta
+  23M Oct 24 20:49 Trinity_RS_SS_ALL20.10.00577495.fasta
+ 535M Oct 24 20:50 Trinity_RS_SS_ALL20.fasta
+
+Already there: 2, 6, 10
+Todo: 1, 3, 4, 5, 7, 8, 9
+Done:
+sudo mount -t nfs 10.20.0.6:/Public/genomics/33sampleRNA_pipeline/xpipe0 /work9
+
+Which VM's will use which type of hard drive for /work:
+total 1.1G
+1 ssd  91M Oct 24 20:47 Trinity_RS_SS_ALL20.01.00000001.fasta
+2 pub  70M Oct 24 20:48 Trinity_RS_SS_ALL20.02.00064167.fasta
+3 ssd  67M Oct 24 20:48 Trinity_RS_SS_ALL20.03.00128333.fasta
+4 spi  62M Oct 24 20:48 Trinity_RS_SS_ALL20.04.00192499.fasta
+5 spi  84M Oct 24 20:48 Trinity_RS_SS_ALL20.05.00256665.fasta
+6 pub  58M Oct 24 20:48 Trinity_RS_SS_ALL20.06.00320831.fasta
+7 ssd  30M Oct 24 20:48 Trinity_RS_SS_ALL20.07.00384997.fasta
+8 spi  28M Oct 24 20:49 Trinity_RS_SS_ALL20.08.00449163.fasta
+9 ssd  25M Oct 24 20:49 Trinity_RS_SS_ALL20.09.00513329.fasta
+10pub  23M Oct 24 20:49 Trinity_RS_SS_ALL20.10.00577495.fasta
+ 535M Oct 24 20:50 Trinity_RS_SS_ALL20.fasta
+
+openstack volume create --type rbd_ssd --size 450 pipe01
+openstack volume create --type rbd_ssd --size 450 pipe03
+openstack volume create --type rbd_ssd --size 450 pipe07
+openstack volume create --type rbd_ssd --size 450 pipe09
+
+openstack volume create --size 500 pipe04
+openstack volume create --size 500 pipe05
+openstack volume create --size 500 pipe08
+
+openstack server add volume ben_vm pipe0
+[brancourt@jump2 ~]$ openstack server add volume ben_vm1 pipe01
+[brancourt@jump2 ~]$ openstack server add volume ben_vm3 pipe03
+[brancourt@jump2 ~]$ openstack server add volume ben_vm7 pipe07
+[brancourt@jump2 ~]$ openstack server add volume ben_vm9 pipe09
+[brancourt@jump2 ~]$ openstack server add volume ben_vm4 pipe04
+[brancourt@jump2 ~]$ openstack server add volume ben_vm5 pipe05
+[brancourt@jump2 ~]$ openstack server add volume ben_vm8 pipe08
+
+---
+# Here are the definitions from the VCF file of the depth data we've extracted:
+#   DP  = "Total read depth at the locus"
+#   DPB = "Total read depth per bp at the locus; bases in reads overlapping / bases in haplotype"
+#   RO  = "Reference allele observation count, with partial observations recorded fractionally"
+#   AO  = "Alternate allele observations, with partial observations recorded fractionally"
+
+SNPid-pos-ref   either
+
+coverage        depth
+variant1        maf
+v1coverage      ro
+v1frequency     -
+variant2        maf
+v2coverage      ao
+v2frequency     -
+
+coverage        depth
+variant1        maf
+v1coverage      ro
+v1frequency     -
+variant2        maf
+v2coverage      ao
+v2frequency     -
+
+Rv1freq/Sv1freq   
+Rv2req/Sv2freq
+
+R:
+SNPid coverage  variant1  v1coverage v1frequency  variant2  v2coverage v2frequency
+S:
+SNPid coverage  variant1  v1coverage v1frequency  variant2  v2coverage v2frequency
+Also:
+Rv1freq/Sv1freq   Rv2req/Sv2freq
+
+v1frequency = v1coverage / v1coverage + v2coverage
+
+sed -i 's/;/\",\"/g' test.txt
+
+x- combine depth_detailed and maf, and create two versions, one with good data and one where it has alt/alt but RO is not zero
+x- create new version of coverages file
+x- investigate vcf-to-tab bug (problem: the .tab files sometimes have an alt/alt or ref/ref even though according to the info in the _cutoff vcf it should be ref/alt. How does vcf_to_tab do that?)
+x- resolve issue in coverages files caused by multiple AO values (is it only a concern for indels?)
+x- write script to extract AO values from _cutoff file, taking the one that's largest if there's more than one
+
+du -sc /work
+du -sc /work9
+
+
+
+Save pipeline parameters as:
+XP-GWAS - and no need for indels
+
+---
+done 10
+et li 36
+wic 53
+ani 53
+-nat 65
+chas 39
+waiting 42
+-salv 65
+-sovr 65
+-betr 55
+---
+
+
+---
+nohup Rscript ./scripts/getDepthStats-parallel.R . > pipeline_log_pipe01-pt2-justDepthStatst.txt &
+
+ssh brancourt@borealpfc.nfis.org
+
+sudo mount -t nfs 10.20.0.6:/Public/genomics/33sampleRNA_pipeline/RNA_seq_clean_raw/pooled /workin
+sudo mount -t nfs 10.20.0.6:/Public/genomics/33sampleRNA_pipeline/setup /work2
+sudo mount -t xfs /dev/vdb1 /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/33sampleRNA_pipeline/pipe0 /work
+
+
+cd /work
+rm -r SNPpipeline
+cp -a /work2/SNPpipeline/ .
+
+
+sudo fdisk /dev/vdb
+sudo mkfs.xfs /dev/vdb1
+sudo mount -t xfs /dev/vdb1 /work
+sudo chmod 775 /work
+sudo chown centos:centos /work
+cd /work
+cp -a /work2/SNPpipeline/ .
+
+
+cd /work
+git clone https://github.com/benranco/SNPpipeline.git
+ls
+mv HBref* SNPpipeline/reference/
+cd SNPpipeline
+rm -r data
+ln -s /workin data
+ls
+
+nohup ./start.sh > pipeline_log_pipe0.txt &
+
+
+
+openstack server add floating ip ben_vm1 10.20.0.153         
+openstack server add floating ip ben_vm2 10.20.0.210         
+openstack server add floating ip ben_vm3 10.20.0.200         
+openstack server add floating ip ben_vm4 10.20.0.203         
+openstack server add floating ip ben_vm5 10.20.0.155         
+openstack server add floating ip ben_vm6 10.20.0.152         
+openstack server add floating ip ben_vm7 10.20.0.196         
+openstack server add floating ip ben_vm8 10.20.0.120         
+openstack server add floating ip ben_vm9 10.20.0.183         
+openstack server add floating ip ben_vm10 10.20.0.207    
+
+ssh brancourt@borealpfc.nfis.org
+
+======================================
+
+jj_vol              vdb
+-----------------------
+[centos@ben-vm1 work]$ ls
+bacterial_genome_assemblies.tar  DeconSeqConfig-original.pm  gz_cmd.sh     rename_fastq.sh  SNPpipeline-42sampleSet  test
+db                               DeconSeqConfig.pm           RealphyInput  rename_sam.sh    temp                     testout
+
+
+snp_pipeline_data   vdc
+-----------------------
+[centos@ben-vm1 work2]$ ls
+grace  SNPpipeline-fluidigm  SNPpipeline-graceSmallTest1
+
+
+jj_big_vol          vdd
+-----------------------
+[centos@ben-vm1 work3]$ ls
+files-processed.txt  input-files.txt  RealPhyOutput  SNPpipeline-42sampleSet-28samples  SNPpipeline-42sampleSetPartial
+
+
+
+sudo mount -t xfs /dev/vdb1 /work
+# to unmount:
+sudo umount /work
+
+sudo mount -t nfs 10.20.0.6:/Public/genomics/storage /workin
+
+
+
+========================================================
+========================================================
+
+KING: Kinship-based INference for Gwas
+KING is a toolset that makes use of high-throughput SNP data typically seen in a genome-wide association study (GWAS) or a sequencing project. Applications of KING include family relationship inference and pedigree error checking, quality control, population substructure identification, forensics, gene mapping, etc.
+
+Online Manual
+Software Manual in HTML format
+Download Program
+
+The latest version of KING
+http://people.virginia.edu/~wc9c/KING/
+
+
+Dear Prof. Chen:
+
+We meet a problem in genetic mapping using a full-sib seed family with SNPs from exome-seq because of suspected seed contamination. As I understand that your software KING is able to determine relationship of individual samples to re-construct full-sib family from populations using a large set of SNP data. I wonder if KING is able to remove contaminated samples or not in our mapping population. Our mapping population consists of haploid individuals supposed through meiosis from one single mother tree.
+
+Thanks for your great advices. Your help is greatly appreciated!
+
+Jun-Jun Liu
+
+
+----------------
+My summary:
+
+- problem with gene mapping using a full-sib seed family with SNPs from exome-seq 
+- remove contaminated samples, perhaps by evaluating relationships and excluding those not closely related
+- population consists of haploid individuals supposed through meiosis from one single mother tree.
+
+
+Options for 192gDNA data:
+- convert master maf report to KING format (might need to change A/ to A/A, etc)
+- inside each pipeline, combine the 192 vcf files (samples) into one vcf file, ending up with 10 vcf files
+- combine vcf files from 10 piplines into one (in totla 10 x 192 vcf files), ending with 192 vcf files (samples)
+
+For combining VCF files:
+- across the ten pipelines would be a concatenation, since each pipeline has unique chrom/sequence ids
+- across the 192 samples within a pipeline would be a merge
+
+To convert vcf file to plink:
+plink2 --vcf example.vcf.gz --make-bed --out ex
+
+
+PED file format: http://zzz.bwh.harvard.edu/plink/data.shtml#ped 
+The PED file is a white-space (space or tab) delimited file: the first six columns are mandatory:
+     Family ID
+     Individual ID
+     Paternal ID
+     Maternal ID
+     Sex (1=male; 2=female; other=unknown)
+     Phenotype
+
+To convert maf report to PED format, for each column:
+- colname = Indiv ID and family ID
+- colname = Indiv ID and family ID
+- parents = founders (0)
+- parents = founders (0)
+- sex = unknown (3)
+- phenotype = -9
+- column transposed to row and eg. A/ -> A A, NA -> 0 0
+
+To create MAP file:
+By default, each line of the MAP file describes a single marker and must contain exactly 4 columns:
+     chromosome (1-22, X, Y or 0 if unplaced) (is this coded in the maf file's CHROM ids?)
+     rs# or snp identifier (CHROM)
+     Genetic distance (morgans) (set to 0)
+     Base-pair position (bp units) (POS)
+
+---
+To convert maf report to (transposed) TPED and TFAM format: 
+
+For TPED, for each row:
+- chromosome (1-22, X, Y or 0 if unplaced) (is this coded in the maf file's CHROM ids?)
+- rs# or snp identifier (CHROM)
+- Genetic distance (morgans) (set to 0)
+- Base-pair position (bp units) (POS)
+- row as eg. A/ -> A A, NA -> 0 0
+
+For TFAM, for each sample, create a row:
+- colname = Indiv ID and family ID
+- colname = Indiv ID and family ID
+- parents = founders (0)
+- parents = founders (0)
+- sex = unknown (3)
+- phenotype = -9
+
+---
+To create binary ped format: plink --file mydata --make-bed
+which creates (by default)
+     plink.bed      ( binary file, genotype information )
+     plink.fam      ( first six columns of mydata.ped ) 
+     plink.bim      ( extended MAP file: two extra cols = allele names)
+- I think the two extra allele name columns correspond to (first, A1) minor allele and (second, A2) major allele of the maf row, which is also represented in the .frq file which can be generated from the map and ped.
+
+---------------------
+
+~/Desktop/KING/plink-1.07-x86_64/plink --tped MAF_cutoff_report.tped --tfam MAF_cutoff_report.tfam --make-bed --out binary_MAF_cutoff_report
+
+~/Desktop/KING/king -b ../binary_MAF_cutoff_report.bed --related > king-related-log.txt
+
+~/Desktop/KING/king -b ../binary_filled_report.bed --related > king-related-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --kinship > king-kinship-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --ibdseg > king-ibdseg-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --ibs > king-ibs-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --homog > king-homog-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --unrelated > king-unrelated-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --build > king-build-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --cluster > king-cluster-log.txt
+
+~/Desktop/KING/king -b ../binary_filled_report.bed --autoQC > king-autoQC-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --bySNP > king-bySNP-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --bysample > king-bysample-log.txt
+
+~/Desktop/KING/king -b ../binary_filled_report.bed --tdt > king-tdt-log.txt
+~/Desktop/KING/king -b ../binary_filled_report.bed --mtscore > king-mtscore-log.txt
+
+
+- give all samples same mother id (and create a new sample column for mom using REFs as values?)
+- rerun autoqc with:
+    1.3  Sample call rate < 80% (removed)
+    1.4  SNPs with call rate < 80% (removed) 
+
+~/Desktop/KING/king -b ../binary_filled_report.bed --autoQC --callrateN 0.8 --callrateM 0.8 > king-autoQC-log.txt
+~/Desktop/KING/king -b ../binary_MAF_cutoff_report.bed --autoQC --callrateN 0.8 --callrateM 0.8 > king-autoQC-log.txt
+
+========================================================
+Download from nanuq for Grace: 
+login: gsumampo
+password: q2hvdliy
+
+
+Dec2019-Jan2020Het_Illumina_NGS (downloaded):
+read -p "Login: " login && read -p "Password: " -s password && echo -n "j_username=$login&j_password=$password" > .auth.txt && chmod 600 .auth.txt && wget -O - "https://ces.genomequebec.com/nanuqMPS/readsetList?projectId=18807&tech=HiSeq" --no-cookies --no-check-certificate --post-file .auth.txt | wget --no-cookies --no-check-certificate --post-file .auth.txt -ci -; rm -f .auth.txt
+
+2018_19HoccPopulationStudy (didn't work):
+read -p "Login: " login && read -p "Password: " -s password && echo -n "j_username=$login&j_password=$password" > .auth.txt && chmod 600 .auth.txt && wget -O - "https://genomequebec.mcgill.ca/nanuqMPS/readsetList?projectId=17322&tech=HiSeq" --no-cookies --no-check-certificate --post-file .auth.txt | wget --no-cookies --no-check-certificate --post-file .auth.txt -ci -; rm -f .auth.txt
+
+
+========================================================
+========================================================
+Data on Jun-Jun's computer:
+
+Grace's data on Jun-Jun's computer:
+/home/benrancourt/Desktop/grace/Heterobasidion2017   (48 samples)
+/home/benrancourt/Desktop/grace/Heterobasidion2018   (48 samples)
+/run/media/benrancourt/New Volume/grace/Dec2019-Jan2020Het_Illumina_NGS   (51 samples)
+/run/media/benrancourt/New Volume/fromNAS/fromNAS/firstDisk/storage/grace/heterobasidion-raw-summer-2016/Herobasidion-Raw-data-2015
+
+Grace's data on Isabel's computer:
+/home/benrancourt/Desktop/grace/SNPpipeline-hocc2017-2018-transcriptRef/data/   (2017 and 2018 combined)
+
+Isabel's data on Jun-Jun's computer:
+/home/benrancourt/Documents/copiedFromGosuzombie/gosuzombieDesktop/RNASEQ  (duplicated in SNPpipeline-isabel-fupansRun)
+/run/media/benrancourt/New Volume/fromNAS/fromNAS/firstDisk/gosuzombie/isabel-summer-2016-fupan
+
+Jun-Jun's old data on Jun-Jun's computer:
+/run/media/benrancourt/New Volume/junjun/junjun_Conifer_192gDNA
+/run/media/benrancourt/New Volume/fromNAS/fromNAS/firstDisk/gosuzombie/jun-jun-rnaseq-summer-2016-fupan/fluidigm
+/run/media/benrancourt/New Volume/fromNAS/fromNAS/firstDisk/gosuzombie/jun-jun-rnaseq-summer-2016-fupan/region38
+/run/media/benrancourt/New Volume/fromNAS/fromNAS/firstDisk/gosuzombie/jun-jun-rnaseq-summer-2016-fupan/region45
+
+========================================================
+========================================================
+
+Updating Jun-Jun's VB program:
+
+Tab 1 - Update DNA ID:
+- works fine
+- improvements: handle huge files
+- read in fasta file, truncate the > line to only the ID proper (up to first space?), save output
+
+Tab 2 - Extract DNA sequence by matching gene id's:
+- works fine
+- improvements: handle huge files
+- read in list of seq ids and fasta file, output fasta file containing only sequences of id's
+
+Tab 3 - Merge DNA files in folder:
+- no sample input
+
+Tab 4 - to replace certain DNA segement by replacing settings (Put-SNP-in?)
+- most complex
+- I've already redone this in R
+- improvements: don't care about size of input files
+
+Tab 5 - Extrat Longest IDs:
+- Requirements: There are one or multiple rows in column "A" with same ID. If only one row with unique ID, copy this row into a new table. If there are multiple rows with same ID, compare their length and copy that row with longest length into the new table. Output file would be a csv file with each row with a unique ID in column "A".
+- Improvements: It is supposed NOT to care about how many rows and how many column in the input table. 
+
+Tab 6 - Format GenBank File:
+- works fine
+- improvements: don't care about size of input files
+- seems to just duplicate the " CDS 1..100000" lines that occur after the FEATURES lines and before the ORIGIN lines
+
+Tab 7 - ? Extract unique ID_x?
+- no sample input
+
+Tab 8 - Extract Tab-Data by IDs:
+- works fine
+- For improvement, it should not care about the row and column numbers in the input tab.
+
+Compare Two Files:
+- no sample input
+
+Tab 9 - Extract Multiple Recoreds:
+- Requrements: Input ID file is a sub-list of column "A" of the input table. Some IDs appear multiple rows (times) in the table. When IDs in the input txt file are identical to that in input table's column "A", copy the whole row from input tab into an output csv file. Those rows with the same IDs would be copied multiple times.
+- Improvements: This function would not care about row and column numbers in the input table.
+
+========================================================
+========================================================
+Standalone executable (hopefully portable - no install) app research:
+
+Python vs R vs Matlab:
+https://www.quora.com/How-do-I-compare-R-MATLAB-and-Python-What-are-their-differences-and-relationships
+
+R:
+https://www.r-bloggers.com/deploying-desktop-apps-with-r/
+https://stackoverflow.com/questions/14096520/compile-r-script-into-standalone-exe-file
+https://shiny.rstudio.com/
+https://stackoverflow.com/questions/11144122/gui-frontend-for-r-script
+https://www.r-bloggers.com/the-popularity-of-point-and-click-guis-for-r/
+http://r4stats.com/articles/software-reviews/
+
+Python:
+https://stackoverflow.com/questions/5458048/how-to-make-a-python-script-standalone-executable-to-run-without-any-dependency
+https://opensource.com/resources/python/gui-frameworks
+https://thenewstack.io/popularity-python-java-world/
+https://www.activestate.com/blog/python-vs-java-duck-typing-parsing-whitespace-and-other-cool-differences/
+
+Lazarus-IDE (FreePascal compiler, Object Pascal language):
+    - seems to be best/fastest for cross-platform gui apps and Rapid Application Development
+https://www.quora.com/What-is-the-fastest-way-to-build-a-simple-Windows-GUI-apps
+(see comment by Alexander Stepanov): https://www.quora.com/Is-Lazarus-worth-learning-today
+https://www.quora.com/Why-not-go-back-to-Pascal-as-it-is-less-complicated-than-Python-and-runs-faster
+https://www.quora.com/How-popular-is-Pascal-Delphi-in-2019-and-how-big-are-its-capabilities-compared-to-other-languages
+(see comment from Ozz Nixon on Modern Pascal): https://www.quora.com/Can-you-make-a-website-with-Pascal
+Using Lazarus and FreePascal (FPC?) for Android and iOS apps:
+https://forum.lazarus.freepascal.org/index.php?topic=31996.0
+https://forum.lazarus.freepascal.org/index.php?topic=39763.0
+https://forum.lazarus.freepascal.org/index.php?topic=36413.0
+
+Rust:
+
+Java:
+https://www.graalvm.org/
+https://technology.amis.nl/2018/08/21/java-programs-as-native-executables-graalvm-is-the-answer/
+https://medium.com/@sulabh4/how-to-make-a-executable-file-from-your-java-code-3f521938ae5c
+
+
+========================================================
+========================================================
+
+======================================
+
+https://www.networkworld.com/article/3447401/gartner-top-10-strategic-technology-trends-for-2020.html
+
+https://www.livescience.com/is-space-time-smooth-chunky.html
+https://arxiv.org/abs/1911.02154
+
+Hibryda: Very interesting read:
+Really well designed piece of code. I wonder whether ML was used to make it so efficient...
+Otherwise, making it appear so oddly natural would be a titanic work with simple mutagenesis.
+https://www.biorxiv.org/content/10.1101/2020.01.26.920249v1.full.pdf
+https://www.linkedin.com/feed/update/urn:li:activity:6627141223222136832
+#nCoV2019 #coronavirus #CoronavirusOutbreak 
+
+https://www.soundonsound.com/techniques/phase-demystified
+This equation will change how you see the world (Mandelbrot): https://youtu.be/ovJcsL7vyrk
+
+https://medium.com/@Hibryda/sustainability-and-trust-7e340e151600
+https://medium.com/@Hibryda/the-good-the-bad-and-the-ugly-sustainability-trust-and-coronavirus-6f5bfbe8c59a
+
+https://www.eurekalert.org/features/doe/2020-02/ddoe-cth022120.php
+https://medium.com/sequoia-capital/coronavirus-the-black-swan-of-2020-7c72bdeb9753
+
+Covid19 virus viability on various surfaces: https://www.medrxiv.org/content/10.1101/2020.03.09.20033217v2.full.pdf+html
+
+
+--------------------
+
+
+===================
+Great branching off point (other linked articles) for exploring the role that science plays in apologetics when the bible is regarded as the foundation of all truth:
+https://creation.com/animal-carnivory-began-at-fall
+
+A couple articles from the bottom of the comments that I might miss:
+https://creation.com/refuting-noahs-ark-critics
+https://creation.com/incarnation-why-god-became-man#txtRef7
+===================
