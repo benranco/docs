@@ -129,7 +129,11 @@ for (i in 1:length(LGsInGroup2))
 {
   maxPos <- max( input[ input[,3]==LGsInGroup2[i], 4 ] ) * positionMultiplier
   minPos <- min( input[ input[,3]==LGsInGroup2[i], 4 ] ) * positionMultiplier
-
+  
+  if (minPos == maxPos && minPos > 0) {
+    minPos = 0
+  }
+  
   row <- data.frame("chr", "-", paste0(chromosomePrefixGroup2, LGsInGroup2[i]), paste0(chromosomeLabelPrefixGroup2, LGsInGroup2[i]), minPos, maxPos, paste0("chr",i))
   names(row) <- c("Chr","Dash","Name","Label","MinPos","MaxPos","Color")
 
@@ -147,6 +151,10 @@ for (i in length(LGsInGroup1):1)
   maxPos <- max( input[ input[,1]==LGsInGroup1[i], 2 ] ) * positionMultiplier
   minPos <- min( input[ input[,1]==LGsInGroup1[i], 2 ] ) * positionMultiplier
 
+  if (minPos == maxPos && minPos > 0) {
+    minPos = 0
+  }
+  
   row <- data.frame("chr", "-", paste0(chromosomePrefixGroup1, LGsInGroup1[i]), paste0(chromosomeLabelPrefixGroup1, LGsInGroup1[i]), minPos, maxPos, paste0("chr",i))
   names(row) <- c("Chr","Dash","Name","Label","MinPos","MaxPos","Color")
 
