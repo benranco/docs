@@ -115,6 +115,9 @@ circosExecutable="/home/benrancourt/Desktop/circos/circos-0.69-3/bin/circos"
 csvFilePath="/home/benrancourt/Documents/temp"
 # The name of the .csv input file:
 csvFileName="To-Ben-4-Circos-3617-e-100.csv"
+# (optional, leave "" if not used) The name of the .csv file containing the full data for each
+# LG to use in generating the karyotype.txt file.
+csvFullLgData=""
 
 # The label prefix to display for the linkage groups of your group 1 data 
 # (the first two columns of your .csv file):
@@ -138,7 +141,7 @@ positionMultiplier=10000000
 ##########################################################################################
 # Execution code:
 
-Rscript convertCsvToCircosInput.R $csvFilePath $csvFileName `pwd` $generatedDataFileName $generatedKaryotypeFileName $chromosomeLabelPrefixGroup1 $chromosomeLabelPrefixGroup2 $group1InternalPrefix $group2InternalPrefix $positionMultiplier
+Rscript convertCsvToCircosInput.R $csvFilePath $csvFileName $csvFullLgData `pwd` $generatedDataFileName $generatedKaryotypeFileName $chromosomeLabelPrefixGroup1 $chromosomeLabelPrefixGroup2 $group1InternalPrefix $group2InternalPrefix $positionMultiplier
 
 
 echo "Creating image circos.png and writing report to run.out."

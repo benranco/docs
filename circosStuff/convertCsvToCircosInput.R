@@ -35,19 +35,29 @@ path <- args[1]
 #inputFileName <- "Lim2,110-Pinast-for-CIRCOS-Feb-7-2017-preCircos.csv"
 inputFileName <- args[2]
 
+# (optional, leave "" if not used) The name of the .csv file containing the full data for each
+# LG to use in generating the karyotype.txt file.
+# File format:
+# We assume the input csv file colums are organized: 
+# Group1 LG, Group1 position, Group2 LG, Group2 position.
+#
+# These are all numeric values, with no non-numeric characters (so no "LG"
+# in the LG ids, for example).
+csvFullLgDataFileName="" <- args[3]
+
 # This is the directory in which to save the mydata.txt and mykaryotype.txt circos
 # input files.  
-pathToSaveCircosOutputFiles <- args[3]
+pathToSaveCircosOutputFiles <- args[4]
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
 #dataOutputFileName <- "mydata.txt"
-dataOutputFileName <- args[4]
+dataOutputFileName <- args[5]
 
 # This will be used as an input file by circos, and it's name and location should
 # be specified in your circos.conf file.
 #karyotypeOutputFileName <- "mykaryotype.txt"
-karyotypeOutputFileName <- args[5]
+karyotypeOutputFileName <- args[6]
 
 # Group1 identifiers are intended for the data set that will be 
 # displayed on the left-hand side of circle graph.
@@ -56,15 +66,15 @@ karyotypeOutputFileName <- args[5]
 # Pita_ for loblolly pine, Pipi_ for pinster (maritime pine), and Pifl_ for limber pine.
 #chromosomeLabelPrefixGroup1 <- "Pifl-"
 #chromosomeLabelPrefixGroup2 <- "Pipi-"
-chromosomeLabelPrefixGroup1 <- args[6]
-chromosomeLabelPrefixGroup2 <- args[7]
+chromosomeLabelPrefixGroup1 <- args[7]
+chromosomeLabelPrefixGroup2 <- args[8]
 
 # prefixes for circos to use internally for chromosome identifiers. 
 # This shouldn't be changed unless you also change the circos.conf file.
 #chromosomePrefixGroup1 <- "lg-"
 #chromosomePrefixGroup2 <- "LG"
-chromosomePrefixGroup1 <- args[8]
-chromosomePrefixGroup2 <- args[9]
+chromosomePrefixGroup1 <- args[9]
+chromosomePrefixGroup2 <- args[10]
 
 # IMPORTANT - multiplier required to get rid of all decimal places in the positions.
 # I believe circos likes to use integers for positional information when 
@@ -77,12 +87,18 @@ chromosomePrefixGroup2 <- args[9]
 # to use for the labels, if using labeled ticks.
 # You shouldn't need to change this unless you have values with more than 7 decimal places.
 #positionMultiplier <- 10000000
-positionMultiplier <- strtoi(args[10])
+positionMultiplier <- strtoi(args[11])
 
 # ########################################################
 # Execution code:
 
 input <- read.csv(paste(path.expand(path),inputFileName,sep="/"),header=TRUE)
+
+fullLgData <- NA
+if (!is.na(csvFullLgDataFileName) && csvFullLgDataFileName != "") {
+  fullLgData <- read.csv(paste(path.expand(path),csvFullLgDataFileName,sep="/"),header=TRUE)
+  fullLgData <- na.omit(fullLgData)
+}
 
 # Convert NA's to 0? No, don't do this, instead remove all rows/links that contain NA values
 #input[is.na(input)] <- 0
@@ -117,6 +133,14 @@ data <- cbind(
 
 # create the data for the karyotype input file
 
+karyInput <- NA
+if (!is.na(fullLgData)) {
+  karyInput <- fullLgData
+} 
+else {
+  karyInput <- input
+}
+
 karyotype <- data.frame(Chr=character(),Dash=character(),Name=character(),Label=character(),MinPos=numeric(),MaxPos=numeric(),Color=character())
 
 # for each LG in Group2 ascending numeric order
@@ -127,8 +151,8 @@ karyotype <- data.frame(Chr=character(),Dash=character(),Name=character(),Label=
 
 for (i in 1:length(LGsInGroup2))
 {
-  maxPos <- max( input[ input[,3]==LGsInGroup2[i], 4 ] ) * positionMultiplier
-  minPos <- min( input[ input[,3]==LGsInGroup2[i], 4 ] ) * positionMultiplier
+  maxPos <- max( karyInput[ karyInput[,3]==LGsInGroup2[i], 4 ] ) * positionMultiplier
+  minPos <- min( karyInput[ karyInput[,3]==LGsInGroup2[i], 4 ] ) * positionMultiplier
   
   if (minPos == maxPos && minPos > 0) {
     minPos = 0
@@ -148,8 +172,8 @@ for (i in 1:length(LGsInGroup2))
 
 for (i in length(LGsInGroup1):1)
 {
-  maxPos <- max( input[ input[,1]==LGsInGroup1[i], 2 ] ) * positionMultiplier
-  minPos <- min( input[ input[,1]==LGsInGroup1[i], 2 ] ) * positionMultiplier
+  maxPos <- max( karyInput[ karyInput[,1]==LGsInGroup1[i], 2 ] ) * positionMultiplier
+  minPos <- min( karyInput[ karyInput[,1]==LGsInGroup1[i], 2 ] ) * positionMultiplier
 
   if (minPos == maxPos && minPos > 0) {
     minPos = 0
