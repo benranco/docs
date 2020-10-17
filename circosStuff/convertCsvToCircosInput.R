@@ -43,7 +43,7 @@ inputFileName <- args[2]
 #
 # These are all numeric values, with no non-numeric characters (so no "LG"
 # in the LG ids, for example).
-csvFullLgDataFileName="" <- args[3]
+csvFullLgDataFileName <- args[3]
 
 # This is the directory in which to save the mydata.txt and mykaryotype.txt circos
 # input files.  
@@ -94,7 +94,7 @@ positionMultiplier <- strtoi(args[11])
 
 input <- read.csv(paste(path.expand(path),inputFileName,sep="/"),header=TRUE)
 
-fullLgData <- NA
+fullLgData <- NULL
 if (!is.na(csvFullLgDataFileName) && csvFullLgDataFileName != "") {
   fullLgData <- read.csv(paste(path.expand(path),csvFullLgDataFileName,sep="/"),header=TRUE)
   fullLgData <- na.omit(fullLgData)
@@ -133,11 +133,10 @@ data <- cbind(
 
 # create the data for the karyotype input file
 
-karyInput <- NA
-if (!is.na(fullLgData)) {
+karyInput <- NULL
+if (!is.null(fullLgData)) {
   karyInput <- fullLgData
-} 
-else {
+} else {
   karyInput <- input
 }
 
