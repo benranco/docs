@@ -67,3 +67,9 @@ git diff --cached [filename]
 # show differences between current commit and working tree
 git diff HEAD [filename]
 
+# from: https://stackoverflow.com/questions/2016901/viewing-unpushed-git-commits
+# viewing unpushed git commands and the diff between head:
+git log origin/master..HEAD
+git diff origin/master..HEAD
+
+
