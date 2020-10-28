@@ -5,6 +5,25 @@ http://r.789695.n4.nabble.com/modify-function-in-a-package-td4697499.html
 Getting started with charts:
 http://www.statmethods.net/graphs/
 https://flowingdata.com/2012/12/17/getting-started-with-charts-in-r/
+- the output of plot() might print directly to pdf in your current folder by default
+
+------------------
+Dealing with problems printing to .png, .tiff:
+
+from: https://stackoverflow.com/questions/13067751/how-to-run-r-scripts-on-servers-without-x11
+---
+- run capabilities() in R to see whether it has png, tiff, x11, cairo support:
+> capabilities()
+       jpeg         png        tiff       tcltk         X11        aqua 
+      FALSE       FALSE       FALSE       FALSE       FALSE       FALSE 
+   http/ftp     sockets      libxml        fifo      cledit       iconv 
+       TRUE        TRUE        TRUE        TRUE        TRUE        TRUE 
+        NLS     profmem       cairo         ICU long.double     libcurl 
+       TRUE       FALSE       FALSE       FALSE        TRUE        TRUE 
+
+- if no x11 support, but you have cairo support, try setting: options(bitmapType='cairo')
+- but how to install/enable cairo...? 
+---
 
 ------------------
 Saving plots as images to disk:
