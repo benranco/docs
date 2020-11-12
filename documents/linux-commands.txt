@@ -60,7 +60,7 @@ head -10 file  <-- print the first 10 lines of file
 
 tail -10 file  <-- print the last 10 lines of file
 
-tail +10 file  <- print file beginning 10 lines from the front
+tail -n +10 file  <- print file beginning 10 lines from the front
 
 wc -l  <-- count the number of lines in a file
 
@@ -102,7 +102,7 @@ How to format usb drive in the terminal:
 https://www.unixmen.com/how-to-format-usb-drive-in-the-terminal/
 
 
-To searck for process id by command name:
+To search for process id by command name:
 ps -e | grep name
 To kill all processes of a certain command:
 pkill -9 name
@@ -118,10 +118,10 @@ rename 's/ABC/XYZ/' *.txt
 
 
 Replace first occurrence of a comma within each line of a file with a dash:
+(the -i stands for edit file in place)
 
 sed -i 's/,/-/' filename
 
- 
 
 Replace all occurrences of a string within a file:
 
@@ -144,9 +144,11 @@ sed -i 's/\"T\/\"/\"T\/T\"/g' filename
 
 Replace the first part of each line in a file:
 
-sed 's/^[^ ]* /_/' filename # replaces all characters before the first space that aren't space on each line with _
-sed 's/^[^\t]*/_/' filename # replaces all characters before the first tab that aren't tab on each line with _
-sed 's/^[^\t]*\t//' filename # replaces all characters before the first tab as well as the first tab on each line with nothing
+sed 's/^[^ ]* /_/' filename > outfile # replaces all characters before the first space that aren't space on each line with _
+sed 's/^[^\t]*/_/' filename > outfile # replaces all characters before the first tab that aren't tab on each line with _
+sed 's/^[^\t]*\t//' filename > outfile # replaces all characters before the first tab as well as the first tab on each line with nothing
+sed 's/\(>[^ ]*\) .*/\1/' test.fasta > outfile # capture the portion contained in ( ), which is a string beginning with > and followed by any non-space character, and then replace it and everything following it with simply the captured portion referred to by \1 backreference.
+sed 's/\(>[^\t]*\)\t.*/\1/' test.fasta > outfile # same as above but with tab (and sometimes space???) instead of space
 
 
 # bash script to do the above for each file in a folder:
