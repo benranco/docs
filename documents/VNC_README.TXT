@@ -26,7 +26,7 @@ openstack server create \
   --security-group vnc_security_group \
 	--key-name username \
 	--nic net-id=Private \
-	--flavor gp2.medium \
+	--flavor mm1.medium \
 	your_server_name
 
 # Wait a bit and then check to make sure your server was created successfully:
@@ -148,8 +148,8 @@ https://community.time4vps.com/discussion/120/how-to-connect-to-vnc-server-ussin
 http://www.mit.edu/~avp/lqcd/ssh-vnc.html
 
 To connect with vncserver via the TigerVNC VncViewer java client, on your client machine, first do either of (I prefer the second if I don't want to run the ssh tunneling in the background):
-ssh -v -L 5901:10.20.0.88:5901 -N -f -l brancourt borealcloud.nfis.org 
-ssh -v -L 5901:10.20.0.88:5901 -N -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.88:5901 -N -f -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.88:5901 -N -l brancourt borealcloud.nfis.org 
 
 Important! Make sure the ip address above is the ip of the OpenStack server that you connect to. 
 The password that you will be prompted to enter at this stage is the password of your account on borealcloud.nfis.org. 
@@ -163,6 +163,7 @@ The password that you will be prompted to enter is the passord I set up for the 
 -L Specifies that the given port on the local (client) host is to be forwarded to the given host and port on the remote side.
 ssh -L sourcePort:forwardToHost:onPort connectToHost means: connect with ssh to connectToHost, and forward all connection attempts to the local sourcePort to port onPort on the machine called forwardToHost, which can be reached from the connectToHost machine.
 
+-C Requests compression of all data (including stdin, stdout, stderr, and data for forwarded X11, TCP and UNIX-domain connections).  The compression algorithm is the same used by gzip(1).  Compression is desirable on modem lines and other slow connections, but will only slow down things on fast networks. 
 -N specifies that we're merely forwarding traffic not running a command on the remote machine.
 -T disables pseudo-tty allocation.
 -L indicates that the first port is a local port

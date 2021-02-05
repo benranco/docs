@@ -50,13 +50,13 @@ Installed:
   tigervnc-server.x86_64 0:1.8.0-13.el7
 
 -----------------
-# Continuing to follow the instructions, to configure the server:
-sudo cp /lib/systemd/system/vncserver\@.service /etc/systemd/system/vncserver_centos\@:1.service
-sudo nano /etc/systemd/system/vncserver_centos\@:1.service
-# Modified these two lines to show:
-#   ExecStart=/usr/sbin/runuser -l centos -c "/usr/bin/vncserver %i -geometry 1200x1000"
-#   PIDFile=/home/centos/.vnc/%H%i.pid
-# and added this line below Type=forking:
+# Continuing to follow the instructions, to configure the server (it seems this 
+#config file has been updated since the blog post was written):
+sudo cp /lib/systemd/system/vncserver\@.service /etc/systemd/system/vncserver_centos\@:2.service
+sudo nano /etc/systemd/system/vncserver_centos\@:2.service
+# Modified this line to show the username:
+#   ExecStart=/usr/bin/vncserver_wrapper centos %i
+# and added this line below Type=simple:
 #   User=centos
 
 # The instructions included stuff for firewall, and I'm not sure if my vm is using that, so
@@ -73,11 +73,11 @@ sudo firewall-cmd --list-all-zones
 # Then did:
 sudo systemctl daemon-reload
 # We will now enable the vncserver service for each user on the selected port, this will also enable autostart on system boot, with the commands below: 
-sudo systemctl enable vncserver_centos\@:1.service
+sudo systemctl enable vncserver_centos\@:2.service
 # which outputted:
-#   Created symlink from /etc/systemd/system/multi-user.target.wants/vncserver_centos@:1.service 
-#   to /etc/systemd/system/vncserver_centos@:1.service.
-sudo systemctl daemon-reload
+#   Created symlink from /etc/systemd/system/multi-user.target.wants/vncserver_centos@:2.service 
+#   to /etc/systemd/system/vncserver_centos@:2.service.
+sudo systemctl daemon-reload 
 
 # Then set up a password for the centos user (I used centos as the password):
 vncpasswd centos
@@ -94,12 +94,13 @@ vncserver
   A view-only password is not used
   xauth:  file /home/centos/.Xauthority does not exist
 
-  New 'ben-d.novalocal:1 (centos)' desktop is ben-d.novalocal:1
+  New 'ben-v.novalocal:1 (centos)' desktop is ben-v.novalocal:1
 
   Creating default startup script /home/centos/.vnc/xstartup
   Creating default config /home/centos/.vnc/config
   Starting applications specified in /home/centos/.vnc/xstartup
-  Log file is /home/centos/.vnc/ben-d.novalocal:1.log
+  Log file is /home/centos/.vnc/ben-v.novalocal:1.log
+
 
 ----------
 # When I tried restarting the OpenStack server, the vncserver wasn't started automatically (and there was no .pid file in the ~/.vnc directory), but all I had to do was log into the server and enter the command vncserver. Then I was able to connect via the vnc client. My ssh tunnel which I had left running on the client machine was still active and operating.
@@ -122,22 +123,38 @@ http://www.allgoodbits.org/articles/view/58
 https://community.time4vps.com/discussion/120/how-to-connect-to-vnc-server-ussing-ssh-tunnel
 http://www.mit.edu/~avp/lqcd/ssh-vnc.html
 
+IF CONNECTING FROM WITHIN PFC:
 To connect with vncserver via the TigerVNC VncViewer java client, on your client machine, first do either of (I prefer the second if I don't want to run the ssh tunneling in the background):
-ssh -v -L 5901:10.20.0.88:5901 -N -f -l brancourt borealcloud.nfis.org 
-ssh -v -L 5901:10.20.0.88:5901 -N -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.201:5901 -N -f -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.201:5901 -N -l brancourt borealcloud.nfis.org 
 
-Important! Make sure the ip address above is the ip of the OpenStack server that you connect to. 
+IF CONNECTING FROM HOME: 
+In this case we need to set up an ssh tunnel through inf2 to borealpfc, then in a new terminal session set up a second tunnel through the first tunnel to connect to your virtual machine on the cloud:
+ssh -v -L 2223:borealpfc.nfis.org:22 -N -l brancour inf2.pfc.forestry.ca
+Then, in a new terminal:
+ssh -v -C -L 5901:10.20.0.201:5901 -N -p 2223 -l brancourt localhost
+
+
+Important! Make sure the ip address in the ssh tunnel above is the ip of the OpenStack server that you connect to. 
 The password that you will be prompted to enter at this stage is the password of your account on borealcloud.nfis.org. 
 
 Then, launch the VncViewer client from a new terminal:
-java -jar VncViewer-1.9.0.jar
+java -jar VncViewer-1.11.0.jar
 
-Then connect to localhost:5901 (which connects to your local end of the ssh tunnel you set up, and forwards it on).
+Then type localhost:5901 in the VNC server textbox, and click Connect (which connects to your local end of the ssh tunnel you set up, and forwards it on).
 The password that you will be prompted to enter is the passord I set up for the vncserver, which is just "centos", the same as the username on the server.
+
+NOTE: IF YOU GET THIS ERROR WHEN TRYING TO CONNECT:
+SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
+THEN: 
+Relaunch VncViewer, and click "Options...", then click the Security tab, then de-select "Anonymous TLS", 
+then click OK, then try Connecting again.
+
 
 -L Specifies that the given port on the local (client) host is to be forwarded to the given host and port on the remote side.
 ssh -L sourcePort:forwardToHost:onPort connectToHost means: connect with ssh to connectToHost, and forward all connection attempts to the local sourcePort to port onPort on the machine called forwardToHost, which can be reached from the connectToHost machine.
 
+-C Requests compression of all data (including stdin, stdout, stderr, and data for forwarded X11, TCP and UNIX-domain connections).  The compression algorithm is the same used by gzip(1).  Compression is desirable on modem lines and other slow connections, but will only slow down things on fast networks. 
 -N specifies that we're merely forwarding traffic not running a command on the remote machine.
 -T disables pseudo-tty allocation.
 -L indicates that the first port is a local port

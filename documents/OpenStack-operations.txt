@@ -158,6 +158,16 @@ openstack server create \
 	--flavor x1.4xlarge \
 	ben0
 
+# for VNC vm: 
+openstack server create \
+	--image CentOS7_BenWork2 \
+  --security-group default \
+  --security-group vnc_security_group \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm1.medium \
+	ben_v
+	
 openstack server add floating ip ben01a 10.20.0.54
 openstack server add floating ip ben01b 10.20.0.134		
 openstack server add floating ip ben02a 10.20.0.153         
