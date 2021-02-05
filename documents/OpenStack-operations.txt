@@ -35,6 +35,14 @@ tmpfs                 1023732          0     1023732   0% /sys/fs/cgroup
 
 sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun_Conifer_192gDNA /workin
 sudo mount -t nfs 10.20.0.6:/Public/genomics/out01 /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/NCBI-NR /work2
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/komendja_backup2 /work3
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/orthofinder /work
+
+sudo mount -t nfs 10.20.0.6:/Public/genomics/NCBI-NR /work2
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun/blast0 /work
+
 
 List of OpenStack commands:
 https://docs.openstack.org/python-openstackclient/latest/cli/command-list.html
@@ -44,15 +52,26 @@ https://docs.openstack.org/python-openstackclient/latest/cli/command-list.html
 
 The thing to do when you want a larger root disk (larger than 20 GB), is create the VM using a volume.  In the web interface or using ansible it is easier.  But on the command-line you can do it like so:
 
-openstack volume create --image grdi --bootable --size 44 grdi_vol
+openstack volume create --image grdi --bootable --size 50 ben_grdi_vol
 
 openstack server create \
-	--volume grdi_vol2 \
-  --flavor gp2e.4xlarge \
+	--volume ben_grdi_vol \
+  --flavor mm1.medium \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
-	ben_grdi_vm2
+	ben_grdi
+
+openstack volume create --image biolinux8 --bootable --size 50 ben_bio_vol
+
+openstack server create \
+	--volume ben_bio_vol \
+  --flavor mm1.medium \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	ben_bio
+
 
 For ansible, use the example script and add the “boot_from_volume”, “terminate_volume”, and “volume_size”  declarations for the “os_server” task.  See: http://docs.ansible.com/ansible/latest/modules/os_server_module.html
 
@@ -65,7 +84,6 @@ For ansible, use the example script and add the “boot_from_volume”, “termi
 
 openstack image list
 openstack flavor list
-
 
 
 openstack server create \
@@ -85,23 +103,73 @@ openstack server create \
 	ben_pipeline_vm
 
 openstack server create \
-	--image CentOS7_SNPpipeline \
+	--image CentOS7_BenWork \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
-	--flavor gp2.medium \
-	ben_small_vm
+	--flavor mm1.medium \
+	ben_t
+	
+openstack server create \
+	--image CentOS7_BenWork \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm1.4xlarge \
+	ben_b
 
-openstack server add floating ip ben_vm1 10.20.0.153         
-openstack server add floating ip ben_vm2 10.20.0.210         
-openstack server add floating ip ben_vm3 10.20.0.200         
-openstack server add floating ip ben_vm4 10.20.0.203         
-openstack server add floating ip ben_vm5 10.20.0.155         
-openstack server add floating ip ben_vm6 10.20.0.152         
-openstack server add floating ip ben_vm7 10.20.0.196         
-openstack server add floating ip ben_vm8 10.20.0.120         
-openstack server add floating ip ben_vm9 10.20.0.183         
-openstack server add floating ip ben_vm10 10.20.0.207    
+openstack server create \
+	--image CentOS7_BenWork \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm2.4xlarge \
+	ben0
+
+openstack server create \
+	--image CentOS7_BenWork \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm1.8xlarge \
+	ben0
+		
+openstack server create \
+	--image CentOS7_BenWork \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm2.8xlarge \
+	ben0
+	
+openstack server create \
+	--image CentOS7_BenWork \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm1.16xlarge \
+	ben0
+
+openstack server create \
+	--image CentOS7_BenWork \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor x1.4xlarge \
+	ben0
+
+openstack server add floating ip ben01a 10.20.0.54
+openstack server add floating ip ben01b 10.20.0.134		
+openstack server add floating ip ben02a 10.20.0.153         
+openstack server add floating ip ben02b 10.20.0.210         
+openstack server add floating ip ben03 10.20.0.200         
+openstack server add floating ip ben04 10.20.0.203         
+openstack server add floating ip ben05 10.20.0.155         
+openstack server add floating ip ben06 10.20.0.152         
+openstack server add floating ip ben07 10.20.0.196         
+openstack server add floating ip ben08 10.20.0.120         
+openstack server add floating ip ben09 10.20.0.183         
+openstack server add floating ip ben10 10.20.0.207    
 
 
 openstack floating ip list
@@ -157,7 +225,7 @@ But I did this before installing xfsprogs-devel, so I don't know if I actually n
 
 
 To run a command as a background process, end with an &, but this will terminate if you exit from an ssh session in which you ran the command, so when you want the process to continue even after your ssh session ends, use the nohup (no hangups) command:
-nohup command > log.txt
+nohup command 2>&1 1> log.txt &
 
 To searck for process id by command name:
 ps -e | grep name

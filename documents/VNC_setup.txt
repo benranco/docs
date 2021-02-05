@@ -1,0 +1,163 @@
+Steps I took to set up and test VNC on a VM in the boreal cloud.
+
+================================================================
+First, I download TigerVNC's VncViewer-1.9.0.jar to use as a client on my local machine from:
+https://github.com/TigerVNC/tigervnc/releases
+
+Documentation for VncViewer:
+https://tigervnc.org/doc/vncviewer.html
+
+Info on TigerVNC:
+https://tigervnc.org/
+
+
+================================================================
+To install TigerVNC server on a CentOS7 VM:
+
+# First, I started with the CentOS7_Trinity image that I created. See notes on how I created that 
+# in OpenStack-operations.txt.
+
+# Since I had just created the CentOS7_Trinity image and everything is up to date, I skipped:
+sudo yum update
+
+# Then, install the Gnome Desktop, based on info from these websites:
+# https://www.techrepublic.com/article/how-to-install-a-gui-on-top-of-centos-7/
+# https://unix.stackexchange.com/questions/181503/how-to-install-desktop-environments-on-centos-7
+# https://www.itzgeek.com/how-tos/linux/centos-how-tos/install-gnome-gui-on-centos-7-rhel-7.html
+
+yum group list # just to see what groups have been installed and what are available
+sudo yum groups install "GNOME Desktop" "Graphical Administration Tools"
+
+# But, according to this:
+# https://linuxconfig.org/how-to-install-gui-gnome-on-centos-7-linux-system
+# The group "Server with GUI" will along with GNOME GUI also install some extra server packages.
+# To get more info on each of these groups:
+yum groupinfo "Server with GUI"
+yum groupinfo "GNOME Desktop"
+
+# So I did, just in case:
+sudo yum groupinstall "Server with GUI"
+
+-----------------
+# Then, following these instructions to install TigerVNC:
+# https://www.thegeekdiary.com/how-to-install-and-configure-vnc-tigervnc-server-in-centos-rhel-7/
+
+yum search tigervnc
+sudo yum install tigervnc-server
+
+# Which installed:
+Installed:
+  tigervnc-server.x86_64 0:1.8.0-13.el7
+
+-----------------
+# Continuing to follow the instructions, to configure the server:
+sudo cp /lib/systemd/system/vncserver\@.service /etc/systemd/system/vncserver_centos\@:1.service
+sudo nano /etc/systemd/system/vncserver_centos\@:1.service
+# Modified these two lines to show:
+#   ExecStart=/usr/sbin/runuser -l centos -c "/usr/bin/vncserver %i -geometry 1200x1000"
+#   PIDFile=/home/centos/.vnc/%H%i.pid
+# and added this line below Type=forking:
+#   User=centos
+
+# The instructions included stuff for firewall, and I'm not sure if my vm is using that, so
+# I did:
+firewall-cmd -h
+sudo firewall-cmd --state
+sudo firewall-cmd --list-all-zones
+# which returned "FirewallD is not running", so I'm going to skip the firewall commands for now.
+# hmm... the second time I tried an install, the firewall was running, so I did:
+sudo firewall-cmd --zone=public --permanent --add-service=vnc-server
+sudo firewall-cmd  --reload
+sudo firewall-cmd --list-all-zones
+
+# Then did:
+sudo systemctl daemon-reload
+# We will now enable the vncserver service for each user on the selected port, this will also enable autostart on system boot, with the commands below: 
+sudo systemctl enable vncserver_centos\@:1.service
+# which outputted:
+#   Created symlink from /etc/systemd/system/multi-user.target.wants/vncserver_centos@:1.service 
+#   to /etc/systemd/system/vncserver_centos@:1.service.
+sudo systemctl daemon-reload
+
+# Then set up a password for the centos user (I used centos as the password):
+vncpasswd centos
+  Password: centos
+  Verify: centos
+  Would you like to enter a view-only password (y/n)? n
+
+# Then did:
+vncserver
+  You will require a password to access your desktops.
+  Password: centos
+  Verify: centos
+  Would you like to enter a view-only password (y/n)? n
+  A view-only password is not used
+  xauth:  file /home/centos/.Xauthority does not exist
+
+  New 'ben-d.novalocal:1 (centos)' desktop is ben-d.novalocal:1
+
+  Creating default startup script /home/centos/.vnc/xstartup
+  Creating default config /home/centos/.vnc/config
+  Starting applications specified in /home/centos/.vnc/xstartup
+  Log file is /home/centos/.vnc/ben-d.novalocal:1.log
+
+----------
+# When I tried restarting the OpenStack server, the vncserver wasn't started automatically (and there was no .pid file in the ~/.vnc directory), but all I had to do was log into the server and enter the command vncserver. Then I was able to connect via the vnc client. My ssh tunnel which I had left running on the client machine was still active and operating.
+
+# For some reason I could never get the autostart on system boot to work using the systemd/systemctl method above, so I decided to just set up a cron job to run on system reboot. I did not undo any of the above steps, since some of them might have been important. To create the cron job I did:
+
+# first, to make sure crond.service was running (and was therefore be started on system boot):
+systemctl status crond.service
+# then, to edit the crontab:
+crontab -e
+# then I added this line to the file, and saved and exited the editor:
+@reboot vncserver
+
+# After this, vncserver was able to be started automatically on system reboot.
+
+================================================================
+Info on connecting via ssh tunneling:
+https://unix.stackexchange.com/questions/115897/whats-ssh-port-forwarding-and-whats-the-difference-between-ssh-local-and-remot
+http://www.allgoodbits.org/articles/view/58
+https://community.time4vps.com/discussion/120/how-to-connect-to-vnc-server-ussing-ssh-tunnel
+http://www.mit.edu/~avp/lqcd/ssh-vnc.html
+
+To connect with vncserver via the TigerVNC VncViewer java client, on your client machine, first do either of (I prefer the second if I don't want to run the ssh tunneling in the background):
+ssh -v -L 5901:10.20.0.88:5901 -N -f -l brancourt borealcloud.nfis.org 
+ssh -v -L 5901:10.20.0.88:5901 -N -l brancourt borealcloud.nfis.org 
+
+Important! Make sure the ip address above is the ip of the OpenStack server that you connect to. 
+The password that you will be prompted to enter at this stage is the password of your account on borealcloud.nfis.org. 
+
+Then, launch the VncViewer client from a new terminal:
+java -jar VncViewer-1.9.0.jar
+
+Then connect to localhost:5901 (which connects to your local end of the ssh tunnel you set up, and forwards it on).
+The password that you will be prompted to enter is the passord I set up for the vncserver, which is just "centos", the same as the username on the server.
+
+-L Specifies that the given port on the local (client) host is to be forwarded to the given host and port on the remote side.
+ssh -L sourcePort:forwardToHost:onPort connectToHost means: connect with ssh to connectToHost, and forward all connection attempts to the local sourcePort to port onPort on the machine called forwardToHost, which can be reached from the connectToHost machine.
+
+-N specifies that we're merely forwarding traffic not running a command on the remote machine.
+-T disables pseudo-tty allocation.
+-L indicates that the first port is a local port
+-f : Requests ssh to go to background just before command execution. Once password supplied it will go to background and you can use prompt for type commands on local system.
+-l vncuser : vncuser is the user to log in as on the remote machine.
+
+================================================================
+
+process command to look for when using top (you can also find the process id in ~/.vnc/, it's 
+in the file ending in .pid): Xvnc
+
+[centos@ben-d .vnc]$ ps aux | grep -i Xvnc
+centos    9368  0.0  0.0 112708   996 pts/0    S+   01:33   0:00 grep --color=auto -i Xvnc
+centos   28365  0.0  0.9 226640 36640 ?        Sl   Jul13   8:28 /usr/bin/Xvnc :1 -auth /home/centos/.Xauthority -desktop ben-d.novalocal:1 (centos) -fp catalogue:/etc/X11/fontpath.d -geometry 1024x768 -pn -rfbauth /home/centos/.vnc/passwd -rfbport 5901 -rfbwait 30000
+[centos@ben-d .vnc]$ 
+
+
+
+================================================================
+
+
+
+

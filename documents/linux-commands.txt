@@ -1,3 +1,5 @@
+Set the PATH variable permanently:
+https://www.tecmint.com/set-path-variable-linux-permanently/
 
 
 
@@ -21,7 +23,21 @@ rsync -a --ignore-existing /src/dir/ host:/dest/dir/
 
 To run a command as a background process, end with an &, but this will terminate if you exit from an ssh session in which you ran the command, so when you want the process to continue even after your ssh session ends, use the nohup (no hangups) command:
 
-nohup command > log.txt
+nohup command 2>&1 1> log.txt &
+
+
+To split and rejoin a tar.gz archive into multiple parts:
+tar cvzf foldername.tar.gz foldername
+split -b 50M foldername.tar.gz foldername.tar.gz-
+cat foldername.tar.gz-* > foldername.tar.gz
+
+To zip a folder and all it's contents, applying compression:
+zip -r output_file.zip file1 folder1
+
+
+To check/verify an md5 md5sum, from: https://www.geeksforgeeks.org/md5sum-linux-command/
+md5sum -c file.md5 # checks the md5 sum of the file listed inside the .md5 file
+md5sum -c --quiet file.md5 # only produces output if the check fails
 
 
 
@@ -70,7 +86,7 @@ ls | wc -l  <-- count the number of files in a directory
 Read a file from line number X to line number Y (there are other ways too):
 
 awk 'NR >= X && NR <= Y' filename 
-
+awk 'NR == X' filename 
 
 To print out a range of lines from a file using sed:
 sed -n 'startline,endline p; endline+1 q' in.txt > out.txt

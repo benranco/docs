@@ -1,0 +1,105 @@
+THIS IS ABOUT FIGURING OUT HOW TO USE VNC ON A BOREAL CLOUD VM THROUGH REMOTE ACCESS.
+
+-----------------------------------------
+From Kristian about how to do scp through remote access:
+
+Hey Ben,
+
+Does your SSH command have the “-j” flag?
+
+I don’t remember off-hand how to do it, but you should be able to use the “-j” flag to jump through borealremote to borealcloud.  My ssh doesn’t support it.
+
+I have shell access on borealremote, so what I do is this (and maybe without shell it might still work):
+
+ssh -L 2225:borealcloud.nfis.org:22 karndt@borealremote.nfis.org   <- logs me into borealremote with port tunnel from localhost:2223 to port 22 (ssh) on borealcloud
+
+Keep the first command open.
+
+Then:
+scp -P 2223 myfile.txt karndt@localhost:
+
+Cheers,
+
+Kristian.
+-----------------------------------------
+From the man ssh page on CentOS 8: 
+
+-J destination
+       Connect to the target host by first making a ssh connection to the jump host described by destination and then establishing a TCP forwarding to the ultimate destination from
+       there.  Multiple jump hops may be specified separated by comma characters.  This is a shortcut to specify a ProxyJump configuration directive.  Note that configuration direc‐
+       tives supplied on the command-line generally apply to the destination host and not any specified jump hosts.  Use ~/.ssh/config to specify configuration for jump hosts.
+
+---
+My attempt to use ssh -J:
+
+First I created a .ssh/config file with this in it: 
+Host borealremote
+  Hostname borealremote.nfis.org
+  User brancourt
+  Port 22
+
+Then:
+ssh -J borealremote brancourt@borealpfc.nfis.org
+
+-----------------------------------------
+My attempt to set up an ssh tunnel to borealpfc using Kristian's advice and the 
+stuff I learned about ssh tunneling while working on VNC stuff:
+
+Links I found useful: 
+https://blog.linuxserver.io/2016/12/02/perform-multiple-ssh-hops-with-ssh-config/
+
+Other potentiall useful links: 
+https://starkandwayne.com/blog/jumping-seamlessly-thorough-tunnels-a-guide-to-ssh-proxy/
+https://stackoverflow.com/questions/25084288/keep-ssh-session-alive
+https://unix.stackexchange.com/questions/150402/what-is-the-default-idle-timeout-for-openssh/150406
+
+---
+Not much luck through borealremote:
+
+This didn't work going through borealremote, maybe because I don't have shell access:
+ssh -v -L 2224:borealpfc.nfis.org:22 -N -l brancourt borealremote.nfis.org
+Then (note I used my username for borealpfc):
+scp -P 2224 brancourt@localhost:~/hello.txt .
+
+Using scp -J option through borealremote didn't work: 
+scp -J borealremote brancourt@borealpfc.nfis.org:~/test2.txt .
+
+---
+Much better success through inf2: 
+
+This worked for going through inf2 (maybe I'll just always use port 2223 for inf2):
+ssh -v -L 2223:borealpfc.nfis.org:22 -N -l brancour inf2.pfc.forestry.ca
+Then (note I used my username for borealpfc):
+Recieve a file:
+scp -P 2223 brancourt@localhost:~/move_files_in_list.sh .
+scp -P 2223 brancourt@localhost:~/hello.txt .
+Send a file:
+scp -P 2223 ./test.txt brancourt@localhost:~/
+Trying ssh (has to be a small -p) worked: 
+ssh -p 2223 brancourt@localhost
+Perhaps I could do a second ssh tunnel through the first one for VNC (not tested):
+ssh -v -L 5901:10.20.0.88:5901 -N -p 2223 brancourt@localhost
+ssh -v -L 5901:10.20.0.88:5901 -N -p 2223 -l brancourt localhost
+
+
+These scp -J options worked through inf2 (configured in .ssh/config): 
+scp -J inf2 brancourt@borealpfc.nfis.org:~/test.txt .
+scp -J inf2 ./test2.txt brancourt@borealpfc.nfis.org:~/
+
+Trying to use -J through ssh on inf2 seems to be prohibited:
+ssh -J inf2 brancourt@borealpfc.nfis.org:~/test.txt .
+brancour@inf2.pfc.forestry.ca's password: 
+channel 0: open failed: administratively prohibited: open failed
+stdio forwarding failed
+kex_exchange_identification: Connection closed by remote host
+
+
+-----------------------------------------
+Info on ssh tunneling / port forwarding with multiple hops: 
+
+https://superuser.com/questions/96489/an-ssh-tunnel-via-multiple-hops
+(see the -t option): https://superuser.com/questions/253843/how-to-create-a-ssh-tunnel-chain-in-one-command
+
+-----------------------------------------
+
+-----------------------------------------

@@ -58,6 +58,9 @@ git reset HEAD~  # undo recent commit # actually, be careful before applying thi
 https://github.com/blog/2019-how-to-undo-almost-anything-with-git
 git reset <last good SHA> # undo local commit
 
+Reset local repository to be just like the origin/remote:
+https://stackoverflow.com/questions/1628088/reset-local-repository-branch-to-be-just-like-remote-repository-head
+
 # show differences between index and working tree
 # that is, changes you haven't staged to commit
 git diff [filename]
