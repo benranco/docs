@@ -160,14 +160,15 @@ openstack server create \
 
 # for VNC vm: 
 openstack server create \
-	--image CentOS7_BenWork2 \
+	--image CentOS7_GUI_VNC-noInstruct \
   --security-group default \
   --security-group vnc_security_group \
 	--key-name brancourt \
 	--nic net-id=Private \
 	--flavor mm1.medium \
-	ben_v
-	
+	ben_v4
+
+
 openstack server add floating ip ben01a 10.20.0.54
 openstack server add floating ip ben01b 10.20.0.134		
 openstack server add floating ip ben02a 10.20.0.153         
@@ -277,6 +278,8 @@ openstack server image create --name image_name server_name
 
 # To create a new security group and add rules to enable ssh in and out:
 
+openstack security group show name
+
 openstack security group create benssh --description "Intended to allow ssh ingress on port 22, as well as egress."
 
 openstack security group rule create benssh \
@@ -300,7 +303,48 @@ openstack security group rule create default \
     --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0 \
     --egress --ethertype IPv4
 
+---
+# here's the vnc_security_group: 
+openstack security group show vnc_security_group
+This revealed four rules, which I've pasted below in more human-readable format: 
 
+RULE 1:
+created_at='2019-06-07T21:41:29Z', 
+direction='egress', 
+ethertype='IPv4', 
+id='180b1fbd-1f5e-4dc5-af34-4814c29e2bcf', 
+updated_at='2019-06-07T21:41:29Z'
+
+RULE 2:
+created_at='2019-06-07T21:43:10Z', 
+direction='ingress', 
+ethertype='IPv4', 
+id='9c4734bf-adf7-4340-9f8e-fe46d12b9dea', 
+port_range_max='5901', 
+port_range_min='5901', 
+protocol='tcp', 
+remote_ip_prefix='0.0.0.0/0', 
+updated_at='2019-06-07T21:43:10Z'
+
+RULE 3:
+created_at='2019-06-07T21:41:29Z', 
+direction='egress', 
+ethertype='IPv6', 
+id='b4a86bab-bcae-49c3-9305-05ccd594bbd9', 
+updated_at='2019-06-07T21:41:29Z'
+
+RULE 4:
+created_at='2019-06-07T21:43:20Z', 
+direction='egress', 
+ethertype='IPv4', 
+id='f6cd53de-0bd4-48b8-bb2f-7bf8446c56b1', 
+port_range_max='5901', 
+port_range_min='5901', 
+protocol='tcp', 
+remote_ip_prefix='0.0.0.0/0', 
+updated_at='2019-06-07T21:43:20Z'
+
+---
 
 
 

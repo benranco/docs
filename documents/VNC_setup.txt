@@ -52,8 +52,8 @@ Installed:
 -----------------
 # Continuing to follow the instructions, to configure the server (it seems this 
 #config file has been updated since the blog post was written):
-sudo cp /lib/systemd/system/vncserver\@.service /etc/systemd/system/vncserver_centos\@:2.service
-sudo nano /etc/systemd/system/vncserver_centos\@:2.service
+sudo cp /lib/systemd/system/vncserver\@.service /etc/systemd/system/vncserver_centos\@:1.service
+sudo nano /etc/systemd/system/vncserver_centos\@:1.service
 # Modified this line to show the username:
 #   ExecStart=/usr/bin/vncserver_wrapper centos %i
 # and added this line below Type=simple:
@@ -65,7 +65,7 @@ firewall-cmd -h
 sudo firewall-cmd --state
 sudo firewall-cmd --list-all-zones
 # which returned "FirewallD is not running", so I'm going to skip the firewall commands for now.
-# hmm... the second time I tried an install, the firewall was running, so I did:
+# WAIT! hmm... the second time I tried an install, the firewall was running, so I did:
 sudo firewall-cmd --zone=public --permanent --add-service=vnc-server
 sudo firewall-cmd  --reload
 sudo firewall-cmd --list-all-zones
@@ -73,10 +73,10 @@ sudo firewall-cmd --list-all-zones
 # Then did:
 sudo systemctl daemon-reload
 # We will now enable the vncserver service for each user on the selected port, this will also enable autostart on system boot, with the commands below: 
-sudo systemctl enable vncserver_centos\@:2.service
+sudo systemctl enable vncserver_centos\@:1.service
 # which outputted:
-#   Created symlink from /etc/systemd/system/multi-user.target.wants/vncserver_centos@:2.service 
-#   to /etc/systemd/system/vncserver_centos@:2.service.
+#   Created symlink from /etc/systemd/system/multi-user.target.wants/vncserver_centos@:1.service 
+#   to /etc/systemd/system/vncserver_centos@:1.service.
 sudo systemctl daemon-reload 
 
 # Then set up a password for the centos user (I used centos as the password):
@@ -125,8 +125,9 @@ http://www.mit.edu/~avp/lqcd/ssh-vnc.html
 
 IF CONNECTING FROM WITHIN PFC:
 To connect with vncserver via the TigerVNC VncViewer java client, on your client machine, first do either of (I prefer the second if I don't want to run the ssh tunneling in the background):
-ssh -v -C -L 5901:10.20.0.201:5901 -N -f -l brancourt borealcloud.nfis.org 
-ssh -v -C -L 5901:10.20.0.201:5901 -N -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.201:5901 -N -f -l brancourt borealpfc.nfis.org 
+ssh -v -C -L 5901:10.20.0.201:5901 -N -l brancourt borealpfc.nfis.org 
+(note: not sure what the difference is between borealpfc.nfis.org and borealcloud.nfis.org, but I think we're supposed to use borealpfc)
 
 IF CONNECTING FROM HOME: 
 In this case we need to set up an ssh tunnel through inf2 to borealpfc, then in a new terminal session set up a second tunnel through the first tunnel to connect to your virtual machine on the cloud:
@@ -174,6 +175,60 @@ centos   28365  0.0  0.9 226640 36640 ?        Sl   Jul13   8:28 /usr/bin/Xvnc :
 
 
 ================================================================
+
+
+
+
+
+==========
+VNC Troubleshooting stuff...
+
+
+Troubleshooting the error that occured when trying to use VncViewer on my home CentOS 8 machine:
+com.tigervnc.rdr.SystemException: javax.net.ssl.SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
+
+CConn: connected to host localhost port 5901
+CConnection: Server supports RFB protocol version 3.8
+CConnection: Using RFB protocol version 3.8
+com.tigervnc.rdr.SystemException: javax.net.ssl.SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
+	at com.tigervnc.rfb.CSecurityTLS.processMsg(CSecurityTLS.java:145)
+	at com.tigervnc.rfb.CSecurityStack.processMsg(CSecurityStack.java:41)
+	at com.tigervnc.rfb.CSecurityVeNCrypt.processMsg(CSecurityVeNCrypt.java:177)
+	at com.tigervnc.rfb.CConnection.processSecurityMsg(CConnection.java:263)
+	at com.tigervnc.rfb.CConnection.processMsg(CConnection.java:133)
+	at com.tigervnc.vncviewer.VncViewer.run(VncViewer.java:565)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+[ben@localhost TigerVNC]$ 
+[ben@localhost TigerVNC]$ 
+
+
+https://github.com/TigerVNC/tigervnc/issues/851
+https://stackoverflow.com/questions/38205947/sslhandshakeexception-no-appropriate-protocol
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/considerations_in_adopting_rhel_8/security_considerations-in-adopting-rhel-8#tls-v10-v11_security
+https://access.redhat.com/articles/3642912
+
+update-crypto-policies --show
+update-crypto-policies --set LEGACY
+update-crypto-policies --set DEFAULT
+
+Setting system policy to LEGACY
+Note: System-wide crypto policies are applied on application start-up.
+It is recommended to restart the system for the change of policies
+to fully take place.
+[ben@localhost TigerVNC]$ 
+
+
+---
+VNC TODO:
+
+- troubleshoot the SSLHandshakeException (see above)
+- if possible, reset: update-crypto-policies --set DEFAULT
+- record the details of the VNC security-group
+- record details of local .ssh/config file
+- save full install instructions file
+- make new setup instructions, including what to do if the home folder already contains a .Xauthority file or a .vnc folder
+- test the cron job
+
 
 
 
