@@ -34,6 +34,10 @@ cat foldername.tar.gz-* > foldername.tar.gz
 To zip a folder and all it's contents, applying compression:
 zip -r output_file.zip file1 folder1
 
+To unzip/extract a .gz gzip file, two options: 
+gunzip filename.gz
+zcat filename.gz > newFileName  # handy if gunzip gives you an "unexpected end of file", this will at least still output.
+
 
 To check/verify an md5 md5sum, from: https://www.geeksforgeeks.org/md5sum-linux-command/
 md5sum -c file.md5 # checks the md5 sum of the file listed inside the .md5 file
@@ -43,25 +47,22 @@ md5sum -c --quiet file.md5 # only produces output if the check fails
 
 Grep:
 
+Use grep to select several types of lines based on how they begin: 
+grep -E "^==.*|--.*|running.*|r1.*|Input.*" trim_master_log.txt > trim_master_log-highlights.txt 
+
 Use grep on all lines of a file except the first line:
-
 option1: cat R28-S91-M28K-Ben-filtered-map_js.txt | sed -n '1!p' | grep -c "expression"
-
 option2: cat R28-S91-M28K-Ben-filtered-map_js.txt | awk '{if(NR>1)print}' | grep -c "expression"
 
 Use grep to search for matches of an entire line: grep "^expression$" file
-
 List line numbers of occurences: grep -n "expression" file
-
 Count the number of occurences: grep -c "expression" file
 
 
 Use grep to only print the segment of the matching lines that contains the matching string with padding of 0-20 characters on either side:
-
 grep -oE ".{0,20}searchpattern.{0,20}"
 
 An alternative way to truncate lines, piping it to cut to print only characters 10 to 90:
-
 grep "searchpattern" | cut -c10-90
  
 
@@ -93,6 +94,10 @@ sed -n 'startline,endline p; endline+1 q' in.txt > out.txt
   -n suppresses echoing the input as output
    p prints out the relevant lines
    q exit sed without processing rest of file
+
+
+Addition/subtraction/arithmetic/math in a bash terminal: 
+echo $((1 + 2))
 
 
 du -sch * --exclude=pattern <-- calculate total size of everything (in current dir), and give a grand total, human readable, excluding any file names that contain the given pattern
@@ -167,6 +172,10 @@ sed 's/\(>[^ ]*\) .*/\1/' test.fasta > outfile # capture the portion contained i
 sed 's/\(>[^\t]*\)\t.*/\1/' test.fasta > outfile # same as above but with tab (and sometimes space???) instead of space
 
 
+grep ">" reads-Sar.fasta | sed 's/\>([^ ]*\) .*/\1/' | sed 's/>//' > seqIds-Sar.txt # using above, print out a list of seq Ids from a fasta file, one per line, with the starting ">" still there. The second sed command replaces all ">" with empty string.
+grep ">" reads-Sar.fasta | sed 's/>\([^ ]*\) .*/\1/' > seqIds-Sar3.txt # does the same as above, but with just the one sed command, by moving the \( to exclude the initial ">" from the captured portion.
+
+
 # bash script to do the above for each file in a folder:
 
 path="/path/to/folder/"
@@ -215,7 +224,7 @@ Adding a drive/managing your Volume Group/Logical Volume(s) and Logical Volume M
 
 http://www.techotopia.com/index.php/Adding_a_New_Disk_to_a_CentOS_Volume_Group_and_Logical_Volume
 
-Some useful info commands: mount, vgdisplay (volume group(s)), lvdisplay (logical volumes), pvdisplay (physical volumes), ls /dev/sd*, cat /proc/partitions
+Some useful info commands (see further down for some usage): mount, vgdisplay (volume group(s)), lvdisplay (logical volumes), pvdisplay -m (physical volumes), ls /dev/sd*, cat /proc/partitions
 
 Some useful create commands:
 
@@ -242,7 +251,19 @@ The most popular answer in this thread has a good summary of what this guy did f
 https://stackoverflow.com/questions/26305376/resize2fs-bad-magic-number-in-super-block-while-trying-to-open
 
 
-
+Some useful commands for finding out how partitions, logical volumes, logical volume management (lvm) are being used:
+ls /dev/sd*  # list all physical SCSI (SATA...) storage devices, mounted and unmounted
+ls /dev/dm*  # list all device mapper devices (used by lvm)
+ls -l /dev/mapper/  # show where the dm* devices map to.
+cat /proc/partitions  # show all partitions (including sd* and dm*, and unmounted) and their sizes (see pvdisplay -m).
+mount # show all mounted filesystems (not very human readable), also: less /proc/mounts, less /proc/self/mounts
+df -aTh # show all mounted filesystems in a human readable format
+sudo vgdisply   # I didn't know how to use the data this gave me
+sudo lvdisplay  # give information about the logical volumes 
+sudo pvdisplay -m  # give information about the (mounted?) physical volumes, including (-m) the mapping of physical extents to logical volumes and logical extents. I'm guessing if an sd* doesn't show up in this list then it isn't mounted.
+sudo fdisk -l /dev/sdc2  # (or sfdisk) get info on unmounted partition, including filesystem.
+parted /dev/sdX -l  # similar but better formatted output
+sudo mount /dev/sdc2 /mnt/mountSdc2  # this was all i needed to do for the qnx4.x filesystem of /dev/sdc2 on Jun-Jun's Z800.
 
 ==============================
 Automatic security updates in CentOS:

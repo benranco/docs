@@ -75,7 +75,7 @@ scp -P 2223 brancourt@localhost:~/move_files_in_list.sh .
 scp -P 2223 brancourt@localhost:~/hello.txt .
 Send a file:
 scp -P 2223 ./test.txt brancourt@localhost:~/
-Trying ssh (has to be a small -p) worked: 
+Trying ssh (has to be a lower case -p, whereas the scp was an upper case -P) worked: 
 ssh -p 2223 brancourt@localhost
 Perhaps I could do a second ssh tunnel through the first one for VNC (not tested):
 ssh -v -L 5901:10.20.0.88:5901 -N -p 2223 brancourt@localhost

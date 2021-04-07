@@ -14,8 +14,8 @@ https://tigervnc.org/
 ================================================================
 To install TigerVNC server on a CentOS7 VM:
 
-# First, I started with the CentOS7_Trinity image that I created. See notes on how I created that 
-# in OpenStack-operations.txt.
+# First, I started with the CentOS7_Trinity image that I created. This isn't necessary, but see 
+# notes on how I created that in ~/software/trinity
 
 # Since I had just created the CentOS7_Trinity image and everything is up to date, I skipped:
 sudo yum update
@@ -51,7 +51,7 @@ Installed:
 
 -----------------
 # Continuing to follow the instructions, to configure the server (it seems this 
-#config file has been updated since the blog post was written):
+# config file has been updated since the blog post was written):
 sudo cp /lib/systemd/system/vncserver\@.service /etc/systemd/system/vncserver_centos\@:1.service
 sudo nano /etc/systemd/system/vncserver_centos\@:1.service
 # Modified this line to show the username:
@@ -59,7 +59,7 @@ sudo nano /etc/systemd/system/vncserver_centos\@:1.service
 # and added this line below Type=simple:
 #   User=centos
 
-# The instructions included stuff for firewall, and I'm not sure if my vm is using that, so
+# The instructions included stuff for firewall, and I wasn't sure if my vm is using that, so
 # I did:
 firewall-cmd -h
 sudo firewall-cmd --state
@@ -72,20 +72,30 @@ sudo firewall-cmd --list-all-zones
 
 # Then did:
 sudo systemctl daemon-reload
-# We will now enable the vncserver service for each user on the selected port, this will also enable autostart on system boot, with the commands below: 
+# We will now enable the vncserver service for each user on the selected port, this will also 
+# enable autostart on system boot (for some reason autostart never worked), with the commands 
+# below: 
 sudo systemctl enable vncserver_centos\@:1.service
 # which outputted:
 #   Created symlink from /etc/systemd/system/multi-user.target.wants/vncserver_centos@:1.service 
 #   to /etc/systemd/system/vncserver_centos@:1.service.
 sudo systemctl daemon-reload 
 
-# Then set up a password for the centos user (I used centos as the password):
+
+# AT THIS POINT, EVERYTHING IS INSTALLED, it just needs to be initialized, so I based my 
+# CentOS7_GUI_VNC image on the current state. So when you start a new vm from this image, just 
+# do the following steps. If you're creating a vm from an image that has already initialized 
+# vnc server, you can just delete the .Xauthority file and the .vnc folder from your home 
+# directory if you like before doing these steps. I don't think that's necessary though.
+
+
+# Set up a password for the centos user (I used centos as the password):
 vncpasswd centos
   Password: centos
   Verify: centos
   Would you like to enter a view-only password (y/n)? n
 
-# Then did:
+# Then start vncserver:
 vncserver
   You will require a password to access your desktops.
   Password: centos
@@ -130,7 +140,7 @@ ssh -v -C -L 5901:10.20.0.201:5901 -N -l brancourt borealpfc.nfis.org
 (note: not sure what the difference is between borealpfc.nfis.org and borealcloud.nfis.org, but I think we're supposed to use borealpfc)
 
 IF CONNECTING FROM HOME: 
-In this case we need to set up an ssh tunnel through inf2 to borealpfc, then in a new terminal session set up a second tunnel through the first tunnel to connect to your virtual machine on the cloud:
+In this case we need to set up an ssh tunnel through inf2 to borealpfc, then in a new terminal session set up a second tunnel through the first tunnel to connect to your virtual machine on the boreal cloud:
 ssh -v -L 2223:borealpfc.nfis.org:22 -N -l brancour inf2.pfc.forestry.ca
 Then, in a new terminal:
 ssh -v -C -L 5901:10.20.0.201:5901 -N -p 2223 -l brancourt localhost
