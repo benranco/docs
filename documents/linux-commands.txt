@@ -96,6 +96,9 @@ sed -n 'startline,endline p; endline+1 q' in.txt > out.txt
    q exit sed without processing rest of file
 
 
+Passing bash variables into awk: 
+https://stackoverflow.com/questions/19075671/how-do-i-use-shell-variables-in-an-awk-script
+
 Addition/subtraction/arithmetic/math in a bash terminal: 
 echo $((1 + 2))
 
@@ -174,6 +177,9 @@ sed 's/\(>[^\t]*\)\t.*/\1/' test.fasta > outfile # same as above but with tab (a
 
 grep ">" reads-Sar.fasta | sed 's/\>([^ ]*\) .*/\1/' | sed 's/>//' > seqIds-Sar.txt # using above, print out a list of seq Ids from a fasta file, one per line, with the starting ">" still there. The second sed command replaces all ">" with empty string.
 grep ">" reads-Sar.fasta | sed 's/>\([^ ]*\) .*/\1/' > seqIds-Sar3.txt # does the same as above, but with just the one sed command, by moving the \( to exclude the initial ">" from the captured portion.
+
+
+sed 's/\(.*\)\/\(.*\)\/\(.*\) \(.*\)/\3-\2-\1 \4 UTC/' old > new  # This formats a date line from 14/12/2017 22:51:09 to 2017-12-14 22:51:09 UTC
 
 
 # bash script to do the above for each file in a folder:

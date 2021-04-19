@@ -40,8 +40,8 @@ sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun /w
 sudo mount -t nfs 10.20.0.6:/Public/genomics/komendja_backup2 /work3
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/orthofinder /work
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun/forMegan6 /work
-sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/WBP-NGS-trimmomatic /work
-sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/WWP-NGS-rawData /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/WWP-NGS-trimmomatic /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/WWP-NGS-rawData /work2
 
 sudo mount -t nfs 10.20.0.6:/Public/genomics/NCBI-NR /work2
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun/blast0 /work
