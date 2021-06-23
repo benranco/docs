@@ -1,0 +1,108 @@
+===============================================
+TransDecoder links:
+https://github.com/TransDecoder/TransDecoder/wiki
+(search for "Running TransDecoder is a two-step process): 
+https://bioinformaticsdotca.github.io/RNAseq_2019_Module8_lab
+https://github.com/TransDecoder/TransDecoder
+https://github.com/TransDecoder/TransDecoder/blob/devel/TransDecoder.Predict
+
+
+TransDecoder install issue:
+Solution here: https://github.com/TransDecoder/TransDecoder/issues/76
+I had to install the perl module:
+$ sudo cpan URI::Escape
+
+Create two symbolic links in /usr/local/bin: 
+TransDecoder.LongOrfs -> /home/centos/software/trinity/TransDecoder/TransDecoder.LongOrfs
+TransDecoder.Predict -> /home/centos/software/trinity/TransDecoder/TransDecoder.Predict
+
+===============================================
+
+TransDecoder runs in two steps, with an optional blast run between them (which I haven't done so far on Jun-Jun's data).
+
+Here is a description of the final output files:
+
+transcripts.fasta.transdecoder.pep : peptide sequences for the final candidate ORFs; all shorter candidates within longer ORFs were removed.
+transcripts.fasta.transdecoder.cds  : nucleotide sequences for coding regions of the final candidate ORFs
+transcripts.fasta.transdecoder.gff3 : positions within the target transcripts of the final selected ORFs
+transcripts.fasta.transdecoder.bed  : bed-formatted file describing ORF positions, best for viewing using GenomeView or IGV.
+
+
+===============================================
+
+from: 
+https://bioinformaticsdotca.github.io/RNAseq_2019_Module8_lab
+
+
+Running TransDecoder is a two-step process. First run the TransDecoder step that identifies all long ORFs.
+% $TRANSDECODER_HOME/TransDecoder.LongOrfs -t ../trinity_out_dir/Trinity.fasta
+
+Now, run the step that predicts which ORFs are likely to be coding.
+% $TRANSDECODER_HOME/TransDecoder.Predict -t ../trinity_out_dir/Trinity.fasta 
+
+You’ll now find a number of output files containing ‘transdecoder’ in their name:
+%  ls -1 |grep transdecoder
+Trinity.fasta.transdecoder.bed
+Trinity.fasta.transdecoder.cds
+Trinity.fasta.transdecoder.gff3
+Trinity.fasta.transdecoder.pep
+Trinity.fasta.transdecoder_dir/
+...
+
+The file we care about the most here is the ‘Trinity.fasta.transdecoder.pep’ file, which contains the protein sequences corresponding to the predicted coding regions within the transcripts.
+
+Go ahead and take a look at this file:
+%   less Trinity.fasta.transdecoder.pep
+
+>TRINITY_DN107_c0_g1_i1.p1 TRINITY_DN107_c0_g1~~TRINITY_DN107_c0_g1_i1.p1  ORF type:internal len:175 (+),score=164.12 TRINITY_DN107_c0_g1_i1:2-523(+)
+VPLYQHLADLSDSKTSPFVLPVPFLNVLNGGSHAGGALALQEFMIAPTGAKSFREAMRIG
+SEVYHNLKSLTKKRYGSSAGNVGDEGGVAPDIQTAEEALDLIVDAIKAAGHEGKVKIGLD
+CASSEFFKDGKYDLDFKNPNSDASKWLSGPQLADLYHSLVKKYPIVSIEDPFAE
+>TRINITY_DN10_c0_g1_i1.p2 TRINITY_DN10_c0_g1~~TRINITY_DN10_c0_g1_i1.p2  ORF type:internal len:158 (-),score=122.60 TRINITY_DN10_c0_g1_i1:2-472(-)
+TDQDKRYQAKMGKSHGYRSRTRYMFQRDFRKHGAIALSTYLKVYKVGDIVDIKANGSIQK
+GMPHKFYQGKTGVVYNVTKSSVGVIVNKMVGNRYLEKRLNLRVEHVKHSKCRQEFLDRVK
+SNAAKRAEAKAQGKAVQLKRQPAQPREARVVSTEGNV
+>TRINITY_DN110_c0_g1_i1.p2 TRINITY_DN110_c0_g1~~TRINITY_DN110_c0_g1_i1.p2  ORF type:complete len:131 (+),score=98.69 TRINITY_DN110_c0_g1_i1:55-447(+)
+MTRSSVLADALNAINNAEKTGKRQVLIRPSSKVIIKFLQVMQRHGYIGEFEYIDDHRSGK
+
+There are a few items to take notice of in the above peptide file. The header lines includes the protein identifier composed of the original transcripts along with ‘m.(number)’. The ‘type’ attribute indicates whether the protein is ‘complete’, containing a start and a stop codon; ‘5prime_partial’, meaning it’s missing a start codon and presumably part of the N-terminus; ‘3prime_partial’, meaning it’s missing the stop codon and presumably part of the C-terminus; or ‘internal’, meaning it’s both 5prime-partial and 3prime-partial. You’ll also see an indicator (+) or (-) to indicate which strand the coding region is found on, along with the coordinates of the ORF in that transcript sequence.
+
+===============================================
+
+TransDecoder running example from Ben (in two steps): 
+
+nohup TransDecoder.LongOrfs -m 50 -t ../inputFolder/Trin.fasta 2>&1 1> TransDecoder.LongOrfs.log &
+
+nohup TransDecoder.Predict --single_best_only -t ../inputFolder/Trin.fasta 2>&1 1> TransDecoder.Predict.log &
+
+
+===============================================
+Real use-case example:
+
+Please go ahead to TransDecorder at ORF length at least 50 genetic codons (amino acid). Thanks
+
+Please run TransDecoder.LongOrgs using MergedContigs-CC-LPnd-Trin 641,657 at LongOrfs -m 50 –t. Then run cd-hit using amino acid sequences (pep. file) of MergedContigs-CC-LPnd-Trin 641,657 at 0.98.
+
+Thanks.
+
+(for this case (ass6) I think I first had to combine three of Kangakola's Trinity outputs using MeGAMerge): 
+MeGAMerge-1.1.pl -d out-full CC-clean-480,846nt-GenBank_GHWB00000000.fasta LPndtranscript163,075.fasta Trinity_RS_SS_D641,657.fasta
+
+
+nohup TransDecoder.LongOrfs -m 50 -t ../MeGAMerge-fullResults/MergedContigs-CC-LPnd-Trin.fasta > TransDecoder.LongOrfs-try2.log &
+
+nohup TransDecoder.Predict --single_best_only -t ../MeGAMerge-fullResults/MergedContigs-CC-LPnd-Trin.fasta > TransDecoder.Predict.log &
+
+nohup cd-hit-est -i ../TransDecoderResults-try2-afterMeGAMerge--singleBestOnly/MergedContigs-CC-LPnd-Trin.fasta.transdecoder.pep -o MergedContigs-CC-LPnd-Trin.transdecoder.pep-cd-hit-est.pep -c 0.98 -n 10 -d 0 -M 36000 -T 0 > cd-hit-est.log &
+
+
+[centos@ben-a work]$ grep -c ">" MeGAMerge-fullResults/MergedContigs-CC-LPnd-Trin.fasta 
+619892
+[centos@ben-a TransDecoderResults-try2-afterMeGAMerge--singleBestOnly]$ grep -c ">" MergedContigs-CC-LPnd-Trin.fasta.transdecoder.pep 
+399753
+[centos@ben-a CdHitEstResults-afterTransDecoder]$ grep -c ">" MergedContigs-CC-LPnd-Trin.transdecoder.pep-cd-hit-est.pep
+399599
+
+
+
+

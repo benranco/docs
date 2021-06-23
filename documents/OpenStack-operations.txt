@@ -4,6 +4,15 @@ Then:
 source quickstart/openrc.sh
 
 
+If I get this error:
+Could not chdir to home directory /export/home/brancourt: Permission denied
+-bash: /export/home/brancourt/.bash_profile: Permission denied
+-bash-4.2$
+Kristian Arndt  6:04 PM
+Try typing "kinit" and your password
+
+
+
               RAM   CPU AVAILABLE
 x1.16xlarge   1015  64  2          not public (but I have access)
 mm2e.16xlarge 1000  56  1          not public
@@ -40,8 +49,12 @@ sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun /w
 sudo mount -t nfs 10.20.0.6:/Public/genomics/komendja_backup2 /work3
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/orthofinder /work
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun/forMegan6 /work
-sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/WWP-NGS-trimmomatic /work
-sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/WWP-NGS-rawData /work2
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/Bens-Trinity-assembly /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/LP-NGS-RawData/LP-RNAseq-2015-trimmomatic /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/Hemlock-Heterobasidion-2017-trimmomatic /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/Fluidigm-May2021/Cr4cM5_Fluidigm /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/Fluidigm-May2021/LG12_Fluidigm /work
+
 
 sudo mount -t nfs 10.20.0.6:/Public/genomics/NCBI-NR /work2
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun/blast0 /work
@@ -103,15 +116,7 @@ openstack server create \
 	--key-name brancourt \
 	--nic net-id=Private \
 	--flavor x1.16xlarge \
-	ben_pipeline_vm
-
-openstack server create \
-	--image CentOS7_BenWork3 \
-  --security-group default \
-	--key-name brancourt \
-	--nic net-id=Private \
-	--flavor mm1.medium \
-	ben_a
+	ben_vm1
 	
 openstack server create \
 	--image CentOS7_BenWork \
@@ -151,7 +156,15 @@ openstack server create \
 	--key-name brancourt \
 	--nic net-id=Private \
 	--flavor x1.16xlarge \
-	ben_t
+	ben_
+
+openstack server create \
+	--image CentOS7_BenWork3 \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor mm1.medium \
+	ben_a
 
 # for VNC vm: 
 openstack server create \

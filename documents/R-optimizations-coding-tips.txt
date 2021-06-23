@@ -74,6 +74,17 @@ Customizing where R installs packages:
 http://stackoverflow.com/questions/2615128/where-does-r-store-packages
 
 
+from: 
+https://stackoverflow.com/questions/54669173/error-package-digest-was-installed-by-an-r-version-with-different-internals
+If you get an error like this: 
+"package ‘seqinr’ was installed by an R version with different internals; it needs to be reinstalled for use with this R version"
+Solution, run this (it takes a long time): 
+update.packages(checkBuilt=TRUE, ask=FALSE)
+
+
+========
+About specific functions, etc
+
 paste, paste0, sprintf:
 https://www.r-bloggers.com/paste-paste0-and-sprintf/
 

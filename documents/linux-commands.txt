@@ -8,6 +8,11 @@ https://www.tecmint.com/set-path-variable-linux-permanently/
     Redirect both to a file: command &> out.
 
 
+To check whether a text file has Windows CRLF (carriage return, \n, newline) ending or Linux LF ending:
+cat -A file.txt # Window CR will display as ^M
+To convert Windows CRLF ending to Linux LF ending: 
+sed -i -e 's/\r$//' file.txt
+
 Mounting and reading/writing to NTFS on CentOS:
 
 https://wiki.centos.org/TipsAndTricks/NTFS
@@ -24,6 +29,15 @@ rsync -a --ignore-existing /src/dir/ host:/dest/dir/
 To run a command as a background process, end with an &, but this will terminate if you exit from an ssh session in which you ran the command, so when you want the process to continue even after your ssh session ends, use the nohup (no hangups) command:
 
 nohup command 2>&1 1> log.txt &
+
+from: https://linuxize.com/post/how-to-use-linux-screen/
+screen command  # To run a command in a new screen window
+Crt-a d  # to detach from a screen session
+screen -ls  # list all open screen sessions
+screen resume  # to re-attach to the screen session
+https://stackoverflow.com/questions/285015/how-to-prevent-a-background-process-from-being-stopped-after-closing-ssh-client
+https://stackoverflow.com/questions/20766300/nohup-vs-screen-which-is-better-for-long-running-process
+https://superuser.com/questions/454907/how-to-execute-a-command-in-screen-and-detach
 
 
 To split and rejoin a tar.gz archive into multiple parts:
@@ -64,7 +78,11 @@ grep -oE ".{0,20}searchpattern.{0,20}"
 
 An alternative way to truncate lines, piping it to cut to print only characters 10 to 90:
 grep "searchpattern" | cut -c10-90
- 
+
+from: https://stackoverflow.com/questions/6958841/use-grep-to-report-back-only-line-numbers
+Use grep to get only the line number(s) of the search pattern
+grep -n "text to find" file.ext | cut -f1 -d:
+
 
 Count how many unique lines there are in a file:
 
@@ -84,13 +102,27 @@ wc -l  <-- count the number of lines in a file
 ls | wc -l  <-- count the number of files in a directory
 
 
+In bash, iterate through the lines in a file, see these: 
+https://stackoverflow.com/questions/1521462/looping-through-the-content-of-a-file-in-bash
+https://unix.stackexchange.com/questions/402750/modify-global-variable-in-while-loop
+Simple version: 
+  while read line; do
+    echo "$line"
+  done < file.txt
+Better/safer version: 
+  while IFS="" read -r line || [ -n "$line" ]
+  do
+    printf '%s\n' "$line"
+  done < file.txt
+
+
 Read a file from line number X to line number Y (there are other ways too):
 
 awk 'NR >= X && NR <= Y' filename 
 awk 'NR == X' filename 
 
 To print out a range of lines from a file using sed:
-sed -n 'startline,endline p; endline+1 q' in.txt > out.txt
+sed -n 'startline,endline p; endline(+1?) q' in.txt > out.txt
   -n suppresses echoing the input as output
    p prints out the relevant lines
    q exit sed without processing rest of file
@@ -270,6 +302,10 @@ sudo pvdisplay -m  # give information about the (mounted?) physical volumes, inc
 sudo fdisk -l /dev/sdc2  # (or sfdisk) get info on unmounted partition, including filesystem.
 parted /dev/sdX -l  # similar but better formatted output
 sudo mount /dev/sdc2 /mnt/mountSdc2  # this was all i needed to do for the qnx4.x filesystem of /dev/sdc2 on Jun-Jun's Z800.
+sudo mount /dev/sdd1 /mnt/usbMount/  # this is how i mounted Grace's external usb drive. When I did so I got this msg:
+                                        # The disk contains an unclean file system (0, 0).
+                                        # The file system wasn't safely closed on Windows. Fixing.
+
 
 ==============================
 Automatic security updates in CentOS:

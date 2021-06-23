@@ -4,7 +4,8 @@ echo "running run_trimmomatic_on_all_pairs.sh"
 # to install java:
 #   sudo yum install java-1.8.0-openjdk-devel
 
-
+# trimmomatic user manual: 
+# http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf
 
 # these should be the only parameters you need to edit
 inFolder="/work/WBP_MJ9-2013"
