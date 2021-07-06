@@ -136,5 +136,14 @@ http://www.rdocumentation.org/packages/seqinr/versions/3.3-0/topics/read.fasta
 http://davetang.org/muse/2013/05/09/using-the-r-seqinr-package/
 
 
+========
+Common R programming tasks:
+
+r data frame select rows based on column matching value/condition:
+https://stackoverflow.com/questions/3445590/subset-filter-rows-in-a-data-frame-based-on-a-condition-in-a-column
+
+Initialize an empty dataframe: 
+dd <- data.frame(da=character(4), db=logical(4), dc=c(11:14))
+
 
 

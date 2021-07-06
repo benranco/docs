@@ -173,6 +173,17 @@ or if you have a version of rename that takes perl regex:
 rename 's/ABC/XYZ/' *.txt
 
 
+Using sed to replace parts of lines. Examples below.
+command: 
+  sed 's/original/new/' filename
+  sed 's/original/new/g' filename
+  sed -i 's/original/new/g' filename
+  
+From: https://linuxize.com/post/how-to-use-sed-to-find-and-replace-string-in-files/
+-i: in-place editing (modifies the original file)
+g - Global replacement flag. By default, sed reads the file line by line and changes only the first occurrence of the SEARCH_REGEX on a line. When the replacement flag is provided, all occurrences are replaced.
+ 
+
 Replace first occurrence of a comma within each line of a file with a dash:
 (the -i stands for edit file in place)
 
@@ -207,8 +218,18 @@ sed 's/\(>[^ ]*\) .*/\1/' test.fasta > outfile # capture the portion contained i
 sed 's/\(>[^\t]*\)\t.*/\1/' test.fasta > outfile # same as above but with tab (and sometimes space???) instead of space
 
 
-grep ">" reads-Sar.fasta | sed 's/\>([^ ]*\) .*/\1/' | sed 's/>//' > seqIds-Sar.txt # using above, print out a list of seq Ids from a fasta file, one per line, with the starting ">" still there. The second sed command replaces all ">" with empty string.
+grep ">" reads-Sar.fasta | sed 's/\(>[^ ]*\) .*/\1/' | sed 's/>//' > seqIds-Sar.txt # using above, print out a list of seq Ids from a fasta file, one per line, with the starting ">" still there. The second sed command replaces all ">" with empty string.
 grep ">" reads-Sar.fasta | sed 's/>\([^ ]*\) .*/\1/' > seqIds-Sar3.txt # does the same as above, but with just the one sed command, by moving the \( to exclude the initial ">" from the captured portion.
+
+grep -oE "^>\S*" file.fasta | sed 's/>//g'  # A simpler way to do the above by using grep -oE. The grep -oE option only prints the segment of the matching lines that contains the matching string (\S matches any non-whitespace charcter). The sed command replaces all occurences of ">" with "".
+
+# for the below, grep -m2 means just print the first two occurences:
+grep -m 2 "^>" test3/wwp-n20.fasta | sed "s/>\([^ ]*\)/\1 \1/g"  # print out all header lines from a fasta file, with the sequence id duplicated, and without the initial ">"
+
+grep -m 2 "^>" test3/wwp-n20.fasta | sed "s/>\([^ ]*\)\(_i[0-9]*\)/\1 \1\2/g"  # print out all header lines from a fasta file, with the sequence id duplicated, but the first duplication without the seqId portion (_i[0-9]*), leaving only the geneId and without the initial ">"
+
+grep -m 2 "^>" test3/wwp-n20.fasta | sed "s/>\([^ ]*\)\(_i[0-9]*\) \(len=\)\([0-9]*\).*/\1 \1\2 \4/g"  # print out only all header lines from a fasta file, but only containing: geneId geneId+seqId lenVal
+
 
 
 sed 's/\(.*\)\/\(.*\)\/\(.*\) \(.*\)/\3-\2-\1 \4 UTC/' old > new  # This formats a date line from 14/12/2017 22:51:09 to 2017-12-14 22:51:09 UTC
