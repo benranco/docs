@@ -271,6 +271,9 @@ Hard link (files only, less flexible and not self documenting)
 #   Source                             Link
 ln /home/jake/doc/test/2000/something /home/jake/xxx
 
+Safest way to remove a symbolic link symlink, from: 
+https://linuxize.com/post/how-to-remove-symbolic-links-in-linux/
+unlink xxx
 
 
 Very handy guides to disk drive management in CentOS (6).
