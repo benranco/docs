@@ -18,7 +18,7 @@ Then exit your virtual machine and restart it for thist to take effect.
 
 USING THE NCBI NR DATABASE
 
-The NCBI NR dabase has been downloaded to ncbi_nr_db. 
+The NCBI NR dabase has been downloaded to the ncbi_nr_db folder. 
 To use it with your blast run, the most straightforward way to do it is to copy the .ncbirc file in this directory 
 into the directory from which you'll be running blast, and edit it. If you don't see the .ncbirc file, use this 
 command from the current directory to see it: 
@@ -27,7 +27,7 @@ ls -la
 If you need to download other NCBI databases, use the perl script provided in the bin directory of your blast 
 installation to do it. Run it from the folder in which you want to download the database. 
 Here is the command that I used to download the NR database. The nohup command at the beginning is to ensure the 
-process continues with "no hangups" even if th ssh session is interrupted: 
+process continues with "no hangups" even if the ssh session is interrupted: 
 nohup ../blast-2.11/ncbi-blast-2.11.0+/bin/update_blastdb.pl --verbose --timeout 180 nr > update_blastdb.log &
 
 To keep track of its progress, you can tail the update_blastdb.log:
@@ -39,6 +39,7 @@ To get  a list of usage instructions, execute the update_blastdb.pl script witho
 
 --- 
 To run blastp...
+First, copy and edit the .ncbirc file as explained above.
 An example basic blastp command, in multi-threaded mode using 16 threads, and running it through nohup to ensure
 "no hangups" even if the ssh session is terminated:
 nohup blastp -num_threads 16 -db nr -query inputdata.fasta -out results.out > console_out.log &
