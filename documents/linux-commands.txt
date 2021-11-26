@@ -26,6 +26,15 @@ Use rsync, instead of scp! Better for updating/regular backups. Some useful opti
 rsync -au /src/dir/ host:/dest/dir/
 rsync -a --ignore-existing /src/dir/ host:/dest/dir/
 
+
+Using scp to copy files through intermediate server to local computer: 
+scp -J brancour@inf2.pfc.forestry.ca  brancourt@borealcloud.nfis.org:file.txt  .
+scp -J brancourt@borealremote.nfis.org brancourt@borealjump.nfis.org:file.txt .
+
+An example given by Alex Chubaty on how to use rsync to copy files from borealcloud to local computer:
+rsync -avzP -e 'ssh -A -J spades@borealremote.nfis.org,achubaty@borealjump.nfis.org' 10.20.0.213:/home/achubaty/myFiles /path/to/local/files/
+
+
 To run a command as a background process, end with an &, but this will terminate if you exit from an ssh session in which you ran the command, so when you want the process to continue even after your ssh session ends, use the nohup (no hangups) command:
 
 nohup command 2>&1 1> log.txt &
@@ -39,6 +48,9 @@ https://stackoverflow.com/questions/285015/how-to-prevent-a-background-process-f
 https://stackoverflow.com/questions/20766300/nohup-vs-screen-which-is-better-for-long-running-process
 https://superuser.com/questions/454907/how-to-execute-a-command-in-screen-and-detach
 
+Understanding the console output of the top command: 
+https://www.howtogeek.com/668986/how-to-use-the-linux-top-command-and-understand-its-output/
+https://www.howtogeek.com/194642/understanding-the-load-average-on-linux-and-other-unix-like-systems/
 
 To split and rejoin a tar.gz archive into multiple parts:
 tar cvzf foldername.tar.gz foldername
@@ -101,6 +113,17 @@ wc -l  <-- count the number of lines in a file
 
 ls | wc -l  <-- count the number of files in a directory
 
+
+# Find all files of *.txt in subfolders recursively, but only to a depth of the first level of subdirectories:
+find . -mindepth 2 -maxdepth 2 -name *.txt -type f 
+# Copy the results of the above search to a new folder:
+cp `find . -mindepth 2 -maxdepth 2 -name *.txt -type f` newFolder
+# Applying the above find command from within R: 
+inFileList <- system2("find", args=c(".", paste0(" -mindepth 2 -maxdepth 2 -name *.txt -type f")), stdout=TRUE)
+
+
+# concatenate all .txt files in current folder to master.txt:
+cat `ls *.txt` >> master.txt
 
 In bash, iterate through the lines in a file, see these: 
 https://stackoverflow.com/questions/1521462/looping-through-the-content-of-a-file-in-bash
@@ -175,9 +198,10 @@ rename 's/ABC/XYZ/' *.txt
 
 Using sed to replace parts of lines. Examples below.
 command: 
-  sed 's/original/new/' filename
-  sed 's/original/new/g' filename
-  sed -i 's/original/new/g' filename
+  sed 's/original/new/' filename > out
+  sed 's/original/new/g' filename > out # I think the /g means do it for all occurences, not just the first
+  sed -i 's/original/new/g' filename  # the -i means edit the file in place
+  sed -i 's/.*$/&hello/g' tmp.txt  # this adds the string "hello" to the end of each line (since in said you can't search for newline). See comment for s/regexp/replacement/ in the sed man page.
   
 From: https://linuxize.com/post/how-to-use-sed-to-find-and-replace-string-in-files/
 -i: in-place editing (modifies the original file)

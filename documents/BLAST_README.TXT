@@ -67,6 +67,7 @@ The online blastp tool: https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&
 
 As for the RAM and processing power for BLAST, you may check the link as below. Thanks. Jun-Jun
 https://doctorlib.info/medical/blast/13.html
+https://ncbi.github.io/blast-cloud/conf/choosing-instance.html
 
 Why is blast taking so long?:
 https://secure.clcbio.com/helpspot/index.php?pg=kb.page&id=248

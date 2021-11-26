@@ -45,10 +45,12 @@ tmpfs                 1023732          0     1023732   0% /sys/fs/cgroup
 sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun_Conifer_192gDNA /workin
 sudo mount -t nfs 10.20.0.6:/Public/genomics/out01 /work
 sudo mount -t nfs 10.20.0.6:/Public/genomics/NCBI-NR /work2
+sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun/Data-Dec2020/Bens-Trinity-assembly/BLASTxRuns/BLASTx-WBP47/WBP47pt01-x1 /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun/Data-Dec2020
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun /work
 sudo mount -t nfs 10.20.0.6:/Public/genomics/komendja_backup2 /work3
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/orthofinder /work
-sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/ben2021/a6/blastrun/forMegan6 /work
+sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun/Data-Dec2020/ben2021/a6/blastrun/forMegan6 /work3
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/Bens-Trinity-assembly /work
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/LP-NGS-RawData/LP-RNAseq-2015-trimmomatic /work
 sudo mount -t nfs 10.20.0.6:/Public/genomics/Data-Dec2020/Hemlock-Heterobasidion-2017-trimmomatic /work
@@ -108,63 +110,25 @@ openstack server create \
 	--key-name brancourt \
 	--nic net-id=Private \
 	--flavor x1.8xlarge \
-	ben_vm1
-
+	benx1-big
+	
 openstack server create \
-	--image CentOS7_SNPpipeline \
+	--image CentOS7_BenWork4 \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
 	--flavor x1.16xlarge \
 	ben_vm1
-	
+
 openstack server create \
-	--image CentOS7_BenWork \
+	--image CentOS7_BenWork4 \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
 	--flavor mm2.4xlarge \
-	ben0
+	benmm2-06
 
-openstack server create \
-	--image CentOS7_BenWork \
-  --security-group default \
-	--key-name brancourt \
-	--nic net-id=Private \
-	--flavor mm1.8xlarge \
-	ben0
-		
-openstack server create \
-	--image CentOS7_BenWork \
-  --security-group default \
-	--key-name brancourt \
-	--nic net-id=Private \
-	--flavor mm2.8xlarge \
-	ben0
-	
-openstack server create \
-	--image CentOS7_BenWork \
-  --security-group default \
-	--key-name brancourt \
-	--nic net-id=Private \
-	--flavor mm1.16xlarge \
-	ben0
 
-openstack server create \
-	--image CentOS7_BenWork3 \
-  --security-group default \
-	--key-name brancourt \
-	--nic net-id=Private \
-	--flavor x1.16xlarge \
-	ben_vm1
-
-openstack server create \
-	--image CentOS7_BenWork3 \
-  --security-group default \
-	--key-name brancourt \
-	--nic net-id=Private \
-	--flavor mm2.2xlarge \
-	ben_a
 
 # for VNC vm: 
 openstack server create \
@@ -173,7 +137,7 @@ openstack server create \
   --security-group vnc_security_group \
 	--key-name brancourt \
 	--nic net-id=Private \
-	--flavor x1.16xlarge \
+	--flavor x1.8xlarge \
 	ben_vnc
 
 
