@@ -92,6 +92,7 @@ After downloading the client, open it by double-clicking the .exe executable fil
 
 2b. From Linux:
 
+From a computer within PFC:
 From a Terminal, do either of these two commands (I prefer the second one if I don't want to 
 run the ssh tunneling in the background), but first replace "username" with your borealcloud 
 username, and 10.20.0.XXX with the floating ip you assigned to your VNC server when you 
@@ -99,6 +100,12 @@ created it (see *below if you forget what that ip is):
     ssh -v -L 5901:10.20.0.XXX:5901 -N -f -l username borealcloud.nfis.org 
     ssh -v -L 5901:10.20.0.XXX:5901 -N -l username borealcloud.nfis.org 
 The password you will need to enter is your borealcloud account password.
+
+To connect from your home Linux computer, you have to use two tunnels: 
+    ssh -v -L 2223:borealjump.nfis.org:22 -N -l brancourt borealremote.nfis.org
+Then do a second ssh tunnel through the first one for VNC using either:
+    ssh -v -L 5901:10.20.0.120:5901 -N -p 2223 brancourt@localhost
+    ssh -v -L 5901:10.20.0.120:5901 -N -p 2223 -l brancourt localhost
 
 *If you have forgotten what the floating ip address is for your VNC server, enter this command 
 from within an OpenStack session:
@@ -126,7 +133,7 @@ You should now be logged into your VNC server, showing graphical window displayi
 
 Open a new Terminal window and navigate to the folder that has the VncViewer-1.9.0.jar file 
 which you downloaded in step 1. Then, launch the VncViewer client with this command:
-    java -jar VncViewer-1.9.0.jar
+    java -jar VncViewer-1.11.0.jar
 
 In the connection details window that pops up, under "VNC server:" enter: localhost:5901
 Then click Connect.
@@ -135,6 +142,13 @@ You should now be logged into your VNC server, showing graphical window displayi
 
 
 ----------
+VNC Viewer Troubleshooting stuff...
+
+
+If you get this error when trying to use VncViewer:
+com.tigervnc.rdr.SystemException: javax.net.ssl.SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
+
+I think I solved this by going to Options-->Security and deselecting "Anonymous TLS" and selecting "None".
 
 ----------
 
@@ -147,19 +161,35 @@ http://www.allgoodbits.org/articles/view/58
 https://community.time4vps.com/discussion/120/how-to-connect-to-vnc-server-ussing-ssh-tunnel
 http://www.mit.edu/~avp/lqcd/ssh-vnc.html
 
+--
+To connect from a computer in the PFC building:
 To connect with vncserver via the TigerVNC VncViewer java client, on your client machine, first do either of (I prefer the second if I don't want to run the ssh tunneling in the background):
-ssh -v -C -L 5901:10.20.0.88:5901 -N -f -l brancourt borealcloud.nfis.org 
-ssh -v -C -L 5901:10.20.0.88:5901 -N -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.120:5901 -N -f -l brancourt borealcloud.nfis.org 
+ssh -v -C -L 5901:10.20.0.120:5901 -N -l brancourt borealcloud.nfis.org 
 
 Important! Make sure the ip address above is the ip of the OpenStack server that you connect to. 
 The password that you will be prompted to enter at this stage is the password of your account on borealcloud.nfis.org. 
 
 Then, launch the VncViewer client from a new terminal:
-java -jar VncViewer-1.9.0.jar
+java -jar VncViewer-11.0.jar
 
 Then connect to localhost:5901 (which connects to your local end of the ssh tunnel you set up, and forwards it on).
 The password that you will be prompted to enter is the passord I set up for the vncserver, which is just "centos", the same as the username on the server.
 
+--
+To connect from your home Linux computer, you have to use two tunnels: 
+ssh -v -L 2223:borealjump.nfis.org:22 -N -l brancourt borealremote.nfis.org
+Then do a second ssh tunnel through the first one for VNC using either:
+ssh -v -L 5901:10.20.0.120:5901 -N -p 2223 brancourt@localhost
+ssh -v -L 5901:10.20.0.120:5901 -N -p 2223 -l brancourt localhost
+
+Then, launch the VncViewer client from a new terminal:
+java -jar VncViewer-11.0.jar
+
+Then connect to localhost:5901 (which connects to your local end of the ssh tunnel you set up, and forwards it on).
+The password that you will be prompted to enter is the passord I set up for the vncserver, which is just "centos", the same as the username on the server.
+
+--
 -L Specifies that the given port on the local (client) host is to be forwarded to the given host and port on the remote side.
 ssh -L sourcePort:forwardToHost:onPort connectToHost means: connect with ssh to connectToHost, and forward all connection attempts to the local sourcePort to port onPort on the machine called forwardToHost, which can be reached from the connectToHost machine.
 
@@ -169,4 +199,29 @@ ssh -L sourcePort:forwardToHost:onPort connectToHost means: connect with ssh to 
 -L indicates that the first port is a local port
 -f : Requests ssh to go to background just before command execution. Once password supplied it will go to background and you can use prompt for type commands on local system.
 -l vncuser : vncuser is the user to log in as on the remote machine.
+
+
+==========
+VNC Troubleshooting stuff...
+
+
+Troubleshooting the error that occured when trying to use VncViewer on my home CentOS 8 machine:
+com.tigervnc.rdr.SystemException: javax.net.ssl.SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
+
+CConn: connected to host localhost port 5901
+CConnection: Server supports RFB protocol version 3.8
+CConnection: Using RFB protocol version 3.8
+com.tigervnc.rdr.SystemException: javax.net.ssl.SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
+	at com.tigervnc.rfb.CSecurityTLS.processMsg(CSecurityTLS.java:145)
+	at com.tigervnc.rfb.CSecurityStack.processMsg(CSecurityStack.java:41)
+	at com.tigervnc.rfb.CSecurityVeNCrypt.processMsg(CSecurityVeNCrypt.java:177)
+	at com.tigervnc.rfb.CConnection.processSecurityMsg(CConnection.java:263)
+	at com.tigervnc.rfb.CConnection.processMsg(CConnection.java:133)
+	at com.tigervnc.vncviewer.VncViewer.run(VncViewer.java:565)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+[ben@localhost TigerVNC]$ 
+[ben@localhost TigerVNC]$ 
+
+I think I solved this by going to Options-->Security and deselecting "Anonymous TLS" and selecting "None".
+
 

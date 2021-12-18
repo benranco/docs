@@ -206,7 +206,10 @@ command:
 From: https://linuxize.com/post/how-to-use-sed-to-find-and-replace-string-in-files/
 -i: in-place editing (modifies the original file)
 g - Global replacement flag. By default, sed reads the file line by line and changes only the first occurrence of the SEARCH_REGEX on a line. When the replacement flag is provided, all occurrences are replaced.
- 
+
+Using double quotes vs single quotes in bash to expand variables, etc:
+from: https://askubuntu.com/questions/76808/how-do-i-use-variables-in-a-sed-command
+The shell is responsible for expanding variables. When you use single quotes for strings, its contents will be treated literally. Use double quotes to make the shell expand variables while preserving whitespace.
 
 Replace first occurrence of a comma within each line of a file with a dash:
 (the -i stands for edit file in place)

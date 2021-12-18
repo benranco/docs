@@ -1,0 +1,128 @@
+> 
+> source('trimSeqInFasta.R')
+Running trimSeqInFasta.R.
+Loading required package: seqinr
+Warning in library(package, lib.loc = lib.loc, character.only = TRUE, logical.return = TRUE,  :
+  there is no package called ‘seqinr’
+also installing the dependencies ‘pixmap’, ‘sp’, ‘ade4’, ‘segmented’
+
+trying URL 'http://cran.us.r-project.org/src/contrib/pixmap_0.4-11.tar.gz'
+Content type 'application/x-gzip' length 34461 bytes (33 KB)
+==================================================
+downloaded 33 KB
+
+trying URL 'http://cran.us.r-project.org/src/contrib/sp_1.4-2.tar.gz'
+Content type 'application/x-gzip' length 1135318 bytes (1.1 MB)
+==================================================
+downloaded 1.1 MB
+
+trying URL 'http://cran.us.r-project.org/src/contrib/ade4_1.7-15.tar.gz'
+Content type 'application/x-gzip' length 3223972 bytes (3.1 MB)
+==================================================
+downloaded 3.1 MB
+
+trying URL 'http://cran.us.r-project.org/src/contrib/segmented_1.2-0.tar.gz'
+Content type 'application/x-gzip' length 110879 bytes (108 KB)
+==================================================
+downloaded 108 KB
+
+trying URL 'http://cran.us.r-project.org/src/contrib/seqinr_3.6-1.tar.gz'
+Content type 'application/x-gzip' length 3526758 bytes (3.4 MB)
+==================================================
+downloaded 3.4 MB
+
+* installing *source* package ‘pixmap’ ...
+** R
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (pixmap)
+* installing *source* package ‘sp’ ...
+** package ‘sp’ successfully unpacked and MD5 sums checked
+** libs
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c Rcentroid.c -o Rcentroid.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c gcdist.c -o gcdist.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c init.c -o init.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c pip.c -o pip.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c pip2.c -o pip2.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c sp_xports.c -o sp_xports.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c surfaceArea.c -o surfaceArea.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c zerodist.c -o zerodist.o
+gcc -shared -L/usr/local/lib64 -o sp.so Rcentroid.o gcdist.o init.o pip.o pip2.o sp_xports.o surfaceArea.o zerodist.o
+installing to /home/ben/pfc/software/R-3.3.3/library/sp/libs
+** R
+** data
+** demo
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded
+* DONE (sp)
+* installing *source* package ‘segmented’ ...
+** package ‘segmented’ successfully unpacked and MD5 sums checked
+** R
+** data
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (segmented)
+* installing *source* package ‘ade4’ ...
+** package ‘ade4’ successfully unpacked and MD5 sums checked
+** libs
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c adesub.c -o adesub.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c divsub.c -o divsub.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c fourthcorner.c -o fourthcorner.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c init.c -o init.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c phylog.c -o phylog.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c testamova.c -o testamova.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c testdim.c -o testdim.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c testrlq.c -o testrlq.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c tests.c -o tests.o
+gcc -shared -L/usr/local/lib64 -o ade4.so adesub.o divsub.o fourthcorner.o init.o phylog.o testamova.o testdim.o testrlq.o tests.o -L/home/ben/pfc/software/R-3.3.3/lib -lRlapack -L/home/ben/pfc/software/R-3.3.3/lib -lRblas -lgfortran -lm -lquadmath
+installing to /home/ben/pfc/software/R-3.3.3/library/ade4/libs
+** R
+** data
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (ade4)
+* installing *source* package ‘seqinr’ ...
+** package ‘seqinr’ successfully unpacked and MD5 sums checked
+** libs
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c alignment.c -o alignment.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c fastacc.c -o fastacc.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c getzlibsock.c -o getzlibsock.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c kaks.c -o kaks.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c packagename_init.c -o packagename_init.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c util.c -o util.o
+gcc -I/home/ben/pfc/software/R-3.3.3/include -DNDEBUG  -I/usr/local/include   -DUSE_TYPE_CHECKING_STRICT -fpic  -g -O2  -c zsockr.c -o zsockr.o
+gcc -shared -L/usr/local/lib64 -o seqinr.so alignment.o fastacc.o getzlibsock.o kaks.o packagename_init.o util.o zsockr.o -lz
+installing to /home/ben/pfc/software/R-3.3.3/library/seqinr/libs
+** R
+** data
+** inst
+** preparing package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** testing if installed package can be loaded
+* DONE (seqinr)
+
+The downloaded source packages are in
+	‘/tmp/Rtmpw98feu/downloaded_packages’
+Updating HTML index of packages in '.Library'
+Making 'packages.html' ... done
+

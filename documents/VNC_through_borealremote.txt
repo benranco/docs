@@ -54,7 +54,7 @@ https://stackoverflow.com/questions/25084288/keep-ssh-session-alive
 https://unix.stackexchange.com/questions/150402/what-is-the-default-idle-timeout-for-openssh/150406
 
 ---
-Not much luck through borealremote:
+Initially, not much luck through borealremote:
 
 This didn't work going through borealremote, maybe because I don't have shell access:
 ssh -v -L 2224:borealpfc.nfis.org:22 -N -l brancourt borealremote.nfis.org
@@ -92,6 +92,11 @@ brancour@inf2.pfc.forestry.ca's password:
 channel 0: open failed: administratively prohibited: open failed
 stdio forwarding failed
 kex_exchange_identification: Connection closed by remote host
+
+
+These scp -J options worked through borealremote (configured in .ssh/config): 
+scp -J borealremote brancourt@borealjump.nfis.org:~/brancourt.pem .
+scp -J borealremote ./test.txt brancourt@borealjump.nfis.org:~/
 
 
 -----------------------------------------

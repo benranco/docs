@@ -13,20 +13,10 @@
 #
 # Example of output of my own script:
 # 
-# The following data line in QSEQ file format:
-# HS6     104     2       1101    1206    1887    0       2       ACCAGTAACATAAGCTTGAAGGAAGAAACCGAGCATTGAGTACATGGCCAACCTTCCATTTTTAATCTCCTTT.TT    caefeffdffeaadW``Nb]\cbcacecdd_feLfa_]]_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB    1
-# 
-# Will be converted to FASTQ file format:
-# @HS6_0104:2:1101:1206:1887:N:2
-# ACCAGTAACATAAGCTTGAAGGAAGAAACCGAGCATTGAGTACATGGCCAACCTTCCATTTTTAATCTCCTTTNTT
-# +
-# caefeffdffeaadW``Nb]\cbcacecdd_feLfa_]]_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
-# 
-######
-# from file A05_N6ABXX_5_3_concat_qseq.txt:
+# The following data line in QSEQ file format from file A05_N6ABXX_5_3_concat_qseq.txt:
 # HS6     103     5       1101    1441    1822    0       3       CCCAGTAGTCCTAGCCGTAAACGATGGATACTAAGTGCTGTGCGTATCGACCCGCGCAGTGCTGTAGCTAACGCGT    gggdggcgege_eeeggegafefdNdfcddggegW`cY`bSdadcf]edeb`b_IYY\[]ddddJ__a`ad`fK_O    1
 #
-# Will be converted to FASTQ file format:
+# Will be converted to FASTQ file format (see the printf command in the script):
 # @HS6:0103:N6ABXX:5:1101:1441:1822 2:N:0:05
 # CCCAGTAGTCCTAGCCGTAAACGATGGATACTAAGTGCTGTGCGTATCGACCCGCGCAGTGCTGTAGCTAACGCGT
 # +

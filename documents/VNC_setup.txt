@@ -211,6 +211,7 @@ com.tigervnc.rdr.SystemException: javax.net.ssl.SSLHandshakeException: No approp
 [ben@localhost TigerVNC]$ 
 [ben@localhost TigerVNC]$ 
 
+I think I solved this by going to Options-->Security and deselecting "Anonymous TLS" and selecting "None".
 
 https://github.com/TigerVNC/tigervnc/issues/851
 https://stackoverflow.com/questions/38205947/sslhandshakeexception-no-appropriate-protocol
