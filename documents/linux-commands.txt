@@ -8,14 +8,15 @@ https://www.tecmint.com/set-path-variable-linux-permanently/
     Redirect both to a file: command &> out.
 
 
-To check whether a text file has Windows CRLF (carriage return, \n, newline) ending or Linux LF ending:
-cat -A file.txt # Window CR will display as ^M
-To convert Windows CRLF ending to Linux LF ending: 
-sed -i -e 's/\r$//' file.txt
-
 Mounting and reading/writing to NTFS on CentOS:
 
 https://wiki.centos.org/TipsAndTricks/NTFS
+
+
+vim/vi text editor quick reference guide (also saved in github as VIM_Quick_Reference_Card.html): 
+http://tnerual.eriogerg.free.fr/vimqrc.html
+Good vim intro and basic commands (also saved in github as vim_intro_and_commands.pdf andpasted in email titled "vim/vi text editor quick reference guide"): 
+https://www.keycdn.com/blog/vim-commands
 
 
 Use rsync, instead of scp! Better for updating/regular backups. Some useful options:
@@ -63,6 +64,8 @@ zip -r output_file.zip file1 folder1
 To unzip/extract a .gz gzip file, two options: 
 gunzip filename.gz
 zcat filename.gz > newFileName  # handy if gunzip gives you an "unexpected end of file", this will at least still output.
+To gzip a file while keeping the original: 
+gzip -c file > file.gz
 
 
 To check/verify an md5 md5sum, from: https://www.geeksforgeeks.org/md5sum-linux-command/
@@ -196,12 +199,19 @@ or if you have a version of rename that takes perl regex:
 rename 's/ABC/XYZ/' *.txt
 
 
+To check whether a text file has Windows CRLF (carriage return, \n, newline) ending or Linux LF ending:
+cat -A file.txt # Window CR will display as ^M
+To convert Windows CRLF ending to Linux LF ending: 
+sed -i -e 's/\r$//' file.txt
+
+
 Using sed to replace parts of lines. Examples below.
 command: 
   sed 's/original/new/' filename > out
   sed 's/original/new/g' filename > out # I think the /g means do it for all occurences, not just the first
   sed -i 's/original/new/g' filename  # the -i means edit the file in place
-  sed -i 's/.*$/&hello/g' tmp.txt  # this adds the string "hello" to the end of each line (since in said you can't search for newline). See comment for s/regexp/replacement/ in the sed man page.
+  sed -i 's/.*$/& hello/g' tmp.txt  # this adds the string " hello" to the end of each line (since in said you can't search for newline). See comment for s/regexp/replacement/ in the sed man page.
+  sed -i 's/\(.*$\)/\1 hello/g' tmp.txt  # same as above but using the \( \) character group to specifiy a group to replace
   
 From: https://linuxize.com/post/how-to-use-sed-to-find-and-replace-string-in-files/
 -i: in-place editing (modifies the original file)

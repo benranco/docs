@@ -8,6 +8,17 @@ echo "running choose_longest_orf_fasta.sh"
 # - After this processing, the total sequence number of 675,367 will decrease to 449,052 transcripts to represent 449,052 genes in WWP18 assembly.
 
 
+
+# IMPORTANT!!! BEFORE I RUN THIS NEXT, I NEED TO MAKE THIS UPDATE: 
+# IMMEDIATELY BELOW IS A PROBLEM WITH THE OUTPUT OF MY LONGEST ORF SCRIPT, THE -longestOrfSeqs-fromPep.txt DOES NOT INCLUDE THE pep id, SO I NEED TO REGENERATE THAT FILE WITH pep ids INCLUDED.
+#--
+#Hello, Ben:
+#
+#I’m checking the files of the longest IDs you extracted from Trinity assemblies. I found that in the files “xxx-longestOrfSeqs-fromPep”, you just listed their isoform IDs, such as ‘WBP47_DN9996_c0_g2_i1’,  can you add their corresponding pep IDs, such as “WBP47_DN9996_c0_g2_i1.p1’? This will allow us to extract pep seqs when necessary.
+#Thanks,
+#Jun-Jun
+#----------------------
+
 ##########################################################
 # Input parameters. These should be the only parameters you need to edit.
 
