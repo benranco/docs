@@ -183,6 +183,11 @@ Then do a second ssh tunnel through the first one for VNC using either:
 ssh -v -L 5901:10.20.0.120:5901 -N -p 2223 brancourt@localhost
 ssh -v -L 5901:10.20.0.120:5901 -N -p 2223 -l brancourt localhost
 
+Here's how to do the first tunnel above through inf2 instead of borealremote: 
+ssh -v -L 2223:borealpfc.nfis.org:22 -N -l brancour inf2.pfc.forestry.ca
+
+
+
 Then, launch the VncViewer client from a new terminal:
 java -jar VncViewer-11.0.jar
 

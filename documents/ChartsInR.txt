@@ -3,6 +3,7 @@ http://r.789695.n4.nabble.com/modify-function-in-a-package-td4697499.html
 
 
 Getting started with charts:
+http://www.r-graph-gallery.com/
 http://www.statmethods.net/graphs/
 https://flowingdata.com/2012/12/17/getting-started-with-charts-in-r/
 - the output of plot() might print directly to pdf in your current folder by default
@@ -91,6 +92,10 @@ ggbio.pdf
 - chapter 11 karyogram autoplot
 ------------------
 
+Displaying and printing plots when using ggplot2 from within an R script: 
+https://stackoverflow.com/questions/6675066/ggplots-qplot-does-not-execute-on-sourcing/6675610#6675610
+
+------------------
 Ladder plots:
 http://rgraphgallery.blogspot.ca/2013/04/rg24-ladder-plot.html
 http://stackoverflow.com/questions/23447249/ladder-plot-code-modification
@@ -114,7 +119,182 @@ http://flowingdata.com/2012/05/15/how-to-visualize-and-compare-distributions/
 
 
 ------------------
+Bubble Plot: 
 
+From the http://www.r-graph-gallery.com/  , info on the bubble plot: 
+http://www.r-graph-gallery.com/bubble-chart.html
+"A bubble plot is a scatter plot with a third numeric variable mapped to circle size. This page describes several methods to build one with R."
+
+Also, from here:
+https://www.datanovia.com/en/blog/how-to-install-ggplot2-in-r/
+--
+if(!require(ggplot2)) {
+  install.packages('ggplot2', repos='http://cran.us.r-project.org')
+}
+library(ggplot2)
+
+
+
+------------------
+My tests with ggplot2: 
+
+--
+First, basic bubble plot: 
+http://www.r-graph-gallery.com/320-the-basis-of-bubble-plot.html
+
+if(!require(dplyr)) {
+  install.packages('dplyr')
+}
+library(dplyr) 
+
+if(!require(gapminder)) {
+  install.packages('gapminder')
+}
+library(gapminder)
+# The dataset is provided in the gapminder library
+data1 <- gapminder %>% filter(year=="2007") %>% dplyr::select(-year)
+# for an explanation of %>%, see:  https://stackoverflow.com/questions/24536154/what-does-mean-in-r
+#    Thus, iris %>% head() is equivalent to head(iris).
+
+# Most basic bubble plot
+ggplot(data1, aes(x=gdpPercap, y=lifeExp, size = pop)) + geom_point(alpha=0.7)
+
+
+# Most basic bubble plot, larger bubbles
+data1 %>% arrange(desc(pop)) %>% mutate(country = factor(country, country)) %>% ggplot(aes(x=gdpPercap, y=lifeExp, size = pop)) + geom_point(alpha=0.5) + scale_size(range = c(.1, 24), name="Population (M)")
+    
+    
+# Using the continent of each country to control circle color:
+data1 %>% arrange(desc(pop)) %>% mutate(country = factor(country, country)) %>% ggplot(aes(x=gdpPercap, y=lifeExp, size=pop, color=continent)) + geom_point(alpha=0.5) + scale_size(range = c(.1, 24), name="Population (M)")
+
+# I'm not sure what the: %>% arrange(desc(pop)) %>% mutate(country = factor(country, country)) 
+# does because it seems to look the same without it: 
+data1 %>% ggplot(aes(x=gdpPercap, y=lifeExp, size=pop, color=continent)) + geom_point(alpha=0.5) + scale_size(range = c(.1, 24), name="Population (M)")
+
+# The same without using %>%
+ggplot(data1, aes(x=gdpPercap, y=lifeExp, size=pop, color=continent)) + geom_point(alpha=0.5) + scale_size(range = c(.1, 24), name="Population (M)")
+
+
+dataSus <- data.frame( 
+  change_fold = c(49.7,121.3,37.6,37.6,51.6,62.9,22.6,103.5,91.6,36.5,-16.3,-194.4,-12.3), 
+  GO_FDR_p_values = c(4.19,1.79,1.36,1.59,1.91,2.42,1.95,2.22,2.35,8.7,0.29,0.28,0.28), 
+  sizes = c(11,36,13,13,19,20,9,34,31,7,3,2,2), 
+  CF_p_values = c(17.9,89.4,43.2,43.2,43.3,47.6,30.9,94.3,84.2,12.4,10.3,4.2,3.7), 
+  GO_name = c("DNA replication","cellular component organization","external encapsulating structure organization","cell wall organization","DNA-binding transcription factor activity","hydrolase activity, hydrolyzing O-glycosyl compounds","pectinesterase activity","cell periphery","plasma membrane","MCM complex","plant-type cell wall modification","basic amino acid transport","killing of cells of other organism"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13), 
+  stringsAsFactors = TRUE )
+
+
+
+data2 <- data.frame( 
+  change_fold = c(45.1,45.1,6.9,6.9,18.8,12.7,147.9,-18.9,-18.9,-18.9,-42.6,-10.9,-48.7,-102.3,-154.7,-18.4), 
+  GO_FDR_p_values = c(1.24,1.39,1.84,1.84,2.31,2.58,5.08,3.2,1.47,3.37,5.6,2.57,7.27,4.42,4.79,2.21), 
+  sizes = c(8,8,3,3,7,3,39,7,7,7,7,2,8,20,15,3), 
+  CF_p_values = c(37.6,37.6,5.7,5.7,14.2,202.4,342.9,11.8,11.8,11.8,12.3,3.2,13.6,34.3,27.7,7.7), 
+  GO_name = c("terpenoid metabolic process","terpenoid biosynthetic process","cinnamic acid biosynthetic process","cinnamic acid metabolic process","benzene-containing compound metabolic process","GDP-mannose 3,5-epimerase activity","oxidoreductase activity","steroid metabolic process","response to wounding","xylem and phloem pattern formation","cellular respiration","iron coordination entity transport","electron transfer activity","oxidoreductase activity","transmembrane transporter activity","proton-transporting ATP synthase complex"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), 
+  stringsAsFactors = TRUE )
+
+
+ggplot(data2, aes(x=change_fold, y=GO_FDR_p_values, size=sizes, color=CF_p_values)) + geom_point(alpha=0.5) + scale_size(range = c(4, 24), name="sizes")
+
+
+
+data3 <- data.frame( 
+  change_fold = c(45.1,45.1,6.9,6.9,18.8,12.7,147.9,-18.9,-18.9,-18.9,-42.6,-10.9,-48.7,-102.3,-154.7,-18.4), 
+  GO_FDR_p_values = c(1.24,1.39,1.84,1.84,2.31,2.58,5.08,3.2,1.47,3.37,5.6,2.57,7.27,4.42,4.79,2.21), 
+  sizes = c(8,8,3,3,7,3,39,7,7,7,7,2,8,20,15,3), 
+  CF_p_values = c(37.6,37.6,5.7,5.7,14.2,20.24,34.29,11.8,11.8,11.8,12.3,3.2,13.6,34.3,27.7,7.7), 
+  GO_name = c("terpenoid metabolic process","terpenoid biosynthetic process","cinnamic acid biosynthetic process","cinnamic acid metabolic process","benzene-containing compound metabolic process","GDP-mannose 3,5-epimerase activity","oxidoreductase activity","steroid metabolic process","response to wounding","xylem and phloem pattern formation","cellular respiration","iron coordination entity transport","electron transfer activity","oxidoreductase activity","transmembrane transporter activity","proton-transporting ATP synthase complex"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), 
+  stringsAsFactors = TRUE )
+
+
+data4 <- data.frame( 
+  change_fold = c(45.1,45.1,6.9,6.9,18.8,12.7,147.9,-18.9,-18.9,-18.9,-42.6,-10.9,-48.7,-102.3,-154.7,-18.4), 
+  GO_FDR_p_values = c(1.24,1.39,1.84,1.84,2.31,2.58,5.08,3.2,1.47,3.37,5.6,2.57,7.27,4.42,4.79,2.21), 
+  sizes = c(8,8,3,3,7,3,39,7,7,7,7,2,8,20,15,3), 
+  CF_p_values = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), 
+  GO_name = c("terpenoid metabolic process","terpenoid biosynthetic process","cinnamic acid biosynthetic process","cinnamic acid metabolic process","benzene-containing compound metabolic process","GDP-mannose 3,5-epimerase activity","oxidoreductase activity","steroid metabolic process","response to wounding","xylem and phloem pattern formation","cellular respiration","iron coordination entity transport","electron transfer activity","oxidoreductase activity","transmembrane transporter activity","proton-transporting ATP synthase complex"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16) )
+
+data5 <- data.frame( 
+  change_fold = c(45.1,45.1,6.9,6.9,18.8,12.7,147.9,-18.9,-18.9,-18.9,-42.6,-10.9,-48.7,-102.3,-154.7,-18.4), 
+  GO_FDR_p_values = c(1.24,1.39,1.84,1.84,2.31,2.58,5.08,3.2,1.47,3.37,5.6,2.57,7.27,4.42,4.79,2.21), 
+  sizes = c(8,8,3,3,7,3,39,7,7,7,7,2,8,20,15,3), 
+  CF_p_values = c(1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4), 
+  GO_name = c("terpenoid metabolic process","terpenoid biosynthetic process","cinnamic acid biosynthetic process","cinnamic acid metabolic process","benzene-containing compound metabolic process","GDP-mannose 3,5-epimerase activity","oxidoreductase activity","steroid metabolic process","response to wounding","xylem and phloem pattern formation","cellular respiration","iron coordination entity transport","electron transfer activity","oxidoreductase activity","transmembrane transporter activity","proton-transporting ATP synthase complex"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16) )
+
+
+data6 <- data.frame( 
+  change_fold = c(45.1,45.1,6.9,6.9,18.8,12.7,147.9,-18.9,-18.9,-18.9,-42.6,-10.9,-48.7,-102.3,-154.7,-18.4), 
+  GO_FDR_p_values = c(1.24,1.39,1.84,1.84,2.31,2.58,5.08,3.2,1.47,3.37,5.6,2.57,7.27,4.42,4.79,2.21), 
+  sizes = c(8,8,3,3,7,3,39,7,7,7,7,2,8,20,15,3), 
+  CF_p_values = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), 
+  GO_name = c("terpenoid metabolic process","terpenoid biosynthetic process","cinnamic acid biosynthetic process","cinnamic acid metabolic process","benzene-containing compound metabolic process","GDP-mannose 3,5-epimerase activity","oxidoreductase activity","steroid metabolic process","response to wounding","xylem and phloem pattern formation","cellular respiration","iron coordination entity transport","electron transfer activity","oxidoreductase activity","transmembrane transporter activity","proton-transporting ATP synthase complex"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), 
+  stringsAsFactors = TRUE  )
+
+
+data7 <- data.frame( 
+  change_fold = c(45.1,45.1,6.9,6.9,18.8,12.7,147.9,-18.9,-18.9,-18.9,-42.6,-10.9,-48.7,-102.3,-154.7,-18.4), 
+  GO_FDR_p_values = c(1.24,1.39,1.84,1.84,2.31,2.58,5.08,3.2,1.47,3.37,5.6,2.57,7.27,4.42,4.79,2.21), 
+  sizes = c(8,8,3,3,7,3,39,7,7,7,7,2,8,20,15,3), 
+  CF_p_values = c("aa","bb","cc","dd","aa","bb","cc","dd","aa","bb","cc","dd","aa","bb","cc","dd"),
+  GO_name = c("terpenoid metabolic process","terpenoid biosynthetic process","cinnamic acid biosynthetic process","cinnamic acid metabolic process","benzene-containing compound metabolic process","GDP-mannose 3,5-epimerase activity","oxidoreductase activity","steroid metabolic process","response to wounding","xylem and phloem pattern formation","cellular respiration","iron coordination entity transport","electron transfer activity","oxidoreductase activity","transmembrane transporter activity","proton-transporting ATP synthase complex"), 
+  label = c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), 
+  stringsAsFactors = TRUE )
+
+
+ggplot(data6, aes(x=change_fold, y=GO_FDR_p_values, size=sizes, color=CF_p_values)) + geom_point(alpha=0.5) + scale_size(range = c(4, 24), name="sizes") 
++ scale_fill_gradient(low = "grey", high = "brown")
++ scale_fill_distiller(palette = "YlOrBr")
++ scale_fill_viridis_c()
++ scale_colour_brewer(palette = "YlOrRd")
+
+ggplot(data6, aes(x=change_fold, y=GO_FDR_p_values, size=sizes)) + geom_point(alpha=0.5, aes(color=CF_p_values)) + scale_size(range = c(4, 24), name="sizes") + scale_colour_gradient2()
+
+ggplot(data6, aes(x=change_fold, y=GO_FDR_p_values, size=sizes)) + geom_point(alpha=0.5, aes(color=CF_p_values)) + scale_size(range = c(4, 24), name="sizes") + scale_colour_gradient(low="yellow", high="red")
+
+
+Color in ggplot2:
+https://ggplot2-book.org/scale-colour.html
+https://ggplot2.tidyverse.org/reference/scale_gradient.html
+
+
+Saving to file: 
+https://ggplot2.tidyverse.org/reference/ggsave.html
+https://www.datanovia.com/en/blog/how-to-save-a-ggplot/
+ggsave("myplot.png")
+ggsave("myplot.pdf")
+
+Working with legends: 
+http://www.cookbook-r.com/Graphs/Legends_(ggplot2)/
+https://www.datanovia.com/en/blog/ggplot-legend-title-position-and-labels/
+https://www.statology.org/ggplot2-legend-size/
+http://r-statistics.co/Complete-Ggplot2-Tutorial-Part2-Customizing-Theme-With-R-Code.html
+https://stackoverflow.com/questions/47335132/how-can-i-force-ggplot-to-show-more-levels-on-the-legend
+https://stackoverflow.com/questions/49994119/adding-data-labels-to-points-in-ggplot-label-argument-not-working
+https://www.casualinferences.com/posts/adding-special-characters-ggplot-labels/
+
+Working with text for points, ggplot labels on points: 
+https://stackoverflow.com/questions/49994119/adding-data-labels-to-points-in-ggplot-label-argument-not-working
+https://stackoverflow.com/questions/15624656/label-points-in-geom-point
+https://stackoverflow.com/questions/15015356/how-to-do-selective-labeling-with-ggplot-geom-point
+https://stackoverflow.com/questions/58984274/how-do-i-label-a-point-with-ggplot-depending-on-two-different-conditions-being-t
+https://stackoverflow.com/questions/32640557/label-specific-point-in-ggplot2
+https://stackoverflow.com/questions/19694497/how-to-smartly-place-text-labels-beside-points-of-different-sizes-in-ggplot2
+https://stackoverflow.com/questions/15624656/label-points-in-geom-point   <-- see the post on ggrepel by Patrick Dolan!!
+
+if(!require(dplyr)) {
+  install.packages('ggrepel')
+}
+library(ggrepel) 
+
+
+============================================
+CIRCOS
 
 -----------------------
 

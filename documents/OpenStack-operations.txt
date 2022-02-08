@@ -125,8 +125,8 @@ openstack server create \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
-	--flavor mm2.4xlarge \
-	benmm2-06
+	--flavor mm1.8xlarge \
+	benmm1-03x
 
 
 

@@ -123,7 +123,8 @@ find . -mindepth 2 -maxdepth 2 -name *.txt -type f
 cp `find . -mindepth 2 -maxdepth 2 -name *.txt -type f` newFolder
 # Applying the above find command from within R: 
 inFileList <- system2("find", args=c(".", paste0(" -mindepth 2 -maxdepth 2 -name *.txt -type f")), stdout=TRUE)
-
+# Another way to execute a command on the files found, in this case the command is ls -lah: 
+find . -mindepth 2 -maxdepth 2 -name *.txt -type f -execdir ls -lah '{}' \;
 
 # concatenate all .txt files in current folder to master.txt:
 cat `ls *.txt` >> master.txt
