@@ -257,18 +257,22 @@ ggplot(data6, aes(x=change_fold, y=GO_FDR_p_values, size=sizes)) + geom_point(al
 
 ggplot(data6, aes(x=change_fold, y=GO_FDR_p_values, size=sizes)) + geom_point(alpha=0.5, aes(color=CF_p_values)) + scale_size(range = c(4, 24), name="sizes") + scale_colour_gradient(low="yellow", high="red")
 
-
+-------------------
 Color in ggplot2:
 https://ggplot2-book.org/scale-colour.html
 https://ggplot2.tidyverse.org/reference/scale_gradient.html
 
+-------------------
+Change element text/font size: 
+https://www.statology.org/ggplot-font-size/
+p + theme(text=element_text(size=20), #change font size of all text
+        axis.text=element_text(size=20), #change font size of axis text
+        axis.title=element_text(size=20), #change font size of axis titles
+        plot.title=element_text(size=20), #change font size of plot title
+        legend.text=element_text(size=20), #change font size of legend text
+        legend.title=element_text(size=20)) #change font size of legend title   
 
-Saving to file: 
-https://ggplot2.tidyverse.org/reference/ggsave.html
-https://www.datanovia.com/en/blog/how-to-save-a-ggplot/
-ggsave("myplot.png")
-ggsave("myplot.pdf")
-
+-------------------
 Working with legends: 
 http://www.cookbook-r.com/Graphs/Legends_(ggplot2)/
 https://www.datanovia.com/en/blog/ggplot-legend-title-position-and-labels/
@@ -291,6 +295,60 @@ if(!require(dplyr)) {
   install.packages('ggrepel')
 }
 library(ggrepel) 
+
+------------------
+
+Saving to file: 
+https://ggplot2.tidyverse.org/reference/ggsave.html
+https://www.datanovia.com/en/blog/how-to-save-a-ggplot/
+ggsave("myplot.png")
+ggsave("myplot.pdf")
+
+ggsave("f.tiff", device="tiff", width=1000, units="px")
+ggsave("f.tiff", device="tiff", width=84, units="mm", dpi=300)
+ggsave("f.eps", device="eps", width=84, units="mm", dpi=300)
+ggsave("f.png", device="png", width=84, units="mm", dpi=300)
+ggsave("f.jpg", device="jpeg", width=84, units="mm", dpi=300)
+
+If reducing with from 1716 px to 1000 px, then heigh would be: 
+(1000/1716)*1875 = 1092.65734266 px
+
+------------------
+Saving to file with specific dimensions while also specifying the same dimensions for ggplot: 
+
+https://stackoverflow.com/questions/57807533/ggplot-with-the-same-width-and-height-as-ggsavewidth-x-height-y
+
+if(!require(egg)) {
+  install.packages('egg')
+}
+library(egg) 
+
+--
+You can use the set_panel_size() function from the egg package...
+https://cran.r-project.org/web/packages/egg/vignettes/Overview.html
+
+p <- ggplot(mtcars, aes(mpg,disp)) +
+      geom_point() +
+      labs(title="Rocket science title that will get cut by ggsave")
+
+#to view the plot
+gridExtra::grid.arrange(egg::set_panel_size(p=p, width=unit(5, "cm"), height=unit(7, "cm")))
+
+#to save the plot
+ggsave(filename = "myplot.pdf", plot = egg::set_panel_size(p=p, width=unit(5, "cm"), height=unit(7, "cm")))
+--
+
+gs <- ggplot(...)
+
+#to view the plot
+gridExtra::grid.arrange(egg::set_panel_size(p=gs, width=unit(1000, "px"), height=unit(1092, "px")))
+ggsave(filename = "SUS-v2.tiff", device="tiff", dpi=300, plot = egg::set_panel_size(p=gs, width=unit(1000, "px"), height=unit(1092, "px")))
+
+gridExtra::grid.arrange(egg::set_panel_size(p=gr, width=unit(1000, "px"), height=unit(1092, "px")))
+ggsave(filename = "QR-v2.tiff", device="tiff", dpi=300, plot = egg::set_panel_size(p=gr, width=unit(1000, "px"), height=unit(1092, "px")))
+
+------------------
+
 
 
 ============================================
