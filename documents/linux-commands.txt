@@ -42,9 +42,13 @@ nohup command 2>&1 1> log.txt &
 
 from: https://linuxize.com/post/how-to-use-linux-screen/
 screen command  # To run a command in a new screen window
+screen -S session_name  # start a named screen session 
+Crt-a ?  # get list of commands
 Crt-a d  # to detach from a screen session
+exit     # to terminate a screen session from within it
 screen -ls  # list all open screen sessions
-screen resume  # to re-attach to the screen session
+screen -r <id> # to re-attach to the screen session
+screen -X -S [session # you want to kill] quit  # kill a detached screen session
 https://stackoverflow.com/questions/285015/how-to-prevent-a-background-process-from-being-stopped-after-closing-ssh-client
 https://stackoverflow.com/questions/20766300/nohup-vs-screen-which-is-better-for-long-running-process
 https://superuser.com/questions/454907/how-to-execute-a-command-in-screen-and-detach
@@ -97,6 +101,10 @@ grep "searchpattern" | cut -c10-90
 from: https://stackoverflow.com/questions/6958841/use-grep-to-report-back-only-line-numbers
 Use grep to get only the line number(s) of the search pattern
 grep -n "text to find" file.ext | cut -f1 -d:
+
+from: https://stackoverflow.com/questions/16956810/how-do-i-find-all-files-containing-specific-text-on-linux
+Use grep to search/find for a string in all .txt files in a location:
+grep --include=*.txt -rn '/path/to/somewhere/' -e 'pattern'
 
 
 Count how many unique lines there are in a file:

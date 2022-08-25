@@ -8,34 +8,42 @@ echo "running choose_longest_orf_fasta.sh"
 # - After this processing, the total sequence number of 675,367 will decrease to 449,052 transcripts to represent 449,052 genes in WWP18 assembly.
 
 
-# April 22, 2022: I've updated the R script called by this script (chooseLongestOrfs_fasta.R) to output the pep ids as well as the seq ids in the ...-longestOrfSeqs-fromPep.txt file.
 
+# IMPORTANT!!! BEFORE I RUN THIS NEXT, I NEED TO MAKE THIS UPDATE: 
+# IMMEDIATELY BELOW IS A PROBLEM WITH THE OUTPUT OF MY LONGEST ORF SCRIPT, THE -longestOrfSeqs-fromPep.txt DOES NOT INCLUDE THE pep id, SO I NEED TO REGENERATE THAT FILE WITH pep ids INCLUDED.
+#--
+#Hello, Ben:
+#
+#I’m checking the files of the longest IDs you extracted from Trinity assemblies. I found that in the files “xxx-longestOrfSeqs-fromPep”, you just listed their isoform IDs, such as ‘WBP47_DN9996_c0_g2_i1’,  can you add their corresponding pep IDs, such as “WBP47_DN9996_c0_g2_i1.p1’? This will allow us to extract pep seqs when necessary.
+#Thanks,
+#Jun-Jun
+#----------------------
 
 ##########################################################
 # Input parameters. These should be the only parameters you need to edit.
 
 # all input file paths must be relative to this outDir:
-outDir="."
+outDir="./test3"
 
 # input file paths, all thes must e relative to outDir:
 #transdecoderFile="../../TransDecoderOutput/WWP18-nt675,367-Trinity.fasta.transdecoder.pep"
 #trinityFile="../../trin-assemblies-renamedSeqIds/WWP18-nt675,367-Trinity.fasta"
 
-transdecoderFile="WWP18-nt675,367-Trinity.fasta.transdecoder.pep"
-trinityFile="WWP18-nt675,367-Trinity.fasta"
+transdecoderFile="../TransDecoderOutput/WWP18-nt675,367-Trinity.fasta.transdecoder.pep"
+trinityFile="../trin-assemblies-renamedSeqIds/WWP18-nt675,367-Trinity.fasta"
 
 # this will be used to prefix all files created by this script except the finalOutputFasta file. 
-outFilePrefix="test4-wwp-"
+outFilePrefix="test3-wwp-"
 
 # Final output fasta file. If this file already exists, it'll be overwritten.
 finalOutputFasta="selected.fasta"  
 
 # The R script to call that does all the comparisons and creates the final output.
-rScriptToChooseLongestOrfs="chooseLongestOrfs_fasta.R"
+rScriptToChooseLongestOrfs="../chooseLongestOrfs_fasta.R"
 
 
 ##########################################################
-# Output files created by this script (there are more output files created by the called R script):
+# Output files created by this script:
 
 allGeneIds="$outFilePrefix"allGeneIds.txt
 geneIds100="$outFilePrefix"geneIds-100.txt  # only used for testing with smaller sample sets 
@@ -43,6 +51,11 @@ geneIds100="$outFilePrefix"geneIds-100.txt  # only used for testing with smaller
 fastaData="$outFilePrefix"fastaData.csv
 pepData="$outFilePrefix"pepData.csv
 
+
+
+longestOrfSeqsAll="$outFilePrefix"longestOrfSeqs-all.txt
+longestOrfSeqsFromPep="$outFilePrefix"longestOrfSeqs-fromPep.txt
+longestDNASeqsFromFasta="$outFilePrefix"longestDNASeqs-fromFasta.txt
 
 ##########################################################
 # Execution code. You shouldn't need to edit below this point.
@@ -58,7 +71,7 @@ grep -oE "^>\S*" $outDir/$trinityFile | sed 's/>\([^ ]*\)_i[0-9]*$/\1/'  | sort 
 
 # For testing with smaller sample sets, uncomment the below line, and 
 # replace $allGeneIds with $geneIds100 in the below Rscript call.
-#head -n 100 $outDir/$allGeneIds > $outDir/$geneIds100
+#head -n 1000 $outDir/$allGeneIds > $outDir/$geneIds100
 
 echo "geneId,seqId,seqLength" > $outDir/$fastaData
 # extract only all header lines from a fasta file, but only containing: geneId geneId+seqId seqLenVal

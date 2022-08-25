@@ -91,13 +91,12 @@ pepInfo <- read.csv(paste(path.expand(path),pepDataCsvFile,sep="/"),header=TRUE,
 
 write(paste0(Sys.time(), " - Beginning comparisons..."), stdout())
 
-chosenSeqs <- data.frame(seqId=character(nrow(geneIds)), hasOrf=logical(nrow(geneIds)), pepId=character(nrow(geneIds)) )
+chosenSeqs <- data.frame(seqId=character(nrow(geneIds)), hasOrf=logical(nrow(geneIds)))
 
 for (geneNum in 1:nrow(geneIds)) {
 
   longestLen <- 0
   longestOrfSeq <- NA
-  longestOrfPep <- NA
   
   gene <- geneIds[geneNum,]
   
@@ -108,14 +107,12 @@ for (geneNum in 1:nrow(geneIds)) {
       if (pep[rowNum,"orfLength"] > longestLen) {
         longestLen <- pep[rowNum,"orfLength"]
         longestOrfSeq <- pep[rowNum,"seqId"]
-        longestOrfPep <- pep[rowNum,"seq_p"]
       }
       else if (pep[rowNum,"orfLength"] == longestLen) {
         oldDnaLength <- fastaInfo[fastaInfo$seqId == longestOrfSeq, "seqLength"]
         newDnaLength <- fastaInfo[fastaInfo$seqId == pep[rowNum,"seqId"], "seqLength"]
         if (newDnaLength > oldDnaLength) {
           longestOrfSeq <- pep[rowNum,"seqId"]
-          longestOrfPep <- pep[rowNum,"seq_p"]
         }
       }    
     } # end inner for-loop
@@ -128,7 +125,6 @@ for (geneNum in 1:nrow(geneIds)) {
   } 
   else { 
     chosenSeqs[geneNum,"hasOrf"] <- TRUE
-    chosenSeqs[geneNum,"pepId"] <- longestOrfPep
   }
   
   chosenSeqs[geneNum,"seqId"] <- longestOrfSeq
@@ -140,10 +136,7 @@ write(paste0(Sys.time(), " - done."), stdout())
 write(paste0("Writing selected sequence ids."), stdout())
 
 write.table(chosenSeqs[,"seqId"], file=paste(path.expand(path),out_longestOrfSeqsAll,sep="/"), row.names=FALSE, col.names=FALSE, quote=FALSE)
-
-pepOutput <- chosenSeqs[chosenSeqs$hasOrf,] 
-write.table( paste0(pepOutput$seqId,pepOutput$pepId),  file=paste(path.expand(path),out_longestOrfSeqsFromPep,sep="/"), row.names=FALSE, col.names=FALSE, quote=FALSE)
-
+write.table(chosenSeqs[chosenSeqs$hasOrf,"seqId"], file=paste(path.expand(path),out_longestOrfSeqsFromPep,sep="/"), row.names=FALSE, col.names=FALSE, quote=FALSE)
 write.table(chosenSeqs[!chosenSeqs$hasOrf,"seqId"], file=paste(path.expand(path),out_longestDNASeqsFromFasta,sep="/"), row.names=FALSE, col.names=FALSE, quote=FALSE)
 
 

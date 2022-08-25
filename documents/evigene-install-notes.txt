@@ -1,0 +1,306 @@
+
+Started by creating a VM from my CentOS7_BenWork5 image: 
+
+openstack server create \
+	--image CentOS7_BenWork5 \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor x1.xlarge \
+	benvm
+	
+
+sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun/temp/ /work
+
+sudo mount -t nfs 10.20.0.6:/Public/genomics/NCBI/ /work2
+
+--
+BLAST (including blastn, makeblastdb)
+
+Already installed and added to the PATH variable.
+I've included a BLAST_README_FROM_BEN.TXT in /home/software/blast-2.11/. I'm not sure if you'll need this information for using BLASTn with evigene, but it would be helpful for doing your own BLAST runs.
+
+--
+CD-HIT (including cd-hit, cd-hit-est)
+
+Already installed, but only cd-hit had been made accessible from anywhere. So I made all the commands in the cdhit folder available from anywhere, see below.
+
+# This is one way to individually make both the cd-hit and cd-hit-est commands available from anywhere, but it wouldn't include any other commands in the cdhit folder:
+cd /usr/local/bin  # this is one common location where binary executable files or symbolic lines to them are kept.
+sudo ln -s /home/centos/software/cdhit/cd-hit cd-hit  # create a symbolic link
+sudo ln -s /home/centos/software/cdhit/cd-hit-est cd-hit-est  # create a symbolic link
+
+The way to make all the commands in the cdhit folder available from anywhere is by adding it to your system's PATH variable. You can always check what is in your PATH variable by doing: 
+echo $PATH
+You should see a list of locations separated by :
+You can add something to you PATH variable by editing the .bash_profile file in your home directory. For this to take effect you would then need to log out of your VM and log back in, because the commands in the .bash_profile file are executed when you log in:
+cd ~
+nano .bash_profile
+# Add this to the end of the line beginning with PATH= 
+:$HOME/software/cdhit
+
+--
+INSTALLING Exonerate (including fastanrdb):
+
+cd software
+wget http://ftp.ebi.ac.uk/pub/software/vertebrategenomics/exonerate/exonerate-2.2.0-x86_64.tar.gz
+tar -xvzf exonerate-2.2.0-x86_64.tar.gz 
+ls exonerate-2.2.0-x86_64/bin  # check to make sure the fastanrdb file is there
+cd ~
+nano .bash_profile
+# Add this to the end of the line beginning with PATH= 
+:$HOME/software/exonerate-2.2.0-x86_64/bin
+
+--
+INSTALLING evigene:
+
+See:
+http://arthropods.eugenes.org/EvidentialGene/evigene/docs/EvidentialGene_howto.txt
+
+cd ~/software 
+tar -xf evigene22may07.tar  # this extracts the tar archive, which I had already downloaded and put there.
+
+cd ~ 
+nano .bash_profile
+# Add this variable:
+# I created this even though I'm also adding some evigene folders to the PATH, just in case some of the evigene scripts depend on the evigene variable.
+export evigene=/home/centos/software/evigene 
+
+# Add these to the end of the line beginning with PATH= 
+:$HOME/software/evigene/scripts:$HOME/software/evigene/scripts/prot
+
+
+After saving and exiting the .bash_profile file, exit your VM and log back in. Now you should be able to run the tr2aacds.pl, evgpipe_sra2genes.pl, evgmrna2tsa.pl scripts directly (and any other scripts located in the evigene/scripts and evigene/scripts/prot folder) from any location without having to specify the path.
+
+-- 
+USING evigene:
+
+To get basic usage instructions for these scripts (and any other evigene scripts you might be running directly, just enter the command: 
+tr2aacds.pl
+evgpipe_sra2genes.pl
+evgmrna2tsa.pl
+
+To see more extensive documentation for these scripts, you can open the script file for reading, and read the documentation at the top of the script: 
+less $evigene/scripts/prot/tr2aacds.pl
+less $evigene/scripts/evgpipe_sra2genes.pl
+less $evigene/scripts/evgmrna2tsa.pl
+
+Also see docs at: 
+http://arthropods.eugenes.org/EvidentialGene/evigene/docs/EvidentialGene_howto.txt
+http://arthropods.eugenes.org/EvidentialGene/evigene/docs/
+
+
+
+--
+SAVING A NEW IMAGE FROM THIS VM:
+
+
+After I did all this, I thought it would be a good idea to update my installed packages (like a Windows update, bu for CentOS):
+yum makecache
+yum clean all
+sudo yum --obsoletes update
+sudo yum autoremove
+yum makecache
+
+After I did all this, I exited the VM, shut it down, and created an image (CentOS7_BenWork6) from it. Here's how I create an image (using a generic image name as an example):
+
+- first exit the VM, then:
+openstack server stop benvm
+# wait for it to shut down, and then check that it is shut down:
+openstack server list
+# create an image from the VM: 
+openstack server image create --name new_image_name benvm
+# It takes a bit of time to create the image, but then you can use the image new_image_name (or whatever you decide to call it) to create a VM.
+
+
+
+
+
+
+=======================
+INSTALLING Trans-ABySS: 
+
+https://bioinformaticshome.com/tools/rna-seq/descriptions/Trans-ABySS.html
+https://github.com/bcgsc/transabyss
+https://github.com/bcgsc/abyss/releases
+
+https://github.com/bcgsc/transabyss/blob/master/TUTORIAL.md
+
+
+which python
+python --version
+pip install python-igraph  # this failed, and it recommended I upgrade my version of pip
+pip install --upgrade pip  # this also failed
+
+
+yum makecache
+yum clean all
+sudo yum --obsoletes update
+sudo yum autoremove
+yum makecache
+
+From: https://phoenixnap.com/kb/how-to-install-python-3-centos-7
+sudo yum install -y python3
+Package python3-3.6.8-18.el7.x86_64 already installed and latest version
+Nothing to do
+which python
+python --version
+Python 2.7.5
+which python3
+/usr/bin/python3
+python3 --version
+Python 3.6.8
+
+Making python3 the default, there are two approaches, one by creating aliases, and the other by updating/managing the symbolic links. I decided to go with the aliases after reading about the symlink option here: 
+https://www.redhat.com/sysadmin/alternatives-command
+
+The aliases option is demonstrated here: 
+https://mymusing.co/how-to-change-default-python-version/
+https://medium.com/@gajuambi/install-and-default-python-3-x-on-centos-7-9873adae3cb9
+
+Also, in order to run alias commands with sudo: 
+https://askubuntu.com/questions/22037/aliases-not-available-when-using-sudo
+
+ls /usr/bin/p*
+# I added these four lines to the ~/.bashrc file and re-logged in:
+alias sudo='sudo '
+alias python=python3.6
+alias pip=pip3
+alias pydoc=pydoc3
+
+--
+
+pip install python-igraph
+- got this error: PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.6'
+- see: 
+https://www.reddit.com/r/learnpython/comments/bishfp/permission_denied_error_while_trying_to_install/
+
+# So, install it for the local user:
+pip install --user python-igraph
+- another error... You will need the Python headers to compile this extension.
+See:
+https://stackoverflow.com/questions/28435418/failing-to-install-python-igraph
+https://stackoverflow.com/questions/34962410/igraph-failed-to-install-through-pip
+
+https://installati.one/centos/7/igraph/
+
+sudo yum -y install igraph
+sudo yum -y install python-igraph
+sudo yum -y install igraph-devel
+sudo yum -y install python-igraph-devel
+
+pip install --user python-igraph
+- same error
+
+
+--
+
+cd ~/software
+wget https://github.com/bcgsc/abyss/releases/download/2.3.5/abyss-2.3.5.tar.gz
+tar xvzf abyss-2.3.5.tar.gz
+
+
+
+
+
+
+
+
+
+=======================
+ben_tmp2
+
+
+openstack server create \
+	--image ben_tmp2 \
+  --security-group default \
+	--key-name brancourt \
+	--nic net-id=Private \
+	--flavor x1.xlarge \
+	ben_dev
+
+
+=======================
+#!/usr/bin/perl
+# tr2aacds.pl
+
+=item ABOUT
+
+  EvidentialGene tr2aacds.pl
+   
+  This program converts mRNA assembly sets of too many transcripts, to best open
+  reading frame coding sequences, with filtering of identical coding sequences, 
+  and alternate CDS transcripts found by high identity subset alignments. 
+
+=item EXAMPLE
+
+  evigene/scripts/prot/tr2aacds.pl -log -cdna transcripts.fa -NCPU 8 -MAXMEM 16000 
+
+  Input is one file of all transcripts.fasta[.gz]
+  
+  Output is folder of non-redundant transcripts, proteins and CDS,
+  classified by gene locus, with tables of gene/transcript qualities,
+  and a separate drop folder of redundant sequences.
+
+  See RUN SCRIPT below for a cluster script.
+
+=item REQUIREMENTS
+
+  Current software required:
+  EvidentialGene source code from http://eugenes.org/EvidentialGene/evigene/
+            or http://sourceforge.net/projects/evidentialgene/
+            packaged by release as evigeneDATE.tar          
+  blastn, makeblastdb of NCBI C++ BLAST (tested ncbi2227 and later)
+          from  https://blast.ncbi.nlm.nih.gov/ (Altschul et al. 1990)
+  cd-hit, cd-hit-est, of https://github.com/weizhongli/cdhit/ or http://cd-hit.org/ (Li & Godzik 2006)
+  fastanrdb, of exonerate package from https://www.ebi.ac.uk/about/vertebrate-genomics/software/exonerate (Slater & Birney 2005)
+    rapid and reliable non-redundant fasta sequence database
+  These need to be in PATH or ENV. 
+
+
+[...]
+
+
+=item RUN SCRIPT run_tr2aacds4.sh 
+
+  This script can be used, or modified, to execute tr2aacds4 on a cluster batch system,
+  or from Unix command line w/o batch system.  
+  NOTE you need to configure required software in path evgapps=$HOME/bio/apps/ ,
+  or equivalent w/ edits.  Required are 
+    evigene/scripts/ cdhit/bin/  exonerate/bin/ ncbi/bin
+  
+  #! /bin/bash
+  #----------------------------------------
+  ### env trset=tevg9arathap.tr datad=`pwd` ./run_tr2aacds4.sh
+  ### env trset=myspecies_all.tr.gz datad=path/to/data qsub -q normal run_tr2aacds4.sh
+  #PBS -N tr2aacds
+  #PBS -A PutAccountIdHere
+  #PBS -l nodes=1:ppn=8,walltime=15:55:00
+  #PBS -V
+  
+  if [ "X" = "X$ncpu" ]; then ncpu=8; fi
+  if [ "X" = "X$maxmem" ]; then maxmem=32000; fi
+  if [ "X" = "X$datad" ]; then echo "datad=?"; exit -1; fi
+  if [ "X" = "X$trset" ]; then echo "trset=what?"; exit -1; fi
+  
+  evgapps=$HOME/bio/apps
+  evigenes=$evgapps/evigene/scripts
+  export PATH=$evgapps/cdhit/bin:$PATH
+  export fastanrdb=$evgapps/exonerate/bin/fastanrdb
+  export PATH=$evgapps/ncbi/bin:$PATH
+  
+  evapp=$evigenes/prot/tr2aacds4.pl
+  traopts="-log"
+  #x traopts="-debug -log"
+  if [ "X" != "X$opt" ]; then traopts="$traopts $opt"; fi
+  
+  cd $datad/
+  echo "#START `date` " 
+  echo $evapp -NCPU $ncpu -MAXMEM $maxmem $traopts -cdna $trset
+  $evapp -NCPU $ncpu -MAXMEM $maxmem $traopts -cdna $trset
+  echo "#DONE : `date`"
+  #----------------------------------------
+
+=cut
+
+
