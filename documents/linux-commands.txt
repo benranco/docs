@@ -103,9 +103,11 @@ Use grep to get only the line number(s) of the search pattern
 grep -n "text to find" file.ext | cut -f1 -d:
 
 from: https://stackoverflow.com/questions/16956810/how-do-i-find-all-files-containing-specific-text-on-linux
-Use grep to search/find for a string in all .txt files in a location:
+Use grep to search/find for a string in all .txt files in a location (multi-file search):
 grep --include=*.txt -rn '/path/to/somewhere/' -e 'pattern'
 
+Use grep to remove all lines containing a string (e.g. ,NA or ,"NA"): 
+grep -v -E ",NA|,\"NA\"" MAF_cutoff_report.csv > MAF_cutoff_report_noNAs.csv
 
 Count how many unique lines there are in a file:
 
@@ -124,7 +126,8 @@ wc -l  <-- count the number of lines in a file
 
 ls | wc -l  <-- count the number of files in a directory
 
-
+# Search this directory and all subdirectories (up to 30 deep) for the *.txt filename, case insensitive: 
+find . -maxdepth 30 -iname *.txt -type f 
 # Find all files of *.txt in subfolders recursively, but only to a depth of the first level of subdirectories:
 find . -mindepth 2 -maxdepth 2 -name *.txt -type f 
 # Copy the results of the above search to a new folder:
@@ -163,8 +166,33 @@ sed -n 'startline,endline p; endline(+1?) q' in.txt > out.txt
    q exit sed without processing rest of file
 
 
-Passing bash variables into awk: 
+Passing bash variables into awk (see my scripts convert-qseq-to-fastq.sh and freebayes-parallel-ben.sh): 
 https://stackoverflow.com/questions/19075671/how-do-i-use-shell-variables-in-an-awk-script
+
+Scripts I've written that do more than basic AWK scripting: 
+convert-qseq-to-fastq.sh
+freebayes-parallel-ben.sh
+extract_from_vcf_multi_sample.sh
+filter_csv_from_multi_sample_vcf.sh
+
+Book: Effective Awk Programing, 4th Edition, by Arnold Robbins
+
+AWK buffers it's output by default according to: 
+https://stackoverflow.com/questions/66445331/does-awk-buffer-multiple-print-statements-before-writing-them-to-disc
+AWK operators: 
+https://www.thegeekstuff.com/2010/02/unix-awk-operators/
+AWK built-in variables: 
+https://www.thegeekstuff.com/2010/01/8-powerful-awk-built-in-variables-fs-ofs-rs-ors-nr-nf-filename-fnr/
+AWK built-in functions: 
+https://www.tutorialspoint.com/awk/awk_built_in_functions.htm
+built-in functions for gnu awk (gawk): 
+https://www.gnu.org/software/gawk/manual/html_node/Built_002din.html
+AWK functions pass by reference (for arrays/dictionaries) and pass by value (for variables): 
+https://www.gnu.org/software/gawk/manual/html_node/Pass-By-Value_002fReference.html
+AWk doesn't have variable scope, so if, for example, you have a function which uses a for-loop with variable i but i is used elsewhere it can create wonky results, therefore, see the answer here for local-scope function variable conventions, and see my script filter_csv_from_multi_sample_vcf.sh for an example of how it's used; 
+https://unix.stackexchange.com/questions/443465/awk-best-practice-for-loop-variable-naming
+
+
 
 Addition/subtraction/arithmetic/math in a bash terminal: 
 echo $((1 + 2))
@@ -182,6 +210,9 @@ Commands to find out how much free memory/RAM there is:
 free -g
 
 vmstat -s
+
+To clear the memory buffer/cache (from: https://unix.stackexchange.com/questions/87908/how-do-you-empty-the-buffers-and-cache-on-a-linux-system  ): 
+sudo sh -c 'echo 3 >/proc/sys/vm/drop_caches'
 
 
 If having problems formatting a drive or usb, install gparted (sudo yum install gparted), and use it. To apply any pending operations in gparted, click the green check mark. See:
@@ -213,6 +244,24 @@ cat -A file.txt # Window CR will display as ^M
 To convert Windows CRLF ending to Linux LF ending: 
 sed -i -e 's/\r$//' file.txt
 
+
+sed tutorial: 
+https://www.grymoire.com/Unix/Sed.html
+In sed:
+.* matches zero or more characters
+.\+ matches one or more characters  
+[^#] matches any character except #
+[[:alnum:]_.-] matches any alphanumeric or _ or . or - character. The - must be listed last.
+[:alpha:] matches alphabetical characters
+\t matches tab
+
+sed '/^#[^#]/q' file > out  # print out all lines up to and including the first line beginning with a single #, then quit
+sed -n '/^#[^#]/q;p' file > out  # same as above, but excluding the matched line (the -n means only the lines that reach the p will be printed, but q quits before that).
+sed '/^#[^#]/Q' file > out  # same as above but for GNU sed
+
+sed '/^#/d' filepath > out # delete all lines in a file beginning with #
+grep -v '^#' filename > out   # the grep equivalent of the above
+grep -n -v -m 1 "^#" filepath | cut -f1 -d:   # return the line number of the first line not beginning with #
 
 Using sed to replace parts of lines. Examples below.
 command: 

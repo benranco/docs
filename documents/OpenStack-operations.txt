@@ -121,12 +121,12 @@ openstack server create \
 	ben_dev
 
 openstack server create \
-	--image CentOS7_BenWork5 \
+	--image CentOS7_BenWork7 \
   --security-group default \
 	--key-name brancourt \
 	--nic net-id=Private \
-	--flavor mm1.8xlarge \
-	benmm1-trim
+	--flavor mm1.16xlarge \
+	benb1
 
 
 

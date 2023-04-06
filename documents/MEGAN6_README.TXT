@@ -2,7 +2,7 @@
 ---
 Megagenome Analyzer 6 links:
 from: https://bio.tools/megan
-"Metagenome Analysis Software - MEGAN (MEtaGenome ANalyzer) is a new computer program that allows laptop analysis of large metagenomic datasets. In a preprocessing step, the set of DNA reads (or contigs) is compared against databases of known sequences using BLAST or another comparison tool. MEGAN can then be used to compute and interactively explore the taxonomical content of the dataset, employing the NCBI taxonomy to summarize and order the results."
+"Metagenome Analysis Software - MEGAN (MEtaGenome ANalyzer) is a new computer program that allows laptop analysis of large metagenomic datasets. In a preprocessing step, the set of DNA reads (or contigs) is compared against databases of known sequences using BLAST or another comparison tool. MEGAN can then be used to compute and interactively explore the taxonomical content of the dataset, employing the NCBI taxonomy to summarize and order the results."
 
 https://uni-tuebingen.de/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/megan6/
 https://software-ab.informatik.uni-tuebingen.de/download/megan6/welcome.html
@@ -16,7 +16,10 @@ https://www.linode.com/docs/guides/how-to-install-openjdk-on-centos-8/
 
 Ben's Notes: 
 - MEGAN6 can be run from an openstack vm based on my CentOS7_GUI_VNC-Java14 image.
-- I've already installed MEGAN6 in this folder (subject to being moved to a less obscure location), so just mount this folder to /work3 or something: 
+- I've already installed MEGAN6 in the following folders:
+    public/genomics/junjun/Data-Dec2020/ben2021/a6/blastrun/forMegan6  (this was the original installation)
+    public/genomics/junjun/MEGAN6   (copied from the original installation location, except for the megan-map files, which I'm not sure I need)
+- to use, just mount either of these folders to /work3 or something: 
   sudo mount -t nfs 10.20.0.6:/Public/genomics/junjun/Data-Dec2020/ben2021/a6/blastrun/forMegan6 /work3
 - to run MEGAN6, from within your VNC session, open a terminal and cd to /work3/megan6/megan, then run ./MEGAN
 - MEGAN expects the input to be the output file of a BLASTp/BLASTx/BLASTn run, as well as the fasta reads file used for the BLAST run.
